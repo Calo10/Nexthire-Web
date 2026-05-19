@@ -1,16 +1,15 @@
 import { useState, FormEvent } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Logo from '../components/Logo';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import ErrorMessage from '../components/ErrorMessage';
 import LanguageSwitcher from '../components/LanguageSwitcher';
-import { authApi, type ApiError } from '../lib/api';
+import { authApi } from '../lib/api';
 
 export default function ForgotPassword() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -25,8 +24,7 @@ export default function ForgotPassword() {
       await authApi.requestPasswordReset(email);
       setIsSubmitted(true);
       setEmail('');
-    } catch (err) {
-      const apiError = err as ApiError;
+    } catch {
       // Always show success message to avoid revealing if email exists
       // But still log the error for debugging
       setIsSubmitted(true);

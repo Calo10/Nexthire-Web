@@ -50,46 +50,62 @@ let mockTasks: Task[] = [
   {
     id: 'mock-1',
     title: 'Schedule interview',
-    status: 'To do',
+    status: 'todo',
     dueAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 3).toISOString(),
+    applicationId: 'app-1',
+    jobId: 'job-1',
+    candidateId: 'cand-1',
+    assignedToUserId: 'user-1',
     candidateName: 'Ana Lopez',
     jobTitle: 'Frontend Engineer',
     assignedToName: 'Carlos',
     createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    completedAt: null,
   },
   {
     id: 'mock-2',
     title: 'Review resume',
-    status: 'In progress',
+    status: 'in_progress',
     dueAt: new Date().toISOString(),
+    applicationId: 'app-2',
+    jobId: 'job-2',
+    candidateId: 'cand-2',
+    assignedToUserId: 'user-1',
     candidateName: 'Juan Perez',
     jobTitle: 'Backend Engineer',
     assignedToName: 'Carlos',
     createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    completedAt: null,
   },
   {
     id: 'mock-3',
     title: 'Send offer',
-    status: 'Waiting',
+    status: 'blocked',
     dueAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 1).toISOString(),
+    applicationId: 'app-3',
+    jobId: 'job-3',
+    candidateId: 'cand-3',
+    assignedToUserId: 'user-1',
     candidateName: 'Sofia Castro',
     jobTitle: 'Product Designer',
     assignedToName: 'Carlos',
     createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    completedAt: null,
   },
   {
     id: 'mock-4',
     title: 'Finalize onboarding',
-    status: 'Done',
+    status: 'done',
     dueAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),
+    applicationId: 'app-4',
+    jobId: 'job-4',
+    candidateId: 'cand-4',
+    assignedToUserId: 'user-1',
     candidateName: 'Diego Fernandez',
     jobTitle: 'QA Engineer',
     assignedToName: 'Carlos',
     createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    completedAt: new Date().toISOString(),
   },
 ];
 
@@ -118,13 +134,14 @@ const mockTasksApi: TasksApi = {
     const t: Task = {
       id: `mock-${Math.random().toString(16).slice(2)}`,
       title: payload.title,
-      status: payload.status || 'To do',
-      dueAt: payload.dueAt || null,
-      candidateId: payload.candidateId ?? null,
-      jobId: payload.jobId ?? null,
-      assignedToUserId: payload.assignedToUserId ?? null,
+      status: payload.status || 'todo',
+      dueAt: payload.dueAt ?? null,
+      applicationId: payload.applicationId,
+      jobId: '',
+      candidateId: '',
+      assignedToUserId: null,
       createdAt: now,
-      updatedAt: now,
+      completedAt: null,
     };
     mockTasks = [t, ...mockTasks];
     return t;
@@ -137,7 +154,7 @@ const mockTasksApi: TasksApi = {
   update: async (id, payload) => {
     const idx = mockTasks.findIndex((x) => x.id === id);
     if (idx === -1) throw { message: 'Task not found', status: 404 };
-    const updated = { ...mockTasks[idx], ...payload, updatedAt: new Date().toISOString() } as Task;
+    const updated: Task = { ...mockTasks[idx], ...payload };
     mockTasks = mockTasks.map((x) => (x.id === id ? updated : x));
     return updated;
   },

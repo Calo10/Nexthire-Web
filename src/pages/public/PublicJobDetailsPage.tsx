@@ -9,11 +9,6 @@ import { looksLikeHtml, markdownToSafeHtml } from '../../lib/markdown';
 import { sanitizeHtml } from '../../lib/sanitizeHtml';
 import { usePublicJob } from '../../hooks/public/usePublicJob';
 
-function formatMeta(value: string | null | undefined) {
-  const s = String(value || '').trim();
-  return s || '—';
-}
-
 function Description({ description }: { description: string | null | undefined }) {
   const raw = String(description || '');
   const safeHtml = useMemo(() => {
