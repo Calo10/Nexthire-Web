@@ -1,0 +1,41 @@
+import { onlyDigits } from '../../lib/phone';
+import type { SourcingLead } from '../../types/sourcing';
+
+export function leadId(lead: SourcingLead): string {
+  return String(lead.id ?? '');
+}
+
+export function leadDisplayName(lead: SourcingLead): string {
+  const fn = [lead.firstName, lead.lastName].filter(Boolean).join(' ').trim();
+  return String(lead.fullName || fn || '—').trim();
+}
+
+export function whatsappHref(phone: string | null | undefined): string | null {
+  if (!phone) return null;
+  const d = onlyDigits(String(phone));
+  if (!d) return null;
+  return `https://wa.me/${d}`;
+}
+
+export function fitScoreTone(score: number | null | undefined): string {
+  if (score == null || Number.isNaN(score)) return 'bg-gray-50 text-gray-600 border border-gray-100';
+  if (score >= 85) return 'bg-green-50 text-green-600 border border-green-100';
+  if (score >= 70) return 'bg-emerald-50 text-emerald-700 border border-emerald-100';
+  if (score >= 60) return 'bg-yellow-50 text-yellow-600 border border-yellow-100';
+  return 'bg-orange-50 text-orange-700 border border-orange-100';
+}
+
+export function formatMoney(n: number | null | undefined, currency = 'USD'): string {
+  if (n == null || Number.isNaN(n)) return '—';
+  try {
+    return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(n);
+  } catch {
+    return `$${n.toFixed(2)}`;
+  }
+}
+
+export function formatPercent(n: number | null | undefined): string {
+  if (n == null || Number.isNaN(n)) return '—';
+  const v = n <= 1 && n > 0 ? n * 100 : n;
+  return `${v.toFixed(1)}%`;
+}

@@ -1,0 +1,1169 @@
+{
+  "common": {
+    "welcome": "Welcome",
+    "login": "Log in",
+    "signUp": "Sign up",
+    "getStarted": "Get started",
+    "pricing": "Pricing",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy",
+    "copyright": "© 2024 NextHire. All rights reserved.",
+    "loading": "Loading...",
+    "optional": "Optional",
+    "none": "—",
+    "placeholders": {
+      "url": "https://..."
+    },
+    "actions": {
+      "cancel": "Cancel",
+      "close": "Close",
+      "delete": "Delete",
+      "edit": "Edit",
+      "creating": "Creating...",
+      "saving": "Saving...",
+      "saveChanges": "Save changes"
+    },
+    "aria": {
+      "closeModal": "Close modal",
+      "closeDrawer": "Close drawer"
+    }
+  },
+  "auth": {
+    "sessionExpired": "Session expired"
+  },
+  "login": {
+    "title": "Log in to NextHire",
+    "email": "Email",
+    "emailPlaceholder": "Enter your email",
+    "sendMagicLink": "Send Magic Link",
+    "magicLinkDescription": "We'll send you a magic link to log in. No password needed.",
+    "noAccount": "Don't have an account?",
+    "checkEmail": "Check your email",
+    "emailSent": "We've sent a magic link to {{email}}. Click the link in the email to log in."
+  },
+  "landing": {
+    "heroTitle": "Start hiring faster",
+    "heroDescription": "The modern recruitment platform that helps you find, track, and hire the best candidates faster than ever.",
+    "viewPricing": "View pricing",
+    "featuresTitle": "Everything you need to hire smarter",
+    "featuresDescription": "Streamline your hiring process with powerful tools designed for modern recruiters.",
+    "jobs": "Jobs",
+    "jobsDescription": "Create and manage job postings with ease. Track applications and find the perfect candidates.",
+    "pipeline": "Pipeline",
+    "pipelineDescription": "Visualize your candidate pipeline. Move candidates through stages and never lose track of progress.",
+    "candidates": "Candidates",
+    "candidatesDescription": "Manage candidate profiles, resumes, and notes all in one place. Make informed hiring decisions.",
+    "pricingTitle": "Simple, transparent pricing",
+    "pricingDescription": "Choose the plan that fits your team. Start free and upgrade as you grow.",
+    "learnMore": "Learn more",
+    "viewAllPricing": "View all pricing details"
+  },
+  "pricing": {
+    "title": "Simple, transparent pricing",
+    "description": "Choose the plan that fits your team. Start free and upgrade as you grow.",
+    "free": "Free",
+    "starter": "Starter",
+    "growth": "Growth",
+    "pro": "Pro",
+    "perMonth": "/month",
+    "freeDescription": "Perfect for trying out NextHire",
+    "starterDescription": "For small teams getting started",
+    "growthDescription": "For growing teams",
+    "proDescription": "For large organizations",
+    "mostPopular": "Most Popular",
+    "trial": "All plans include a 14-day free trial. No credit card required.",
+    "startTrial": "Start your free trial",
+    "features": {
+      "free": {
+        "0": "Up to 3 job postings",
+        "1": "Basic candidate tracking",
+        "2": "Email support"
+      },
+      "starter": {
+        "0": "Up to 10 job postings",
+        "1": "Advanced candidate pipeline",
+        "2": "Email templates",
+        "3": "Priority email support"
+      },
+      "growth": {
+        "0": "Unlimited job postings",
+        "1": "Advanced analytics",
+        "2": "Team collaboration",
+        "3": "Custom workflows",
+        "4": "Priority support"
+      },
+      "pro": {
+        "0": "Everything in Growth",
+        "1": "Advanced integrations",
+        "2": "Dedicated account manager",
+        "3": "Custom reporting",
+        "4": "24/7 phone support"
+      }
+    }
+  },
+  "dashboard": {
+    "welcome": "Welcome, Carlos!",
+    "activeJobs": "Active Jobs",
+    "candidatesInPipeline": "Candidates in Pipeline",
+    "interviewThisWeek": "Interview This Week",
+    "interviewStage": "Interview (pipeline)",
+    "hiredThisMonth": "Hired This Month",
+    "totalApplications": "Total Applications",
+    "pendingInterviews": "Pending Interviews",
+    "avgTimeToHire": "Avg Time to Hire",
+    "candidates": "Candidates",
+    "candidate": "Candidate",
+    "appliedJob": "Applied Job",
+    "stage": "Stage",
+    "dateApplied": "Date Applied",
+    "screening": "Screening",
+    "applied": "Applied",
+    "interview": "Interview",
+    "hired": "Hired",
+    "loading": "Loading...",
+    "allJobs": "All Jobs",
+    "signOut": "Sign out",
+    "applicationsByStage": "Applications by Stage",
+    "activityTrend": "Activity Trend",
+    "myJobs": "My Jobs",
+    "noJobsFound": "No jobs found",
+    "applications": "applications",
+    "recentCandidates": "Recent Candidates",
+    "noCandidatesFound": "No candidates found",
+    "upcomingTasks": "Upcoming Tasks",
+    "noUpcomingTasks": "No upcoming tasks",
+    "dateRange": {
+      "last7Days": "Last 7 days",
+      "last30Days": "Last 30 days",
+      "last90Days": "Last 90 days",
+      "allTime": "All time"
+    }
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "jobs": "Jobs",
+    "candidates": "Candidates",
+    "tasks": "Tasks",
+    "pipeline": "Pipeline",
+    "sourcing": "Sourcing",
+    "templates": "Templates",
+    "aiAgents": "AI Agents",
+    "team": "Teams",
+    "settings": "Settings"
+  },
+  "aiAgents": {
+    "title": "AI Agents",
+    "subtitle": "Automate campaign and pipeline steps per job. Configure each stage, then save. (Stored locally until backend sync is available.)",
+    "selectJob": "Job",
+    "jobPlaceholder": "Select a job",
+    "loadingJobs": "Loading jobs…",
+    "hintSelectJob": "Choose a job to configure automation for that role.",
+    "templatesLoading": "Loading templates…",
+    "selectTemplate": "Select a template",
+    "save": "Save configuration",
+    "saved": "Configuration saved.",
+    "tabs": {
+      "sourcing": "Sourcing",
+      "screening": "Screening",
+      "interview": "Interview",
+      "offer": "Offer"
+    },
+    "cadence": {
+      "hourly": "Every hour",
+      "daily": "Daily",
+      "weekly": "Weekly"
+    },
+    "channel": {
+      "email": "Email",
+      "whatsapp": "WhatsApp"
+    },
+    "sourcing": {
+      "description": "Automatic handling of sourced leads for this job.",
+      "autoConversionPercent": "Automatic conversion rate (%)",
+      "maxProcessed": "Maximum processed per run",
+      "executionCadence": "Execution cadence"
+    },
+    "screening": {
+      "description": "Outreach and follow-up during screening. Messages use your Templates."
+    },
+    "interview": {
+      "description": "Schedule interviews via email or WhatsApp using a template."
+    },
+    "offer": {
+      "description": "Send and track offers with the same automation pattern as Interview.",
+      "maxOffersToSend": "Maximum offers to send (per run)"
+    },
+    "messaging": {
+      "channel": "Send via",
+      "template": "Template",
+      "responseWait": "Hours to wait for a response",
+      "advanceToInterview": "Cadence to advance to Interview",
+      "advanceToOffer": "Cadence to advance to Offer",
+      "advanceAfterOffer": "Cadence after Offer (e.g. close / hired)"
+    },
+    "errors": {
+      "loadJobs": "Could not load jobs.",
+      "save": "Could not save configuration."
+    },
+    "unknownJob": "Unknown job",
+    "savedTable": {
+      "title": "Saved agents",
+      "empty": "No agents configured yet.",
+      "agentColumn": "Agent",
+      "job": "Job",
+      "sourcingCadence": "Sourcing cadence",
+      "screeningChannel": "Screening channel",
+      "actions": "Actions",
+      "open": "Open",
+      "metrics": "View performance metrics",
+      "updatedAt": "Updated"
+    },
+    "metrics": {
+      "title": "Performance metrics",
+      "disclaimer": "These charts illustrate possible outcomes based on your saved automation settings. They are not live analytics.",
+      "noConfig": "No configuration found for this agent.",
+      "stageHired": "Hired",
+      "kpiAutomation": "Automation share",
+      "kpiAutomationHint": "Estimated share of steps handled without manual work.",
+      "kpiHours": "Hours saved (est.)",
+      "kpiHoursHint": "Rough projection vs fully manual handling.",
+      "kpiTargetConv": "Target auto conversion",
+      "kpiTargetConvHint": "From your Sourcing settings.",
+      "funnelTitle": "Projected funnel",
+      "trendTitle": "7-day trend",
+      "trendSubtitle": "Simulated processed candidates per day.",
+      "volumeTitle": "Volume by stage",
+      "volumeSubtitle": "Illustrative distribution before hire."
+    },
+    "newAgent": "Add new agent",
+    "modalTitle": "Agent configuration"
+  },
+  "metaCampaign": {
+    "title": "Meta Ads Campaign Builder",
+    "subtitle": "Create a Meta campaign for a job post in guided steps. New campaigns stay paused until you activate them in Ads Manager.",
+    "stepLabel": "Step {{current}} / {{total}}",
+    "steps": {
+      "s1": "Job",
+      "s2": "Campaign",
+      "s3": "Destination",
+      "s4": "Creative",
+      "s5": "Review"
+    },
+    "nav": {
+      "back": "Back",
+      "next": "Next",
+      "create": "Create campaign",
+      "creating": "Creating…"
+    },
+    "job": {
+      "search": "Search jobs",
+      "searchPlaceholder": "Title, ID, or code",
+      "loading": "Loading jobs…",
+      "none": "No jobs match your search.",
+      "selected": "Selected job",
+      "title": "Title",
+      "location": "Location",
+      "status": "Status",
+      "code": "Job code"
+    },
+    "details": {
+      "campaignName": "Campaign name",
+      "objective": "Objective",
+      "status": "Status",
+      "dailyBudget": "Daily budget (minor units)",
+      "country": "Country (ISO)",
+      "ageMin": "Minimum age",
+      "ageMax": "Maximum age",
+      "platforms": "Placements",
+      "platformBoth": "Facebook & Instagram",
+      "platformFacebook": "Facebook only",
+      "platformInstagram": "Instagram only",
+      "mapTitle": "Target AREA",
+      "mapMockBadge": "Mock only - no API sync",
+      "mapHint": "Google Maps preview for demo. Use presets or edit coordinates to change the area.",
+      "mapAria": "Mock map to choose audience area",
+      "mapRadius": "Coverage radius",
+      "mapPresetLabel": "Quick location",
+      "mapPresetMonterrey": "Monterrey",
+      "mapPresetCdmx": "Mexico City",
+      "mapPresetGuadalajara": "Guadalajara",
+      "mapPresetBogota": "Bogota",
+      "mapPresetMadrid": "Madrid",
+      "mapCenterLabel": "Center: {{lat}}, {{lng}}",
+      "mapSelectionReady": "Selected area: center {{lat}}, {{lng}} with {{radius}} km radius.",
+      "mapSelectionEmpty": "No area selected yet."
+    },
+    "destination": {
+      "type": "Destination",
+      "whatsapp": "WhatsApp (wa.me)",
+      "jobUrl": "Job post URL",
+      "message": "WhatsApp message",
+      "urlOverride": "Override job URL (optional)",
+      "defaultUrlHint": "Default public URL for this job is shown below. Leave override empty to use it.",
+      "noWhatsappEnv": "Configure VITE_SOURCING_WHATSAPP_PHONE (digits only) to build WhatsApp links."
+    },
+    "creative": {
+      "adText": "Primary text",
+      "cta": "Call to action",
+      "imageSection": "Image",
+      "generateDemo": "Generate demo image",
+      "generateAi": "Generate with AI",
+      "regenerate": "Regenerate",
+      "useThisImage": "Use this image",
+      "uploadManualInstead": "Upload manual instead",
+      "upload": "Upload image",
+      "working": "Working…",
+      "noImageYet": "No image yet. Generate a demo or upload a file.",
+      "imageHash": "Meta image hash",
+      "hashOnlyPreview": "Image uploaded; preview may be omitted until Meta returns a URL.",
+      "uploadFailed": "Upload failed.",
+      "demoFailed": "Could not generate or upload a demo image.",
+      "aiValidation": "Please select a valid job before generating an AI preview.",
+      "aiUnavailable": "No se pudo generar imagen AI en este momento",
+      "noHash": "Server did not return an image hash.",
+      "imageOnly": "Please choose an image file."
+    },
+    "review": {
+      "job": "Job",
+      "campaignName": "Campaign name",
+      "budget": "Daily budget",
+      "audience": "Audience",
+      "platforms": "Platforms",
+      "destination": "Destination type",
+      "destinationUrl": "Destination URL",
+      "adText": "Ad text",
+      "cta": "CTA",
+      "status": "Status",
+      "image": "Image preview",
+      "imageFromMeta": "Creative will use the uploaded hash in Meta.",
+      "imageHash": "Image hash"
+    },
+    "result": {
+      "title": "Campaign created (paused)",
+      "campaignId": "Campaign ID",
+      "adSetId": "Ad set ID",
+      "creativeId": "Creative ID",
+      "adId": "Ad ID",
+      "openAdsManager": "Open Ads Manager"
+    },
+    "preview": {
+      "urlLabel": "Generated URL",
+      "copy": "Copy",
+      "copied": "Copied",
+      "noUrl": "Complete the fields to see the URL."
+    },
+    "validation": {
+      "jobRequired": "Select a job to continue.",
+      "required": "This field is required.",
+      "budget": "Enter a daily budget of at least 1.",
+      "country": "Use a 2-letter country code (e.g. US).",
+      "age": "Age range must be valid (minimum age must be less than maximum, 13–65).",
+      "whatsappEnv": "WhatsApp number is not configured for this environment.",
+      "destination": "Enter a message to build the WhatsApp link.",
+      "url": "Enter a valid http(s) URL.",
+      "orgMissing": "Set organization context or paste a full job URL override.",
+      "image": "Add an image (generate demo or upload)."
+    },
+    "errors": {
+      "loadJobs": "Could not load jobs.",
+      "missingTenant": "Missing organization context. Sign in again.",
+      "create": "Could not create the Meta campaign.",
+      "sourcingSync": "Campaign was created in Meta, but it could not be saved to your Sourcing list. You can close and try again, or check with support."
+    }
+  },
+  "teams": {
+    "title": "Teams & roles",
+    "subtitle": "Manage teams, members, and user roles for your organization.",
+    "newTeam": "New Team",
+    "empty": "No teams yet. Create a team to organize members and leads.",
+    "selectTeam": "Select a team using View to manage members and roles.",
+    "selectMember": "Select a member to view or edit their roles.",
+    "loading": "Loading teams…",
+    "table": {
+      "name": "Team",
+      "description": "Description",
+      "status": "Status",
+      "members": "Members",
+      "actions": "Actions"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "actions": {
+      "view": "View",
+      "edit": "Edit",
+      "delete": "Delete",
+      "addMember": "Add member",
+      "removeMember": "Remove",
+      "teamLead": "Team lead",
+      "addRole": "Add role",
+      "removeRole": "Remove"
+    },
+    "members": {
+      "title": "Team members",
+      "empty": "No members in this team yet.",
+      "name": "Name",
+      "email": "Email",
+      "lead": "Lead"
+    },
+    "roles": {
+      "title": "User roles",
+      "catalog": "Available roles",
+      "assigned": "Assigned roles",
+      "empty": "No roles assigned.",
+      "emptyCatalog": "No roles available.",
+      "allAssigned": "All roles are already assigned to this user.",
+      "role": "Role"
+    },
+    "modal": {
+      "createTitle": "New team",
+      "editTitle": "Edit team",
+      "name": "Name",
+      "namePlaceholder": "e.g. Engineering",
+      "description": "Description",
+      "descriptionPlaceholder": "Optional description",
+      "active": "Active"
+    },
+    "addMember": {
+      "title": "Add team member",
+      "selectUser": "User",
+      "hint": "Only users not already on this team are listed.",
+      "noEligible": "Everyone is already on this team."
+    },
+    "confirm": {
+      "deleteTeam": "Delete this team? Members will be removed from the team.",
+      "removeMember": "Remove this member from the team?",
+      "removeRole": "Remove this role from the user?"
+    },
+    "errors": {
+      "loadTeams": "Failed to load teams",
+      "loadMembers": "Failed to load members",
+      "loadRoles": "Failed to load roles",
+      "loadUserRoles": "Failed to load user roles",
+      "saveTeam": "Could not save team",
+      "deleteTeam": "Could not delete team",
+      "member": "Could not update member",
+      "assignRole": "Could not assign role",
+      "removeRole": "Could not remove role"
+    }
+  },
+  "pipeline": {
+    "title": "Pipeline",
+    "overview": "Overview",
+    "selectJob": "Select job",
+    "addApplication": "Add Application",
+    "actions": {
+      "reject": "Reject",
+      "unreject": "Unreject",
+      "archive": "Archive"
+    },
+    "status": {
+      "active": "Active",
+      "rejected": "Rejected",
+      "archived": "Archived"
+    },
+    "empty": {
+      "title": "No applications yet",
+      "subtitle": "Add a candidate to start tracking your pipeline."
+    },
+    "errors": {
+      "load": "Failed to load pipeline",
+      "move": "Could not move application. Reverted.",
+      "updateStatus": "Failed to update application status.",
+      "create": "Failed to create application.",
+      "duplicate": "This candidate already has an application for the selected job.",
+      "validation": "Please select a candidate and a job."
+    },
+    "inspector": {
+      "noHistory": "No stage history yet.",
+      "tasks": "Tasks",
+      "noTasks": "No tasks for this application.",
+      "noNotes": "No notes for this application.",
+      "tabs": {
+        "history": "Stage History",
+        "notes": "Notes",
+        "tasks": "Tasks",
+        "activity": "Activity",
+        "whatsappConversation": "WhatsApp"
+      },
+      "whatsapp": {
+        "empty": "WhatsApp conversation for this application will appear here when available.",
+        "missingTenant": "Could not resolve organization. Sign in again or refresh the page.",
+        "loadError": "Could not load WhatsApp messages.",
+        "noMessages": "No messages in this conversation yet.",
+        "composePlaceholder": "Write a message…"
+      },
+      "resume": {
+        "tab": "Resume",
+        "notesTab": "Notes",
+        "view": "Ver Curriculum",
+        "analyze": "Analizar con AI",
+        "modalTitle": "Curriculum",
+        "analysisModalTitle": "AI Analysis",
+        "analysis": {
+          "refresh": "Refresh analysis",
+          "cached": "Cached",
+          "summary": "Summary",
+          "language": "Language",
+          "docType": "Doc type",
+          "keyPoints": "Key points",
+          "warnings": "Warnings",
+          "createdAt": "Created",
+          "extractedChars": "Extracted text chars",
+          "empty": "No analysis available yet."
+        },
+        "openInNewTab": "Download",
+        "opened": "Resume opened",
+        "analyzed": "AI analysis completed",
+        "failed": "Failed to process resume",
+        "noResume": "No resume available",
+        "hasResult": "AI analysis ready."
+      },
+      "menu": {
+        "aria": "More actions",
+        "addNote": "Add Note",
+        "sendMessage": "Send message"
+      },
+      "addNote": {
+        "title": "Add Note",
+        "subtitle": "Add a note to this application",
+        "body": "Note",
+        "placeholder": "Write your note...",
+        "save": "Save note",
+        "validation": "Note is required"
+      },
+      "notes": {
+        "deleteAria": "Delete note",
+        "deleteConfirm": "Delete this note?"
+      }
+    },
+    "message": {
+      "title": "Send message",
+      "subtitle": "Messaging is available for email and WhatsApp.",
+      "context": "To",
+      "template": "Template",
+      "noTemplates": "No templates",
+      "templateLoadFailed": "Could not load template.",
+      "channel": "Channel",
+      "subject": "Subject",
+      "body": "Message",
+      "placeholder": "Write a message...",
+      "send": "Send",
+      "sending": "Sending...",
+      "missingRecipientEmail": "This candidate does not have an email.",
+      "missingRecipientPhone": "This candidate does not have a phone number.",
+      "subjectRequired": "Subject is required.",
+      "bodyRequired": "Message body is required.",
+      "sendFailed": "Could not send email.",
+      "emailSent": "Email sent successfully",
+      "whatsappSent": "WhatsApp message sent",
+      "whatsappSendFailed": "Failed to send WhatsApp message",
+      "comingSoon": "This feature is coming soon."
+    },
+    "modal": {
+      "title": "Add Application",
+      "subtitle": "Create a new application",
+      "candidate": "Candidate",
+      "job": "Job",
+      "create": "Create Application"
+    }
+  },
+  "jobs": {
+    "title": "Jobs",
+    "newJob": "New Job",
+    "searchPlaceholder": "Search jobs...",
+    "empty": "No jobs found",
+    "status": {
+      "all": "All Status",
+      "applied": "Applied",
+      "interview": "Interview",
+      "hired": "Hired",
+      "open": "Open",
+      "closed": "Closed",
+      "draft": "Draft",
+      "published": "Published",
+      "on_hold": "On hold"
+    },
+    "filters": {
+      "title": "Filters",
+      "more": "More Filters",
+      "comingSoon": "Additional filters coming soon..."
+    },
+    "table": {
+      "title": "Job Title",
+      "candidates": "Candidates",
+      "status": "Status",
+      "created": "Created"
+    },
+    "modal": {
+      "title": "New Job",
+      "subtitle": "Create a new job posting",
+      "create": "Create Job",
+      "createdTitle": "Job created",
+      "created": "The job has been created successfully.",
+      "createdWithTitle": "\"{{title}}\" was created successfully."
+    },
+    "fields": {
+      "title": "Job Title",
+      "company": "Company",
+      "department": "Department",
+      "location": "Location",
+      "salary": "Salary",
+      "status": "Status",
+      "description": "Description"
+    },
+    "placeholders": {
+      "title": "e.g., Senior Software Engineer",
+      "company": "e.g., Acme Inc.",
+      "location": "e.g., Remote, San Francisco",
+      "salary": "e.g., 120000",
+      "description": "Describe the role, responsibilities, and requirements..."
+    },
+    "validation": {
+      "titleRequired": "Job title is required",
+      "descriptionRequired": "Description is required",
+      "companyRequired": "Company is required",
+      "locationRequired": "Location is required",
+      "salaryRequired": "Salary is required",
+      "salaryInvalid": "Salary must be a valid number (0 or higher)"
+    },
+    "errors": {
+      "loadJobs": "Failed to load jobs",
+      "createJob": "Failed to create job. Please try again."
+    },
+    "drawer": {
+      "title": "Job",
+      "details": "Details",
+      "metadata": "Metadata",
+      "created": "Created",
+      "updatedAt": "Updated",
+      "updated": "Job updated successfully.",
+      "validation": "Please provide a job title.",
+      "errors": {
+        "save": "Failed to save changes."
+      }
+    }
+  },
+  "templates": {
+    "title": "Templates",
+    "subtitle": "Create and manage reusable messages for your hiring flow.",
+    "tabs": {
+      "email": "EMAIL",
+      "whatsapp": "WHATSAPP"
+    },
+    "new": "New Template",
+    "list": {
+      "title": "Templates",
+      "actions": "Template actions",
+      "daysAgo": "{{count}} days ago"
+    },
+    "editor": {
+      "noSelection": "Select a template to start editing.",
+      "untitled": "Untitled template",
+      "linkPrompt": "Enter URL",
+      "linkText": "link",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "fields": {
+      "name": "Name",
+      "channel": "Channel",
+      "subject": "Subject",
+      "body": "Body"
+    },
+    "placeholders": {
+      "name": "e.g., Interview invitation",
+      "subject": "e.g., Interview for {{job_title}}",
+      "body": "Write your message here…"
+    },
+    "variables": {
+      "title": "Dynamic Variables",
+      "clickToCopy": "Click to copy",
+      "copied": "Copied"
+    },
+    "defaults": {
+      "subject": "Interview for {{job_title}}",
+      "body": "Hi {{candidate_name}},\n\n..."
+    },
+    "confirm": {
+      "discard": "You have unsaved changes. Discard changes?"
+    },
+    "toast": {
+      "saved": "Template saved",
+      "created": "Template created",
+      "deleted": "Template deleted"
+    },
+    "empty": {
+      "title": "No templates yet",
+      "subtitle": "Create your first template to speed up communication.",
+      "cta": "Create first template"
+    },
+    "modal": {
+      "title": "New Template",
+      "subtitle": "Create a new template",
+      "create": "Create"
+    },
+    "delete": {
+      "title": "Delete template",
+      "subtitle": "This action cannot be undone",
+      "body": "Are you sure you want to delete this template?"
+    },
+    "validation": {
+      "nameRequired": "Name is required"
+    },
+    "errors": {
+      "create": "Failed to create template.",
+      "save": "Failed to save template.",
+      "delete": "Failed to delete template."
+    }
+  },
+  "publicJobs": {
+    "title": "Open Positions",
+    "subtitle": "Explore open roles and apply in minutes.",
+    "search": "Search",
+    "searchPlaceholder": "Search by title or location...",
+    "hero": {
+      "title": "Find your next career move",
+      "subtitle": "Join our team and grow with us!",
+      "searchPlaceholder": "Search job title...",
+      "searchButton": "Search"
+    },
+    "list": {
+      "title": "Open Positions",
+      "subtitle": "We're hiring! Apply below to join our amazing team.",
+      "allLocations": "All Locations"
+    },
+    "cta": {
+      "title": "Don't see the right job?",
+      "subtitle": "Send us your resume and we'll keep you in mind for future openings!",
+      "button": "Submit Resume"
+    },
+    "card": {
+      "applyNow": "Apply Now"
+    },
+    "time": {
+      "today": "Today",
+      "dayAgo": "1 day ago",
+      "daysAgo": "{{count}} days ago",
+      "weekAgo": "1 week ago",
+      "weeksAgo": "{{count}} weeks ago"
+    },
+    "filters": {
+      "all": "All",
+      "clear": "Clear filters",
+      "location": "Location",
+      "department": "Department",
+      "type": "Job type"
+    },
+    "empty": {
+      "title": "No results",
+      "subtitle": "Try adjusting your search or filters."
+    },
+    "error": "Failed to load open positions.",
+    "details": {
+      "back": "Back to open positions",
+      "apply": "Apply Now",
+      "applyNow": "Apply Now",
+      "description": "Description",
+      "backToTop": "Back to top",
+      "error": "Failed to load job details."
+    },
+    "apply": {
+      "title": "Apply",
+      "subtitle": "Apply for {{title}}",
+      "submit": "Submit application",
+      "success": "Application submitted successfully.",
+      "error": "Failed to submit application.",
+      "alreadyApplied": "You already applied for this job.",
+      "alreadyAppliedCta": "Already applied",
+      "fields": {
+        "firstName": "First name",
+        "lastName": "Last name",
+        "email": "Email",
+        "phoneCountry": "Country code",
+        "phoneNumber": "Number",
+        "source": "How did you hear about this job?",
+        "resume": "Resume"
+      },
+      "placeholders": {
+        "phoneNumber": "e.g., 8966 7186"
+      },
+      "sources": {
+        "select": "Select source",
+        "metaAds": "Meta Ads",
+        "tikTokAds": "TikTok Ads",
+        "linkedInAds": "LinkedIn Ads",
+        "whatsApp": "WhatsApp"
+      },
+      "validation": {
+        "name": "First name and last name are required.",
+        "email": "Please enter a valid email.",
+        "resume": "Please upload your resume.",
+        "source": "Please select how you heard about this job."
+      }
+    },
+    "footer": {
+      "about": "About Us",
+      "resources": "Resources",
+      "community": "Community",
+      "company": "Company",
+      "careers": "Careers",
+      "blog": "Blog",
+      "helpCenter": "Help Center",
+      "support": "Support",
+      "contact": "Contact Us",
+      "events": "Events",
+      "forums": "Forums",
+      "developers": "Developers"
+    }
+  },
+  "tasks": {
+    "title": "Tasks",
+    "newTask": "New Task",
+    "searchPlaceholder": "Search tasks...",
+    "empty": "No tasks found",
+    "emptyState": {
+      "alt": "Tasks",
+      "title": "No tasks found",
+      "subtitle": "Create a new task to get started.",
+      "cta": "New Task"
+    },
+    "untitled": "Untitled task",
+    "dateRange": {
+      "last7Days": "Last 7 days",
+      "last30Days": "Last 30 days",
+      "last90Days": "Last 90 days",
+      "custom": "Custom"
+    },
+    "view": {
+      "list": "List",
+      "kanban": "Kanban"
+    },
+    "dueFilter": {
+      "today": "Today",
+      "overdue": "Overdue",
+      "next7": "Next 7 days",
+      "custom": "Custom range"
+    },
+    "status": {
+      "all": "All Status",
+      "open": "Open",
+      "inProgress": "In Progress",
+      "done": "Done",
+      "overdue": "Overdue"
+    },
+    "kanban": {
+      "todo": "To do",
+      "inProgress": "In progress",
+      "blocked": "Blocked",
+      "done": "Done"
+    },
+    "filters": {
+      "title": "Filters",
+      "more": "More Filters",
+      "comingSoon": "Additional filters coming soon...",
+      "from": "From",
+      "to": "To"
+    },
+    "table": {
+      "title": "Task Title",
+      "candidate": "Candidate",
+      "job": "Job",
+      "due": "Due",
+      "status": "Status",
+      "assignedTo": "Assigned To",
+      "actions": "Actions"
+    },
+    "pagination": {
+      "showing": "Showing {{from}}–{{to}} of {{total}}",
+      "prev": "Prev",
+      "next": "Next"
+    },
+    "aria": {
+      "actions": "Task actions"
+    },
+    "modal": {
+      "newTitle": "New Task",
+      "newSubtitle": "Create a new task",
+      "editTitle": "Edit Task",
+      "editSubtitle": "Update task details",
+      "saved": "Task saved successfully.",
+      "create": "Create Task",
+      "createdTitle": "Task created",
+      "created": "The task has been created successfully.",
+      "createdWithTitle": "\"{{title}}\" was created successfully."
+    },
+    "toast": {
+      "moved": "Task moved.",
+      "moveFailed": "Could not move task. Reverted.",
+      "deleted": "Task deleted."
+    },
+    "applications": {
+      "empty": "No applications found",
+      "unknown": "Application"
+    },
+    "list": {
+      "columns": {
+        "title": "Title",
+        "status": "Status",
+        "due": "Due Date",
+        "job": "Job",
+        "candidate": "Candidate",
+        "created": "Created",
+        "actions": "Actions"
+      },
+      "actions": {
+        "menu": "Task actions",
+        "markDone": "Mark done",
+        "delete": "Delete"
+      }
+    },
+    "details": {
+      "title": "Task Details",
+      "noSelection": "Select a task to view details.",
+      "applicationId": "Application",
+      "status": "Status",
+      "dueDate": "Due date",
+      "confirmDelete": "Delete this task? This action cannot be undone."
+    },
+    "fields": {
+      "title": "Title",
+      "applicationId": "Application",
+      "candidate": "Candidate",
+      "job": "Job",
+      "dueDate": "Due date",
+      "assignTo": "Assign to",
+      "status": "Status",
+      "notes": "Notes",
+      "none": "—",
+      "unassigned": "Unassigned"
+    },
+    "placeholders": {
+      "title": "e.g., Schedule interview",
+      "notes": "Add notes...",
+      "applicationId": "e.g., app_123",
+      "applicationSearch": "Search application..."
+    },
+    "validation": {
+      "titleRequired": "Title is required",
+      "applicationRequired": "Application ID is required"
+    },
+    "drawer": {
+      "title": "Task Details",
+      "details": "Details",
+      "metadata": "Metadata",
+      "created": "Created",
+      "updatedAt": "Updated",
+      "selectTask": "Select a task to view details.",
+      "markDone": "Mark Done",
+      "markedDone": "Task marked as done.",
+      "confirmDelete": "Delete this task? This action cannot be undone."
+    },
+    "errors": {
+      "loadTasks": "Failed to load tasks",
+      "loadTask": "Failed to load task",
+      "loadApplications": "Failed to load applications",
+      "save": "Failed to save task.",
+      "delete": "Failed to delete task.",
+      "markDone": "Failed to mark task as done."
+    }
+  },
+  "candidates": {
+    "title": "Candidates",
+    "subtitle": "Search and manage candidates in your pipeline.",
+    "searchPlaceholder": "Search candidates...",
+    "newCandidate": "New Candidate",
+    "candidate": "Candidate",
+    "unknown": "Unknown",
+    "filters": {
+      "source": "Source",
+      "sourceAll": "All",
+      "from": "From",
+      "to": "To"
+    },
+    "sources": {
+      "linkedin": "LinkedIn",
+      "referral": "Referral",
+      "website": "Website",
+      "email": "Email",
+      "indeed": "Indeed",
+      "agency": "Agency",
+      "other": "Other"
+    },
+    "table": {
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "source": "Source",
+      "created": "Created"
+    },
+    "empty": {
+      "title": "No candidates found",
+      "subtitle": "Try adjusting your search or add your first candidate.",
+      "cta": "Add your first candidate"
+    },
+    "modal": {
+      "title": "New Candidate",
+      "subtitle": "Add a candidate to your pipeline",
+      "create": "Create Candidate",
+      "created": "Candidate created successfully.",
+      "createdWithName": "Candidate \"{{name}}\" created successfully.",
+      "resumeUploadHint": "PDF, Word — same upload pipeline as the public job application.",
+      "resumeUrlFallbackHint": "Optional if you are not uploading a file. Otherwise leave empty.",
+      "resumeUrlDisabledWhenFile": "Clear the file above if you want to use a resume URL instead."
+    },
+    "fields": {
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "email": "Email",
+      "phone": "Phone",
+      "phoneCountry": "Country code",
+      "phoneNumber": "Number",
+      "source": "Source",
+      "resume": "Resume",
+      "resumeUrl": "Resume URL"
+    },
+    "placeholders": {
+      "email": "name@company.com",
+      "phone": "e.g., 8966 7186"
+    },
+    "validation": {
+      "firstNameRequired": "First name is required",
+      "lastNameRequired": "Last name is required",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Please enter a valid email",
+      "resumeRequired": "Please upload a resume file.",
+      "drawerRequired": "Please fill First Name, Last Name and a valid Email."
+    },
+    "errors": {
+      "loadCandidates": "Failed to load candidates",
+      "loadCandidate": "Failed to load candidate",
+      "createCandidate": "Failed to create candidate.",
+      "saveChanges": "Failed to save changes.",
+      "deleteCandidate": "Failed to delete candidate."
+    },
+    "drawer": {
+      "details": "Details",
+      "metadata": "Metadata",
+      "created": "Created",
+      "updatedAt": "Updated",
+      "selectCandidate": "Select a candidate to view details.",
+      "updated": "Candidate updated successfully.",
+      "confirmDelete": "Delete this candidate? This action cannot be undone.",
+      "resume": {
+        "title": "Resume Actions",
+        "view": "Ver Curriculum",
+        "analyze": "Analizar con AI",
+        "modalTitle": "Curriculum",
+        "analysisModalTitle": "AI Analysis",
+        "openInNewTab": "Download",
+        "noResume": "No resume available",
+        "failed": "Failed to process resume",
+        "analysis": {
+          "refresh": "Refresh analysis",
+          "cached": "Cached",
+          "summary": "Summary",
+          "language": "Language",
+          "docType": "Doc type",
+          "keyPoints": "Key points",
+          "warnings": "Warnings",
+          "createdAt": "Created",
+          "extractedChars": "Extracted text chars",
+          "empty": "No analysis available yet."
+        }
+      }
+    }
+  },
+  "forgotPassword": {
+    "title": "Reset your password",
+    "description": "Enter your email and we'll send you a link to reset your password.",
+    "email": "Email",
+    "emailPlaceholder": "you@example.com",
+    "sendResetLink": "Send reset link",
+    "sending": "Sending...",
+    "backToLogin": "Back to login",
+    "checkEmail": "Check your email",
+    "emailSent": "If the email exists, we sent instructions.",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service",
+    "copyright": "© 2026 NextHire. All rights reserved."
+  },
+  "resetPassword": {
+    "title": "Set a new password",
+    "newPassword": "New password",
+    "newPasswordPlaceholder": "Enter new password",
+    "confirmPassword": "Confirm password",
+    "confirmPasswordPlaceholder": "Confirm new password",
+    "updatePassword": "Update password",
+    "updating": "Updating...",
+    "backToLogin": "Back to login",
+    "passwordUpdated": "Password updated",
+    "passwordUpdatedDescription": "Your password has been successfully updated. Redirecting to login...",
+    "invalidLink": "Invalid reset link. Please request a new password reset.",
+    "invalidExpiredLink": "Invalid or expired reset link. Please request a new password reset.",
+    "requestNewLink": "Request a new reset link",
+    "minLength": "Must be at least 8 characters",
+    "passwordsDoNotMatch": "Passwords do not match",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service",
+    "copyright": "© 2026 NextHire. All rights reserved."
+  },
+  "setPassword": {
+    "title": "Set Password",
+    "description": "Set a password to secure your account",
+    "newPassword": "New Password",
+    "newPasswordPlaceholder": "Enter new password",
+    "confirmPassword": "Confirm Password",
+    "confirmPasswordPlaceholder": "Confirm new password",
+    "setPassword": "Set Password",
+    "settingPassword": "Setting password...",
+    "backToLogin": "Back to login",
+    "passwordSetSuccessfully": "Password set successfully",
+    "bothFieldsRequired": "Both password fields are required",
+    "passwordsDoNotMatch": "Passwords do not match",
+    "passwordAlreadySet": "Password already set. Use Change Password instead.",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service",
+    "copyright": "© 2026 NextHire. All rights reserved."
+  },
+  "settings": {
+    "title": "Settings",
+    "description": "Manage your account settings and preferences",
+    "profile": {
+      "title": "Profile",
+      "description": "Manage your profile information",
+      "comingSoon": "Profile settings coming soon..."
+    },
+    "security": {
+      "title": "Set Password",
+      "description": "Set a password to secure your account",
+      "newPassword": "New Password",
+      "newPasswordPlaceholder": "Enter new password",
+      "confirmPassword": "Confirm Password",
+      "confirmPasswordPlaceholder": "Confirm new password",
+      "savePassword": "Save Password",
+      "saving": "Saving...",
+      "forgotPassword": "Forgot Password?",
+      "passwordSavedSuccessfully": "Password saved successfully",
+      "bothFieldsRequired": "Both password fields are required",
+      "passwordsDoNotMatch": "Passwords do not match"
+    }
+  },
+  "verify": {
+    "verifying": "Verifying your link...",
+    "signingIn": "Signing you in...",
+    "linkExpired": "This link expired or was already used.",
+    "sendNewLink": "Send a new link"
+  },
+  "onboarding": {
+    "title": "Set up your organization",
+    "description": "Create your workspace to start managing hires.",
+    "organizationName": "Organization name",
+    "organizationNamePlaceholder": "Enter organization name",
+    "timezone": "Timezone",
+    "createWorkspace": "Create workspace",
+    "creating": "Creating...",
+    "logOut": "Log out"
+  }
+}
