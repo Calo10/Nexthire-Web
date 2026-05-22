@@ -2,7 +2,6 @@ import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import Button from '../Button';
 import TextField from '../TextField';
-import TextareaField from '../TextareaField';
 import type { Template, TemplateChannel } from '../../types/templates';
 
 function ChannelChip({ channel }: { channel: TemplateChannel }) {

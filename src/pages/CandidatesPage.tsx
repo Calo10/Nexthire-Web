@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import TopBar from '../components/TopBar';
@@ -47,7 +47,7 @@ export default function CandidatesPage() {
     setIsDrawerOpen(true);
   };
 
-  const handleCreated = (created: Candidate) => {
+  const handleCreated = (_created: Candidate) => {
     refetch();
   };
 

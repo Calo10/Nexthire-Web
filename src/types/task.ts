@@ -38,5 +38,23 @@ export interface CreateTaskPayload {
   dueAt?: string | null;
 }
 
+export type UpdateTaskPayload = Partial<CreateTaskPayload>;
+
+export interface GetTasksParams {
+  from?: string;
+  to?: string;
+  status?: TaskStatus | string;
+  q?: string;
+  page?: number;
+  pageSize?: number;
+}
+
+export interface TasksListResponse {
+  items: Task[];
+  page?: number;
+  pageSize?: number;
+  total?: number;
+}
+
 export const TASK_STATUSES: TaskStatus[] = ['todo', 'in_progress', 'blocked', 'done'];
 

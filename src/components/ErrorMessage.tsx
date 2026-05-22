@@ -1,5 +1,3 @@
-import { ReactNode } from 'react';
-
 interface ErrorMessageProps {
   message: string;
   className?: string;

@@ -1,11 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { Task, TaskStatus } from '../../types/task';
+import { coerceTaskStatus, TASK_STATUSES, type Task, type TaskStatus } from '../../types/task';
 import TaskStatusPill from './TaskStatusPill';
-
-type ColumnKey = 'To do' | 'In progress' | 'Waiting' | 'Done';
-
-const COLUMNS: ColumnKey[] = ['To do', 'In progress', 'Waiting', 'Done'];
 
 function dueBadge(dueAt?: string | null): { label: string; className: string } | null {
   if (!dueAt) return null;
@@ -29,10 +25,9 @@ export default function TasksKanban({ tasks, isLoading = false, onUpdateStatus }
   const [dragTaskId, setDragTaskId] = useState<string | null>(null);
 
   const byStatus = useMemo(() => {
-    const map: Record<ColumnKey, Task[]> = { 'To do': [], 'In progress': [], Waiting: [], Done: [] };
+    const map = Object.fromEntries(TASK_STATUSES.map((s) => [s, [] as Task[]])) as Record<TaskStatus, Task[]>;
     for (const task of tasks) {
-      const s = (task.status as ColumnKey) || 'To do';
-      const key: ColumnKey = COLUMNS.includes(s) ? s : 'To do';
+      const key = coerceTaskStatus(task.status);
       map[key].push(task);
     }
     return map;
@@ -41,7 +36,7 @@ export default function TasksKanban({ tasks, isLoading = false, onUpdateStatus }
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 p-6">
-        {COLUMNS.map((c) => (
+        {TASK_STATUSES.map((c) => (
           <div key={c} className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4">
             <div className="h-6 w-24 bg-gray-200 rounded animate-pulse mb-4" />
             <div className="space-y-3">
@@ -55,25 +50,25 @@ export default function TasksKanban({ tasks, isLoading = false, onUpdateStatus }
     );
   }
 
-  const handleDrop = async (col: ColumnKey) => {
+  const handleDrop = async (col: TaskStatus) => {
     if (!dragTaskId) return;
     const prevSnapshot = [...tasks];
     const task = tasks.find((t) => t.id === dragTaskId);
     if (!task) return;
-    if (task.status === col) return;
+    if (coerceTaskStatus(task.status) === col) return;
     await onUpdateStatus(dragTaskId, col, prevSnapshot);
   };
 
-  const colLabel = (col: ColumnKey) => {
-    if (col === 'To do') return t('tasks.kanban.todo');
-    if (col === 'In progress') return t('tasks.kanban.inProgress');
-    if (col === 'Waiting') return t('tasks.kanban.waiting');
+  const colLabel = (col: TaskStatus) => {
+    if (col === 'todo') return t('tasks.kanban.todo');
+    if (col === 'in_progress') return t('tasks.kanban.inProgress');
+    if (col === 'blocked') return t('tasks.kanban.blocked');
     return t('tasks.kanban.done');
   };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-6 p-6">
-      {COLUMNS.map((col) => (
+      {TASK_STATUSES.map((col) => (
         <div
           key={col}
           className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 min-h-[500px]"
@@ -110,7 +105,7 @@ export default function TasksKanban({ tasks, isLoading = false, onUpdateStatus }
                       <p className="text-sm font-semibold text-dark-text truncate">{task.title || t('tasks.untitled')}</p>
                       <p className="text-xs text-gray-600 mt-1 truncate">{task.candidateName || '-'}</p>
                     </div>
-                    <TaskStatusPill status={task.status || 'To do'} />
+                    <TaskStatusPill status={task.status} />
                   </div>
 
                   <div className="mt-3 flex items-center justify-between">
@@ -135,4 +130,3 @@ export default function TasksKanban({ tasks, isLoading = false, onUpdateStatus }
     </div>
   );
 }
-

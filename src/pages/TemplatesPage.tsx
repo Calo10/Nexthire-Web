@@ -212,13 +212,6 @@ export default function TemplatesPage() {
     }
   };
 
-  const handleCancel = () => {
-    if (!isDirty) return;
-    const ok = window.confirm(t('templates.confirm.discard'));
-    if (!ok) return;
-    setDraft(initialDraft);
-  };
-
   const handleCreate = async (payload: { name: string; channel: TemplateChannel; subject?: string }) => {
     const created = await templatesApi.create({
       name: payload.name,

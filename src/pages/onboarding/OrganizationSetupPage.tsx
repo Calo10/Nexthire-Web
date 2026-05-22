@@ -1,7 +1,6 @@
 import { useState, FormEvent, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../../contexts/AuthContext';
 import { onboardingApi, type ApiError } from '../../lib/api';
 import Logo from '../../components/Logo';
 import Button from '../../components/Button';
@@ -25,7 +24,6 @@ const TIMEZONES = [
 export default function OrganizationSetupPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { logout } = useAuth();
   const [organizationName, setOrganizationName] = useState('');
   const [timezone, setTimezone] = useState('America/Costa_Rica');
   const [isLoading, setIsLoading] = useState(false);

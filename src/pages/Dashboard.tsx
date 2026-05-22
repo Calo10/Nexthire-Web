@@ -17,7 +17,7 @@ import BarChart from '../components/BarChart';
 import LineChart from '../components/LineChart';
 import ChartCard from '../components/ChartCard';
 import Card from '../components/Card';
-import type { Candidate, Job, Task } from '../types/dashboard';
+import type { Job, Task } from '../types/dashboard';
 
 export default function Dashboard() {
   const { t } = useTranslation();
@@ -172,18 +172,6 @@ export default function Dashboard() {
       .filter(Boolean)
       .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
       .join(' ');
-  };
-
-  const formatDate = (dateString: string) => {
-    try {
-      return new Date(dateString).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-      });
-    } catch {
-      return dateString;
-    }
   };
 
   const formatDateShort = (dateString: string) => {

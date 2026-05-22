@@ -109,7 +109,7 @@ function JobCard({ orgSlug, job, t }: { orgSlug: string; job: JobPublicDTO; t: (
 }
 
 export default function PublicJobsPage() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { orgId } = useParams();
   const listRef = useRef<HTMLDivElement | null>(null);
 

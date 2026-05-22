@@ -1,5 +1,5 @@
 import { apiClient } from '../lib/api';
-import { buildQuery } from '../lib/buildQuery';
+import { buildQuery, type QueryParams } from '../lib/buildQuery';
 import type {
   ActivityTrend,
   ApplicationsByStage,
@@ -14,6 +14,10 @@ export interface DashboardParams {
   from: string;
   to: string;
   jobId?: string;
+}
+
+function toQueryParams(params: DashboardParams): QueryParams {
+  return params as unknown as QueryParams;
 }
 
 function normalizeArrayResponse<T>(result: unknown): T[] {
@@ -34,29 +38,29 @@ function normalizeArrayResponse<T>(result: unknown): T[] {
 
 export const dashboardService = {
   getSummary: async (params: DashboardParams): Promise<DashboardSummary> => {
-    return apiClient.get(`/dashboard/summary${buildQuery(params)}`, true);
+    return apiClient.get(`/dashboard/summary${buildQuery(toQueryParams(params))}`, true);
   },
   getRecentActivity: async (params: DashboardParams): Promise<RecentActivity[]> => {
-    return apiClient.get(`/dashboard/recent-activity${buildQuery(params)}`, true);
+    return apiClient.get(`/dashboard/recent-activity${buildQuery(toQueryParams(params))}`, true);
   },
   getCandidates: async (params: DashboardParams): Promise<Candidate[]> => {
-    return apiClient.get(`/dashboard/recent-candidates${buildQuery(params)}`, true);
+    return apiClient.get(`/dashboard/recent-candidates${buildQuery(toQueryParams(params))}`, true);
   },
   getApplicationsByStage: async (params: DashboardParams): Promise<ApplicationsByStage[]> => {
-    return apiClient.get(`/dashboard/applications-by-stage${buildQuery(params)}`, true);
+    return apiClient.get(`/dashboard/applications-by-stage${buildQuery(toQueryParams(params))}`, true);
   },
   getActivityTrend: async (params: DashboardParams): Promise<ActivityTrend[]> => {
-    return apiClient.get(`/dashboard/activity-trend${buildQuery(params)}`, true);
+    return apiClient.get(`/dashboard/activity-trend${buildQuery(toQueryParams(params))}`, true);
   },
   getMyJobs: async (params: DashboardParams): Promise<Job[]> => {
-    const result = await apiClient.get<unknown>(`/dashboard/my-jobs${buildQuery(params)}`, true);
+    const result = await apiClient.get<unknown>(`/dashboard/my-jobs${buildQuery(toQueryParams(params))}`, true);
     if (import.meta.env.DEV) {
       console.log('[dashboardService.getMyJobs] raw result:', result);
     }
     return normalizeArrayResponse<Job>(result);
   },
   getUpcomingTasks: async (params: DashboardParams): Promise<Task[]> => {
-    return apiClient.get(`/dashboard/upcoming-tasks${buildQuery(params)}`, true);
+    return apiClient.get(`/dashboard/upcoming-tasks${buildQuery(toQueryParams(params))}`, true);
   },
   getJobs: async (): Promise<Job[]> => {
     return apiClient.get('/jobs', true);

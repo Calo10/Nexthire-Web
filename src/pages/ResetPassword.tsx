@@ -5,7 +5,6 @@ import Logo from '../components/Logo';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import ErrorMessage from '../components/ErrorMessage';
-import SuccessMessage from '../components/SuccessMessage';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import { authApi, type ApiError } from '../lib/api';
 

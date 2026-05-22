@@ -8,7 +8,7 @@ interface ChartCardProps {
   error?: string | null;
 }
 
-export default function ChartCard({ title, children, isLoading, error }: ChartCardProps) {
+export default function ChartCard({ title, children, error }: ChartCardProps) {
   return (
     <Card className="p-6">
       <h3 className="text-lg font-semibold text-dark-text mb-4">{title}</h3>
