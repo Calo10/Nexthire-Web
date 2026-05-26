@@ -7,13 +7,40 @@ import Button from '../Button';
 import ErrorMessage from '../ErrorMessage';
 import SuccessMessage from '../SuccessMessage';
 import { publicJobsApi } from '../../api/publicJobsApi';
-import type { ApplyJobRequest } from '../../types/publicJobs';
 import { useApplyJob } from '../../hooks/public/useApplyJob';
 import { FALLBACK_PUBLIC_APPLY_SOURCE_TYPES } from '../../lib/publicApplySourceTypes';
 import { getCountryCallingCodeOptions, onlyDigits, toE164Phone } from '../../lib/phone';
 
 function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+}
+
+const CEFR_LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as const;
+
+function availabilityOptions(t: (k: string) => string) {
+  return [
+    { value: '', label: t('publicJobs.apply.options.select') },
+    { value: 'immediate', label: t('publicJobs.apply.options.availability.immediate') },
+    { value: '1_week', label: t('publicJobs.apply.options.availability.oneWeek') },
+    { value: '2_weeks', label: t('publicJobs.apply.options.availability.twoWeeks') },
+    { value: '1_month', label: t('publicJobs.apply.options.availability.oneMonth') },
+  ];
+}
+
+function experienceYearsOptions(t: (k: string, opts?: { count: number }) => string) {
+  const opts = [{ value: '', label: t('publicJobs.apply.options.select') }];
+  for (let i = 0; i <= 20; i += 1) {
+    opts.push({ value: String(i), label: t('publicJobs.apply.options.years', { count: i }) });
+  }
+  opts.push({ value: '20+', label: t('publicJobs.apply.options.yearsPlus', { count: 20 }) });
+  return opts;
+}
+
+function cefrLevelOptions(t: (k: string) => string) {
+  return [
+    { value: '', label: t('publicJobs.apply.options.select') },
+    ...CEFR_LEVELS.map((level) => ({ value: level, label: level })),
+  ];
 }
 
 export default function ApplyJobModal({
@@ -69,18 +96,32 @@ export default function ApplyJobModal({
     return [{ value: '', label: t('publicJobs.apply.sources.select') }, ...opts];
   }, [sourceTypeRows, t]);
 
-  const [form, setForm] = useState<
-    Omit<ApplyJobRequest, 'phone' | 'resume'> & {
-      phoneCountryCode: string;
-      phoneNationalNumber: string;
-      resume: File | null;
-    }
-  >({
+  const availOptions = useMemo(() => availabilityOptions(t), [t]);
+  const experienceOptions = useMemo(() => experienceYearsOptions(t), [t]);
+  const languageLevelOptions = useMemo(() => cefrLevelOptions(t), [t]);
+
+  const [form, setForm] = useState<{
+    firstName: string;
+    lastName: string;
+    email: string;
+    phoneCountryCode: string;
+    phoneNationalNumber: string;
+    availability: string;
+    experienceYears: string;
+    englishLevel: string;
+    spanishLevel: string;
+    source: string;
+    resume: File | null;
+  }>({
     firstName: '',
     lastName: '',
     email: '',
     phoneCountryCode: '506',
     phoneNationalNumber: '',
+    availability: '',
+    experienceYears: '',
+    englishLevel: '',
+    spanishLevel: '',
     source: '',
     resume: null,
   });
@@ -131,10 +172,13 @@ export default function ApplyJobModal({
         email: form.email.trim(),
         phone: phoneE164 || null,
         source: form.source?.trim() || null,
+        availability: form.availability?.trim() || null,
+        experienceYears: form.experienceYears.trim() || null,
+        englishLevel: form.englishLevel?.trim() || null,
+        spanishLevel: form.spanishLevel?.trim() || null,
         resume: form.resume,
       });
       onApplied();
-      // keep modal open to show success briefly
       setTimeout(() => handleClose(), 1200);
     } catch {
       // handled by hook error
@@ -211,6 +255,32 @@ export default function ApplyJobModal({
             </div>
           </div>
           <SelectField
+            label={t('publicJobs.apply.fields.availability')}
+            value={form.availability ?? ''}
+            onChange={(e) => setForm({ ...form, availability: e.target.value })}
+            options={availOptions}
+          />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <SelectField
+              label={t('publicJobs.apply.fields.experienceYears')}
+              value={form.experienceYears ?? ''}
+              onChange={(e) => setForm({ ...form, experienceYears: e.target.value })}
+              options={experienceOptions}
+            />
+            <SelectField
+              label={t('publicJobs.apply.fields.englishLevel')}
+              value={form.englishLevel ?? ''}
+              onChange={(e) => setForm({ ...form, englishLevel: e.target.value })}
+              options={languageLevelOptions}
+            />
+            <SelectField
+              label={t('publicJobs.apply.fields.spanishLevel')}
+              value={form.spanishLevel ?? ''}
+              onChange={(e) => setForm({ ...form, spanishLevel: e.target.value })}
+              options={languageLevelOptions}
+            />
+          </div>
+          <SelectField
             label={t('publicJobs.apply.fields.source')}
             required
             value={String(form.source || '')}
@@ -237,4 +307,3 @@ export default function ApplyJobModal({
     </Modal>
   );
 }
-

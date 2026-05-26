@@ -2,11 +2,19 @@ import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Button from '../Button';
 import ErrorMessage from '../ErrorMessage';
+import {
+  deleteMetaCampaign,
+  metaCampaignRef,
+  metaErrorMessageFromUnknown,
+  pauseMetaCampaign,
+} from '../../api/metaCampaignApi';
 import { deleteSourcingCampaign, getSourcingCampaigns, updateSourcingCampaignStatus } from '../../api/sourcingApi';
 import type { SourcingCampaign } from '../../types/sourcing';
 import type { Job } from '../../types/dashboard';
+import { normalizeSourcingPlatformCode, SOURCING_PLATFORM_CODES } from '../../lib/sourcingPlatformCodes';
 import CampaignModal from './CampaignModal';
 import LeadStatusPill from './LeadStatusPill';
+import SourceTypeBrandLogo from './SourceTypeBrandLogo';
 
 interface Props {
   shouldFetch: boolean;
@@ -15,6 +23,23 @@ interface Props {
   onToastSuccess: (msg: string) => void;
   onToastError: (msg: string) => void;
   onOpenCreateCampaign: (mode?: 'full' | 'whatsapp-apply') => void;
+}
+
+function campaignPlatformCode(platform: string | null | undefined): string {
+  return normalizeSourcingPlatformCode(platform);
+}
+
+function isMetaAdsCampaign(c: SourcingCampaign): boolean {
+  const platform = (c.platform || '').toLowerCase();
+  return platform === 'meta_ads' || Boolean(c.externalCampaignId);
+}
+
+function campaignPlatformLabel(code: string, t: (key: string) => string): string {
+  const normalized = code.toLowerCase();
+  if ((SOURCING_PLATFORM_CODES as readonly string[]).includes(normalized)) {
+    return t(`sourcing.campaign.platforms.${normalized}`);
+  }
+  return code;
 }
 
 export default function CampaignsTab({
@@ -62,37 +87,54 @@ export default function CampaignsTab({
   };
 
   const togglePause = async (c: SourcingCampaign) => {
-    const id = c.id;
-    if (id == null) return;
+    const rowId = c.id != null ? String(c.id) : '';
+    const ref = metaCampaignRef(c);
+    if (!rowId && !ref) return;
     const cur = (c.status || '').toLowerCase();
-    const next = cur === 'active' || cur === 'running' ? 'paused' : 'active';
-    setPendingId(String(id));
+    const isPaused = cur === 'paused';
+    const isMeta = isMetaAdsCampaign(c);
+    setPendingId(rowId || String(ref));
     try {
-      await updateSourcingCampaignStatus(id, { status: next });
-      onToastSuccess(next === 'paused' ? t('sourcing.toast.campaignPaused') : t('sourcing.toast.campaignActivated'));
+      if (isMeta && ref) {
+        if (isPaused) {
+          if (rowId) await updateSourcingCampaignStatus(rowId, { status: 'active' });
+        } else {
+          await pauseMetaCampaign(ref);
+        }
+      } else if (rowId) {
+        const next = cur === 'active' || cur === 'running' ? 'paused' : 'active';
+        await updateSourcingCampaignStatus(rowId, { status: next });
+      }
+      onToastSuccess(isPaused ? t('sourcing.toast.campaignActivated') : t('sourcing.toast.campaignPaused'));
       await load();
     } catch (e: unknown) {
-      onToastError(e && typeof e === 'object' && 'message' in e ? String((e as { message: string }).message) : t('sourcing.errors.action'));
+      onToastError(metaErrorMessageFromUnknown(e) ?? (e && typeof e === 'object' && 'message' in e ? String((e as { message: string }).message) : t('sourcing.errors.action')));
     } finally {
       setPendingId(null);
     }
   };
 
   const removeCampaign = async (c: SourcingCampaign) => {
-    const id = c.id;
-    if (id == null) return;
+    const rowId = c.id != null ? String(c.id) : '';
+    const ref = metaCampaignRef(c);
+    if (!rowId && !ref) return;
     const label = (c.name || '').trim() || t('sourcing.campaign.deleteUnnamed');
     const ok = window.confirm(t('sourcing.campaign.confirmDelete', { name: label }));
     if (!ok) return;
-    setPendingId(String(id));
+    setPendingId(rowId || String(ref));
     try {
-      await deleteSourcingCampaign(id);
-      if (viewId != null && String(viewId) === String(id)) setViewId(null);
+      if (isMetaAdsCampaign(c) && ref) {
+        await deleteMetaCampaign(ref);
+      } else if (rowId) {
+        await deleteSourcingCampaign(rowId);
+      }
+      if (viewId != null && rowId && String(viewId) === rowId) setViewId(null);
       onToastSuccess(t('sourcing.toast.campaignDeleted'));
       await load();
     } catch (e: unknown) {
       onToastError(
-        e && typeof e === 'object' && 'message' in e ? String((e as { message: string }).message) : t('sourcing.errors.deleteCampaign')
+        metaErrorMessageFromUnknown(e) ??
+          (e && typeof e === 'object' && 'message' in e ? String((e as { message: string }).message) : t('sourcing.errors.deleteCampaign'))
       );
     } finally {
       setPendingId(null);
@@ -170,11 +212,25 @@ export default function CampaignsTab({
                   const id = c.id != null ? String(c.id) : '';
                   const busy = pendingId === id;
                   const leads = c.leadsCount ?? c.leads ?? '—';
+                  const platformCode = campaignPlatformCode(c.platform);
+                  const platformLabel = platformCode ? campaignPlatformLabel(platformCode, t) : '';
                   return (
                     <tr key={id} className="border-b border-gray-100 hover:bg-purple-50/40">
                       <td className="px-4 py-3 font-medium text-dark-text">{c.name || '—'}</td>
                       <td className="px-4 py-3 text-gray-700">{c.jobTitle || jobTitleById(c.jobId)}</td>
-                      <td className="px-4 py-3 text-gray-600">{c.platform || '—'}</td>
+                      <td className="px-4 py-3">
+                        {platformCode ? (
+                          <div className="flex items-center" title={platformLabel}>
+                            <SourceTypeBrandLogo
+                              sourceTypeCode={platformCode}
+                              displayName={platformLabel}
+                              size="xs"
+                            />
+                          </div>
+                        ) : (
+                          <span className="text-gray-600">—</span>
+                        )}
+                      </td>
                       <td className="px-4 py-3 tabular-nums">
                         {c.dailyBudget != null ? `$${Number(c.dailyBudget).toFixed(2)}` : '—'}
                       </td>

@@ -239,15 +239,14 @@
     "modalTitle": "Agent configuration"
   },
   "metaCampaign": {
-    "title": "Meta Ads Campaign Builder",
-    "subtitle": "Create a Meta campaign for a job post in guided steps. New campaigns stay paused until you activate them in Ads Manager.",
+    "title": "Create Meta campaign",
+    "subtitle": "Promote a job on Facebook and Instagram. We handle the technical settings — you choose where candidates should apply.",
     "stepLabel": "Step {{current}} / {{total}}",
     "steps": {
       "s1": "Job",
-      "s2": "Campaign",
-      "s3": "Destination",
-      "s4": "Creative",
-      "s5": "Review"
+      "s2": "Setup",
+      "s3": "Ad",
+      "s4": "Review"
     },
     "nav": {
       "back": "Back",
@@ -266,44 +265,129 @@
       "status": "Status",
       "code": "Job code"
     },
-    "details": {
+    "setup": {
       "campaignName": "Campaign name",
-      "objective": "Objective",
-      "status": "Status",
-      "dailyBudget": "Daily budget (minor units)",
-      "country": "Country (ISO)",
-      "ageMin": "Minimum age",
-      "ageMax": "Maximum age",
-      "platforms": "Placements",
-      "platformBoth": "Facebook & Instagram",
-      "platformFacebook": "Facebook only",
-      "platformInstagram": "Instagram only",
-      "mapTitle": "Target AREA",
-      "mapMockBadge": "Mock only - no API sync",
-      "mapHint": "Google Maps preview for demo. Use presets or edit coordinates to change the area.",
-      "mapAria": "Mock map to choose audience area",
-      "mapRadius": "Coverage radius",
-      "mapPresetLabel": "Quick location",
-      "mapPresetMonterrey": "Monterrey",
-      "mapPresetCdmx": "Mexico City",
-      "mapPresetGuadalajara": "Guadalajara",
-      "mapPresetBogota": "Bogota",
-      "mapPresetMadrid": "Madrid",
-      "mapCenterLabel": "Center: {{lat}}, {{lng}}",
-      "mapSelectionReady": "Selected area: center {{lat}}, {{lng}} with {{radius}} km radius.",
-      "mapSelectionEmpty": "No area selected yet."
+      "objective": "Campaign objective",
+      "dailyBudget": "Daily budget (USD)",
+      "ageRange": "Age range",
+      "ageRangeFixed": "18 – 65+",
+      "ageRangeLockedHint": "Meta requires 18–65+ for employment, housing, and credit special ad categories.",
+      "platforms": "Where to show the ad",
+      "activeToggleTitle": "Launch campaign active",
+      "activeToggleOn": "Campaign, ad set, and ad will be ACTIVE in Meta.",
+      "activeToggleOff": "Everything will be created PAUSED — you can turn it on later in Ads Manager.",
+      "statusActive": "Active",
+      "statusPaused": "Paused"
+    },
+    "objectives": {
+      "OUTCOME_TRAFFIC": {
+        "label": "More visits to the job",
+        "help": "Drives people to your application page. Recommended for web applications."
+      },
+      "OUTCOME_LEADS": {
+        "label": "More candidates / sign-ups",
+        "help": "Optimizes for interest and lead-style actions."
+      },
+      "OUTCOME_AWARENESS": {
+        "label": "Get the job seen",
+        "help": "More reach; fewer clicks. Good for brand visibility."
+      },
+      "OUTCOME_ENGAGEMENT": {
+        "label": "More interaction",
+        "help": "Useful for WhatsApp and messaging. Recommended for WhatsApp destination."
+      }
     },
     "destination": {
-      "type": "Destination",
-      "whatsapp": "WhatsApp (wa.me)",
-      "jobUrl": "Job post URL",
+      "section": "Where should candidates go?",
+      "webTitle": "Application form on my site",
+      "webDesc": "Opens your public job application page.",
+      "whatsappTitle": "WhatsApp messages",
+      "whatsappDesc": "Opens a WhatsApp chat with a pre-filled message.",
       "message": "WhatsApp message",
-      "urlOverride": "Override job URL (optional)",
-      "defaultUrlHint": "Default public URL for this job is shown below. Leave override empty to use it.",
+      "urlOverride": "Custom application URL (optional)",
+      "urlOverridePlaceholder": "https://…",
+      "defaultUrlHint": "Leave empty to use the default public job URL shown below.",
       "noWhatsappEnv": "Configure VITE_SOURCING_WHATSAPP_PHONE (digits only) to build WhatsApp links."
     },
+    "geo": {
+      "label": "Location",
+      "mapHint": "Search a city for best results. You can drag the pin to fine-tune — drop it on a city, not the ocean or highways.",
+      "noMatchMap": "Meta could not match this map point. Search the city name above, or drop the pin on the city center.",
+      "searchPlaceholder": "Search city…",
+      "mapAria": "Map to select campaign location",
+      "resolving": "Matching location with Meta…",
+      "searching": "Searching…",
+      "searchFailed": "Could not match this location in Meta. Try another nearby city.",
+      "geocodeFailed": "Could not read this point on the map. Try selecting a city from the search dropdown.",
+      "geocodingApiDisabled": "Enable Geocoding API in Google Cloud (needed when clicking the map). Search-by-city still works.",
+      "pickFromList": "Choose a suggestion from the dropdown list (don't press Enter only).",
+      "noMatch": "Meta has no targeting match for this place. Try a larger city nearby.",
+      "missingApiKey": "Google Maps is not configured. Add VITE_GOOGLE_MAPS_API_KEY to your environment.",
+      "mapLoadFailed": "Could not load Google Maps.",
+      "clear": "Clear",
+      "selectedHint": "Targeting: {{label}}",
+      "radiusHint": "Approx. {{miles}} mi radius for city targeting",
+      "radiusLabel": "Audience radius",
+      "radiusUnit": "mi",
+      "radiusRange": "{{min}}–{{max}} miles"
+    },
+    "advanced": {
+      "title": "Advanced settings",
+      "billingLabel": "Billing",
+      "optimizationLabel": "Optimization",
+      "bidLabel": "Bid strategy",
+      "billing": {
+        "IMPRESSIONS": {
+          "label": "Per impressions",
+          "tooltip": "You pay when the ad is shown. Recommended to start."
+        },
+        "LINK_CLICKS": {
+          "label": "Per link click",
+          "tooltip": "You pay when someone clicks the link."
+        }
+      },
+      "optimization": {
+        "LANDING_PAGE_VIEWS": {
+          "label": "Landing page views",
+          "tooltip": "Optimizes for your application page loading. Fallback: link clicks."
+        },
+        "LINK_CLICKS": {
+          "label": "Link clicks",
+          "tooltip": "Optimizes for clicks on the ad link."
+        },
+        "CONVERSATIONS": {
+          "label": "WhatsApp conversations",
+          "tooltip": "Optimizes for starting a chat. Fallback: link clicks if Meta rejects this goal."
+        },
+        "IMPRESSIONS": {
+          "label": "Impressions",
+          "tooltip": "Optimizes for ad impressions."
+        },
+        "REACH": {
+          "label": "Reach",
+          "tooltip": "Shows the ad to as many people as possible."
+        }
+      },
+      "bid": {
+        "LOWEST_COST_WITHOUT_CAP": {
+          "label": "Lowest cost (automatic)",
+          "tooltip": "Meta optimizes delivery and cost automatically. Recommended."
+        },
+        "LOWEST_COST_WITH_BID_CAP": {
+          "label": "Lowest cost with bid cap",
+          "tooltip": "Automatic bidding with a maximum bid limit."
+        },
+        "COST_CAP": {
+          "label": "Cost cap",
+          "tooltip": "Keeps average cost near your target."
+        }
+      }
+    },
     "creative": {
-      "adText": "Primary text",
+      "intro": "Write the ad text and add an image. Meta requires an image before the campaign can be saved.",
+      "message": "Ad text",
+      "headline": "Headline (link name)",
+      "description": "Description",
       "cta": "Call to action",
       "imageSection": "Image",
       "generateDemo": "Generate demo image",
@@ -324,22 +408,30 @@
       "imageOnly": "Please choose an image file."
     },
     "review": {
+      "intro": "Review your campaign before sending it to Meta.",
       "job": "Job",
+      "destination": "Destination",
       "campaignName": "Campaign name",
+      "objective": "Objective",
       "budget": "Daily budget",
-      "audience": "Audience",
+      "location": "Location",
+      "specialAdCategoryCountry": "Special ad category country",
+      "radius": "Audience radius",
+      "audience": "Age range",
       "platforms": "Platforms",
-      "destination": "Destination type",
-      "destinationUrl": "Destination URL",
-      "adText": "Ad text",
-      "cta": "CTA",
-      "status": "Status",
+      "status": "Status at launch",
+      "destinationUrl": "Application URL",
+      "whatsappLink": "WhatsApp link",
+      "whatsappPreFill": "Apply message (local)",
+      "metaCreativeLink": "Meta creative link (Click-to-WhatsApp)",
+      "creativeMessage": "Ad text",
+      "advancedSummary": "Advanced (billing · optimization · bid)",
       "image": "Image preview",
-      "imageFromMeta": "Creative will use the uploaded hash in Meta.",
-      "imageHash": "Image hash"
+      "imageFromMeta": "Image uploaded to Meta."
     },
     "result": {
-      "title": "Campaign created (paused)",
+      "title": "Campaign created",
+      "localRecordId": "Local record ID",
       "campaignId": "Campaign ID",
       "adSetId": "Ad set ID",
       "creativeId": "Creative ID",
@@ -355,12 +447,15 @@
     "validation": {
       "jobRequired": "Select a job to continue.",
       "required": "This field is required.",
-      "budget": "Enter a daily budget of at least 1.",
-      "country": "Use a 2-letter country code (e.g. US).",
+      "budget": "Enter a daily budget between $1 and $50.",
+      "location": "Select a location.",
+      "specialAdCategoryCountry": "Select a valid location or configure the special ad category country.",
+      "platforms": "Select at least one platform (Facebook or Instagram).",
       "age": "Age range must be valid (minimum age must be less than maximum, 13–65).",
       "whatsappEnv": "WhatsApp number is not configured for this environment.",
       "destination": "Enter a message to build the WhatsApp link.",
       "url": "Enter a valid http(s) URL.",
+      "publicUrl": "Use a public https URL (not localhost or a private IP). Set VITE_PUBLIC_APP_URL or paste your production job link.",
       "orgMissing": "Set organization context or paste a full job URL override.",
       "image": "Add an image (generate demo or upload)."
     },
@@ -572,6 +667,7 @@
   "jobs": {
     "title": "Jobs",
     "newJob": "New Job",
+    "viewPublicJobs": "View public jobs",
     "searchPlaceholder": "Search jobs...",
     "empty": "No jobs found",
     "status": {
@@ -783,8 +879,23 @@
         "email": "Email",
         "phoneCountry": "Country code",
         "phoneNumber": "Number",
+        "availability": "Availability",
+        "experienceYears": "Experience (years)",
+        "englishLevel": "English level",
+        "spanishLevel": "Spanish level",
         "source": "How did you hear about this job?",
         "resume": "Resume"
+      },
+      "options": {
+        "select": "Select…",
+        "years": "{{count}} years",
+        "yearsPlus": "{{count}}+ years",
+        "availability": {
+          "immediate": "Immediate",
+          "oneWeek": "1 week",
+          "twoWeeks": "2 weeks",
+          "oneMonth": "1 month"
+        }
       },
       "placeholders": {
         "phoneNumber": "e.g., 8966 7186"

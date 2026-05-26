@@ -39,3 +39,13 @@ export function formatPercent(n: number | null | undefined): string {
   const v = n <= 1 && n > 0 ? n * 100 : n;
   return `${v.toFixed(1)}%`;
 }
+
+export function isSameLocalDay(iso: string | null | undefined, yyyyMmDd: string): boolean {
+  if (!iso || !yyyyMmDd) return true;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return false;
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}` === yyyyMmDd;
+}

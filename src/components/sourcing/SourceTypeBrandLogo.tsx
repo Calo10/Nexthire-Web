@@ -7,8 +7,8 @@ const SOURCE_LOGOS: { match: RegExp; src: string; alt: string }[] = [
 export interface SourceTypeBrandLogoProps {
   sourceTypeCode: string;
   displayName: string;
-  /** Default matches source cards; `lg` for modal headers */
-  size?: 'sm' | 'lg';
+  /** Default matches source cards; `lg` for modal headers; `xs` for compact tables */
+  size?: 'xs' | 'sm' | 'lg';
   className?: string;
 }
 
@@ -16,8 +16,12 @@ export default function SourceTypeBrandLogo({ sourceTypeCode, displayName, size 
   const code = sourceTypeCode.toLowerCase();
   const logo = SOURCE_LOGOS.find((l) => l.match.test(code));
   const boxClass =
-    size === 'lg' ? 'w-12 h-12 rounded-xl border border-gray-200' : 'w-10 h-10 rounded-lg border border-gray-200';
-  const iconClass = size === 'lg' ? 'w-8 h-8' : 'w-6 h-6';
+    size === 'lg'
+      ? 'w-12 h-12 rounded-xl border border-gray-200'
+      : size === 'xs'
+        ? 'w-8 h-8 rounded-md border border-gray-200'
+        : 'w-10 h-10 rounded-lg border border-gray-200';
+  const iconClass = size === 'lg' ? 'w-8 h-8' : size === 'xs' ? 'w-4 h-4' : 'w-6 h-6';
   const initials = (displayName || sourceTypeCode || '??').slice(0, 2).toUpperCase();
 
   return (
@@ -32,7 +36,7 @@ export default function SourceTypeBrandLogo({ sourceTypeCode, displayName, size 
       ) : logo ? (
         <img src={logo.src} alt={logo.alt} className={`${iconClass} object-contain`} loading="lazy" />
       ) : (
-        <span className={`font-semibold text-gray-500 ${size === 'lg' ? 'text-sm' : 'text-xs'}`}>{initials}</span>
+        <span className={`font-semibold text-gray-500 ${size === 'lg' ? 'text-sm' : size === 'xs' ? 'text-[10px]' : 'text-xs'}`}>{initials}</span>
       )}
     </div>
   );

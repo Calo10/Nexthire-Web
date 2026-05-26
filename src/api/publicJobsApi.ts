@@ -137,6 +137,23 @@ export const publicJobsApi = {
     form.append('Phone', String(leadPayload.phone || ''));
     form.append('QualificationNotes', String(leadPayload.qualificationNotes || ''));
     form.append('Source', sourceTypeCode);
+    if (payload.availability?.trim()) {
+      form.append('Availability', payload.availability.trim());
+      form.append('availability', payload.availability.trim());
+    }
+    if (payload.experienceYears != null && String(payload.experienceYears).trim()) {
+      const experienceYears = String(payload.experienceYears).trim();
+      form.append('ExperienceYears', experienceYears);
+      form.append('experienceYears', experienceYears);
+    }
+    if (payload.englishLevel?.trim()) {
+      form.append('EnglishLevel', payload.englishLevel.trim());
+      form.append('englishLevel', payload.englishLevel.trim());
+    }
+    if (payload.spanishLevel?.trim()) {
+      form.append('SpanishLevel', payload.spanishLevel.trim());
+      form.append('spanishLevel', payload.spanishLevel.trim());
+    }
     if (payload.resume) form.append('Resume', payload.resume);
 
     const result = await publicApiRequest<unknown>('/api/sourcing/leads', {

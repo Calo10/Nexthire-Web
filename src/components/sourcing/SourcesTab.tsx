@@ -19,6 +19,8 @@ const LEGACY_META_SOURCE_CODES = new Set(['facebook_ads', 'instagram_ads']);
 
 const HIDDEN_SOURCE_CODES = new Set(['landing_page', 'qr_code', 'manual_entry', 'manual', 'referral']);
 
+const UNDER_CONSTRUCTION_SOURCE_CODES = new Set(['tiktok_ads', 'linkedin_ads']);
+
 function pickMetaAdsConnection(connByCode: Map<string, SourcingSourceConnection>): SourcingSourceConnection | undefined {
   return connByCode.get('meta_ads') ?? connByCode.get('facebook_ads') ?? connByCode.get('instagram_ads');
 }
@@ -121,11 +123,25 @@ export default function SourcesTab({ shouldFetch, refreshKey }: Props) {
               row.code.toLowerCase() === 'meta_ads' ? pickMetaAdsConnection(connByCode) : connByCode.get(row.code.toLowerCase());
             const connected = !!conn?.isConnected;
             const active = conn?.isActive !== false;
+            const underConstruction = UNDER_CONSTRUCTION_SOURCE_CODES.has(row.code.toLowerCase());
             return (
               <div
                 key={row.code}
-                className="rounded-2xl border border-purple-100 bg-white p-5 shadow-sm flex flex-col gap-4"
+                className={`relative rounded-2xl border border-purple-100 bg-white p-5 shadow-sm flex flex-col gap-4 overflow-hidden ${
+                  underConstruction ? 'opacity-70' : ''
+                }`}
               >
+                {underConstruction ? (
+                  <div
+                    aria-hidden
+                    className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-white/55 backdrop-blur-[1px]"
+                  >
+                    <span className="rotate-[-18deg] select-none rounded-lg border-2 border-dashed border-amber-400/80 bg-amber-50/90 px-4 py-2 text-sm font-bold uppercase tracking-wider text-amber-700 shadow-sm">
+                      {t('sourcing.sources.underConstruction')}
+                    </span>
+                  </div>
+                ) : null}
+                <div className={`flex flex-col gap-4 ${underConstruction ? 'pointer-events-none select-none' : ''}`}>
                 <div className="flex items-start gap-3">
                   <SourceTypeBrandLogo sourceTypeCode={row.code} displayName={row.name} size="sm" />
                   <div className="min-w-0 flex-1">
@@ -149,9 +165,16 @@ export default function SourcesTab({ shouldFetch, refreshKey }: Props) {
                     {active ? t('sourcing.sources.active') : t('sourcing.sources.inactive')}
                   </span>
                 </div>
-                <Button variant="outline" size="sm" className="w-full" onClick={() => openConfigure(row.code, row.name)}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  disabled={underConstruction}
+                  onClick={() => openConfigure(row.code, row.name)}
+                >
                   {t('sourcing.sources.configure')}
                 </Button>
+                </div>
               </div>
             );
           })}
