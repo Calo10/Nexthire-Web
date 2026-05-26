@@ -18,36 +18,34 @@ interface Props {
   onSaved: () => void;
 }
 
-const INSTAGRAM_CONFIG_KEYS = [
-  'meta_access_token',
-  'meta_app_id',
-  'meta_app_secret',
-  'meta_ad_account_id',
-  'facebook_page_id',
-  'instagram_actor_id',
-] as const;
+const META_ADS_CONFIG_KEYS = ['AccessToken', 'AdAccountId', 'PageId'] as const;
 
-type InstagramConfigState = Record<(typeof INSTAGRAM_CONFIG_KEYS)[number], string>;
+type MetaAdsConfigState = Record<(typeof META_ADS_CONFIG_KEYS)[number], string>;
 
-function emptyInstagramConfig(): InstagramConfigState {
+function emptyMetaAdsConfig(): MetaAdsConfigState {
   return {
-    meta_access_token: '',
-    meta_app_id: '',
-    meta_app_secret: '',
-    meta_ad_account_id: '',
-    facebook_page_id: '',
-    instagram_actor_id: '',
+    AccessToken: '',
+    AdAccountId: '',
+    PageId: '',
   };
 }
 
-function parseInstagramConfig(json: string): InstagramConfigState {
-  const out = emptyInstagramConfig();
+const LEGACY_META_ADS_KEY_MAP: Record<(typeof META_ADS_CONFIG_KEYS)[number], string[]> = {
+  AccessToken: ['AccessToken', 'meta_access_token'],
+  AdAccountId: ['AdAccountId', 'meta_ad_account_id'],
+  PageId: ['PageId', 'facebook_page_id'],
+};
+
+function parseMetaAdsConfig(json: string): MetaAdsConfigState {
+  const out = emptyMetaAdsConfig();
   try {
     const raw = json.trim() ? JSON.parse(json) : {};
     if (!raw || typeof raw !== 'object') return out;
-    for (const key of INSTAGRAM_CONFIG_KEYS) {
-      const v = (raw as Record<string, unknown>)[key];
-      out[key] = v == null ? '' : String(v);
+    const rec = raw as Record<string, unknown>;
+    for (const key of META_ADS_CONFIG_KEYS) {
+      const legacyKeys = LEGACY_META_ADS_KEY_MAP[key];
+      const match = legacyKeys.map((k) => rec[k]).find((v) => v != null && String(v).trim());
+      out[key] = match == null ? '' : String(match);
     }
   } catch {
     return out;
@@ -61,22 +59,23 @@ function isMetaAdsSourceCode(code: string) {
   return c === 'meta_ads' || c === 'facebook_ads' || c === 'instagram_ads';
 }
 
-function buildInstagramConfigJson(fields: InstagramConfigState, previousJson: string): string {
+function buildMetaAdsConfigJson(fields: MetaAdsConfigState, previousJson: string): string {
   let extra: Record<string, unknown> = {};
   try {
     const prev = previousJson.trim() ? JSON.parse(previousJson) : {};
     if (prev && typeof prev === 'object') {
       for (const [k, v] of Object.entries(prev as Record<string, unknown>)) {
-        if (!INSTAGRAM_CONFIG_KEYS.includes(k as (typeof INSTAGRAM_CONFIG_KEYS)[number])) {
-          extra[k] = v;
-        }
+        const isKnown =
+          META_ADS_CONFIG_KEYS.includes(k as (typeof META_ADS_CONFIG_KEYS)[number]) ||
+          Object.values(LEGACY_META_ADS_KEY_MAP).flat().includes(k);
+        if (!isKnown) extra[k] = v;
       }
     }
   } catch {
     extra = {};
   }
   const merged: Record<string, unknown> = { ...extra };
-  for (const key of INSTAGRAM_CONFIG_KEYS) {
+  for (const key of META_ADS_CONFIG_KEYS) {
     merged[key] = fields[key].trim();
   }
   return JSON.stringify(merged);
@@ -207,7 +206,7 @@ export default function SourceConnectionModal({
   const [isConnected, setIsConnected] = useState(initialConnected);
   const [isActive, setIsActive] = useState(initialActive);
   const [configJson, setConfigJson] = useState(initialConfig);
-  const [instagramConfig, setInstagramConfig] = useState<InstagramConfigState>(() => parseInstagramConfig(initialConfig));
+  const [metaAdsConfig, setMetaAdsConfig] = useState<MetaAdsConfigState>(() => parseMetaAdsConfig(initialConfig));
   const [tiktokConfig, setTiktokConfig] = useState<TiktokConfigState>(() => parseTiktokConfig(initialConfig));
   const [linkedinConfig, setLinkedinConfig] = useState<LinkedinConfigState>(() => parseLinkedinConfig(initialConfig));
   const [error, setError] = useState<string | null>(null);
@@ -223,14 +222,14 @@ export default function SourceConnectionModal({
     setIsActive(initialActive);
     const next = initialConfig || '{}';
     setConfigJson(next);
-    setInstagramConfig(parseInstagramConfig(next));
+    setMetaAdsConfig(parseMetaAdsConfig(next));
     setTiktokConfig(parseTiktokConfig(next));
     setLinkedinConfig(parseLinkedinConfig(next));
     setError(null);
   }, [isOpen, initialConnected, initialActive, initialConfig]);
 
-  const setInstagramField = (key: keyof InstagramConfigState, value: string) => {
-    setInstagramConfig((prev) => ({ ...prev, [key]: value }));
+  const setMetaAdsField = (key: keyof MetaAdsConfigState, value: string) => {
+    setMetaAdsConfig((prev) => ({ ...prev, [key]: value }));
   };
 
   const setTiktokField = (key: keyof TiktokConfigState, value: string) => {
@@ -248,7 +247,7 @@ export default function SourceConnectionModal({
     try {
       let outJson: string;
       if (isMetaAds) {
-        outJson = buildInstagramConfigJson(instagramConfig, configJson);
+        outJson = buildMetaAdsConfigJson(metaAdsConfig, configJson);
       } else if (isTikTok) {
         outJson = buildTiktokConfigJson(tiktokConfig, configJson);
       } else if (isLinkedIn) {
@@ -316,41 +315,22 @@ export default function SourceConnectionModal({
           <div className="space-y-4 pt-1">
             <p className="text-sm font-medium text-gray-800">{t('sourcing.sources.metaAds.sectionTitle')}</p>
             <TextField
-              label={t('sourcing.sources.instagram.metaAccessToken')}
-              value={instagramConfig.meta_access_token}
-              onChange={(e) => setInstagramField('meta_access_token', e.target.value)}
+              label={t('sourcing.sources.metaAds.accessToken')}
+              value={metaAdsConfig.AccessToken}
+              onChange={(e) => setMetaAdsField('AccessToken', e.target.value)}
               autoComplete="off"
             />
             <TextField
-              label={t('sourcing.sources.instagram.metaAppId')}
-              value={instagramConfig.meta_app_id}
-              onChange={(e) => setInstagramField('meta_app_id', e.target.value)}
+              label={t('sourcing.sources.metaAds.adAccountId')}
+              value={metaAdsConfig.AdAccountId}
+              onChange={(e) => setMetaAdsField('AdAccountId', e.target.value)}
+              placeholder={t('sourcing.sources.metaAds.adAccountPlaceholder')}
               autoComplete="off"
             />
             <TextField
-              label={t('sourcing.sources.instagram.metaAppSecret')}
-              type="password"
-              value={instagramConfig.meta_app_secret}
-              onChange={(e) => setInstagramField('meta_app_secret', e.target.value)}
-              autoComplete="new-password"
-            />
-            <TextField
-              label={t('sourcing.sources.instagram.metaAdAccountId')}
-              value={instagramConfig.meta_ad_account_id}
-              onChange={(e) => setInstagramField('meta_ad_account_id', e.target.value)}
-              placeholder={t('sourcing.sources.metaAds.metaAdAccountPlaceholder')}
-              autoComplete="off"
-            />
-            <TextField
-              label={t('sourcing.sources.instagram.facebookPageId')}
-              value={instagramConfig.facebook_page_id}
-              onChange={(e) => setInstagramField('facebook_page_id', e.target.value)}
-              autoComplete="off"
-            />
-            <TextField
-              label={t('sourcing.sources.instagram.instagramActorId')}
-              value={instagramConfig.instagram_actor_id}
-              onChange={(e) => setInstagramField('instagram_actor_id', e.target.value)}
+              label={t('sourcing.sources.metaAds.pageId')}
+              value={metaAdsConfig.PageId}
+              onChange={(e) => setMetaAdsField('PageId', e.target.value)}
               autoComplete="off"
             />
           </div>

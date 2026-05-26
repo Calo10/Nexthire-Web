@@ -1,15 +1,12 @@
 import { useTranslation } from 'react-i18next';
 import TextField from '../../TextField';
-import SelectField from '../../SelectField';
 import ImageUploadPreview from './ImageUploadPreview';
-import type { GeneratedMetaCreativePreview, MetaCtaType } from '../../../types/metaCampaign';
+import type { GeneratedMetaCreativePreview } from '../../../types/metaCampaign';
 
 interface Props {
   selectedJobId: string;
-  adText: string;
-  onAdText: (v: string) => void;
-  ctaType: MetaCtaType;
-  onCtaType: (v: MetaCtaType) => void;
+  creativeMessage: string;
+  onCreativeMessage: (v: string) => void;
   imageHash: string;
   imagePreviewUrl: string | null;
   generatedPreview: GeneratedMetaCreativePreview | null;
@@ -20,10 +17,8 @@ interface Props {
 
 export default function CampaignStepCreative({
   selectedJobId,
-  adText,
-  onAdText,
-  ctaType,
-  onCtaType,
+  creativeMessage,
+  onCreativeMessage,
   imageHash,
   imagePreviewUrl,
   generatedPreview,
@@ -33,25 +28,14 @@ export default function CampaignStepCreative({
 }: Props) {
   const { t } = useTranslation();
 
-  const ctaOpts: { value: MetaCtaType; label: string }[] = [
-    { value: 'LEARN_MORE', label: 'LEARN_MORE' },
-    { value: 'APPLY_NOW', label: 'APPLY_NOW' },
-    { value: 'SIGN_UP', label: 'SIGN_UP' },
-  ];
-
   return (
     <div className="space-y-6">
+      <p className="text-sm text-gray-600">{t('metaCampaign.creative.intro')}</p>
       <TextField
-        label={t('metaCampaign.creative.adText')}
-        value={adText}
-        onChange={(e) => onAdText(e.target.value)}
-        error={fieldErrors.adText}
-      />
-      <SelectField
-        label={t('metaCampaign.creative.cta')}
-        value={ctaType}
-        onChange={(e) => onCtaType(e.target.value as MetaCtaType)}
-        options={ctaOpts}
+        label={t('metaCampaign.creative.message')}
+        value={creativeMessage}
+        onChange={(e) => onCreativeMessage(e.target.value)}
+        error={fieldErrors.creativeMessage}
       />
       <div>
         <p className="text-sm font-medium text-gray-800 mb-2">{t('metaCampaign.creative.imageSection')}</p>

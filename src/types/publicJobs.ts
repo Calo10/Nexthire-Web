@@ -32,6 +32,10 @@ export interface ApplyJobRequest {
   phone?: string | null;
   source?: string | null;
   resume?: File | null;
+  availability?: string | null;
+  experienceYears?: string | number | null;
+  englishLevel?: string | null;
+  spanishLevel?: string | null;
 }
 
 export interface ApplyJobResponse {

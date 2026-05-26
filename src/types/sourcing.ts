@@ -58,6 +58,10 @@ export type SourcingCampaign = {
   endDate?: string | null;
   landingPageUrl?: string | null;
   trackingCode?: string | null;
+  externalCampaignId?: string | null;
+  externalAdAccountId?: string | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
   [key: string]: unknown;
 };
 

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
+import { resolveTenantId } from '../lib/resolveTenantId';
 import TopBar from '../components/TopBar';
 import Card from '../components/Card';
 import Button from '../components/Button';
@@ -13,7 +14,12 @@ import JobDetailDrawer from '../components/jobs/JobDetailDrawer';
 
 export default function JobsPage() {
   const { t } = useTranslation();
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, org } = useAuth();
+  const publicJobsPath = useMemo(() => {
+    const orgSegment = resolveTenantId(org);
+    if (!orgSegment) return null;
+    return `/org/${encodeURIComponent(orgSegment)}/jobs`;
+  }, [org]);
   const { data: jobs, isLoading: jobsLoading, error: jobsError, refetch: refetchJobs } = useJobs(isAuthenticated && !authLoading);
   
   const [searchQuery, setSearchQuery] = useState('');
@@ -88,14 +94,38 @@ export default function JobsPage() {
         {/* Header Section */}
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold text-dark-text">{t('jobs.title')}</h1>
-          <Button variant="primary" size="md" onClick={() => setIsNewJobModalOpen(true)}>
-            <div className="flex items-center gap-2">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              <span>{t('jobs.newJob')}</span>
-            </div>
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="md"
+              disabled={!publicJobsPath}
+              onClick={() => {
+                if (publicJobsPath) {
+                  window.open(publicJobsPath, '_blank', 'noopener,noreferrer');
+                }
+              }}
+            >
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                  />
+                </svg>
+                <span>{t('jobs.viewPublicJobs')}</span>
+              </div>
+            </Button>
+            <Button variant="primary" size="md" onClick={() => setIsNewJobModalOpen(true)}>
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                <span>{t('jobs.newJob')}</span>
+              </div>
+            </Button>
+          </div>
         </div>
 
         {/* Search and Filters Section */}

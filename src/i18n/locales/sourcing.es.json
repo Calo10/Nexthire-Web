@@ -96,6 +96,20 @@
     "created": "Creado",
     "actions": "Acciones"
   },
+  "inboxFilters": {
+    "allStatuses": "Todos los estados",
+    "createdDate": "Fecha de creación",
+    "actions": "Acciones",
+    "clear": "Limpiar filtros"
+  },
+  "leadStatuses": {
+    "new": "Nuevo",
+    "contacted": "Contactado",
+    "qualified": "Calificado",
+    "converted": "Convertido",
+    "rejected": "Rechazado",
+    "archived": "Archivado"
+  },
   "actions": {
     "viewProfile": "Ver perfil",
     "addToPipeline": "Añadir al pipeline",
@@ -183,7 +197,15 @@
     "startDate": "Inicio",
     "endDate": "Fin",
     "landingPageUrl": "URL de landing",
+    "destinationLink": "Enlace de destino",
     "trackingCode": "Código de seguimiento",
+    "status": "Estado",
+    "createdAt": "Creada",
+    "updatedAt": "Actualizada",
+    "externalCampaignId": "ID campaña Meta",
+    "externalAdAccountId": "ID cuenta Meta",
+    "metaIntegration": "Meta Ads",
+    "emptyValue": "—",
     "pause": "Pausar",
     "activate": "Activar",
     "delete": "Eliminar",
@@ -210,6 +232,7 @@
     "sourceTypeCode": "Código de tipo",
     "configJson": "Configuración (JSON)",
     "save": "Guardar conexión",
+    "underConstruction": "Under Construction",
     "invalidJson": "JSON inválido.",
     "instagram": {
       "sectionTitle": "Configuración Meta / Instagram",
@@ -222,7 +245,10 @@
     },
     "metaAds": {
       "sectionTitle": "Configuración Meta Ads",
-      "metaAdAccountPlaceholder": "act_XXXXXXXXXXXX"
+      "accessToken": "AccessToken",
+      "adAccountId": "AdAccountId",
+      "pageId": "PageId",
+      "adAccountPlaceholder": "act_XXXXXXXXXXXX"
     },
     "tiktok": {
       "sectionTitle": "Configuración TikTok",

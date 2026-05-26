@@ -1,70 +1,106 @@
 import { useTranslation } from 'react-i18next';
 import type { Job } from '../../../types/dashboard';
-import type { MetaDestinationType, MetaPlatformChoice } from '../../../types/metaCampaign';
-import { jobCodeFromJob, platformsFromChoice } from '../../../types/metaCampaign';
+import type { MetaDestinationType, MetaGeoSelection } from '../../../types/metaCampaign';
+import {
+  formatDailyBudgetUsd,
+  formatMetaTargetingAgeRange,
+  jobCodeFromJob,
+  META_EMPLOYMENT_SPECIAL_AD_CATEGORIES,
+  specialAdCategoriesRequireFixedAge,
+  specialAdCategoryCountryFromGeo,
+} from '../../../types/metaCampaign';
 
 interface Props {
   job: Job | null;
   jobCode: string;
+  destinationType: MetaDestinationType;
+  destinationLabel: string;
   campaignName: string;
+  objectiveLabel: string;
   dailyBudget: number;
-  country: string;
+  geoSelection: MetaGeoSelection | null;
   ageMin: number;
   ageMax: number;
-  platformChoice: MetaPlatformChoice;
-  destinationType: MetaDestinationType;
+  platformsLabel: string;
   destinationUrl: string;
-  adText: string;
-  ctaType: string;
-  status: string;
+  creativeMessage: string;
+  statusLabel: string;
+  billingLabel: string;
+  optimizationLabel: string;
+  bidLabel: string;
   imagePreviewUrl: string | null;
-  imageHash: string;
+  imageReady: boolean;
 }
 
 export default function CampaignStepReview({
   job,
   jobCode,
+  destinationType,
+  destinationLabel,
   campaignName,
+  objectiveLabel,
   dailyBudget,
-  country,
+  geoSelection,
   ageMin,
   ageMax,
-  platformChoice,
-  destinationType,
+  platformsLabel,
   destinationUrl,
-  adText,
-  ctaType,
-  status,
+  creativeMessage,
+  statusLabel,
+  billingLabel,
+  optimizationLabel,
+  bidLabel,
   imagePreviewUrl,
-  imageHash,
+  imageReady,
 }: Props) {
   const { t } = useTranslation();
-  const platforms = platformsFromChoice(platformChoice).join(', ');
 
   return (
     <div className="space-y-6">
+      <p className="text-sm text-gray-600">{t('metaCampaign.review.intro')}</p>
       <div className="rounded-xl border border-gray-200 bg-white divide-y divide-gray-100">
         <ReviewRow label={t('metaCampaign.review.job')} value={job ? `${job.title} (${jobCode || jobCodeFromJob(job)})` : '—'} />
+        <ReviewRow label={t('metaCampaign.review.destination')} value={destinationLabel} />
         <ReviewRow label={t('metaCampaign.review.campaignName')} value={campaignName} />
-        <ReviewRow label={t('metaCampaign.review.budget')} value={String(dailyBudget)} />
+        <ReviewRow label={t('metaCampaign.review.objective')} value={objectiveLabel} />
+        <ReviewRow label={t('metaCampaign.review.budget')} value={formatDailyBudgetUsd(dailyBudget)} />
+        <ReviewRow label={t('metaCampaign.review.location')} value={geoSelection?.label ?? '—'} />
+        {specialAdCategoryCountryFromGeo(geoSelection).length ? (
+          <ReviewRow
+            label={t('metaCampaign.review.specialAdCategoryCountry')}
+            value={specialAdCategoryCountryFromGeo(geoSelection).join(', ')}
+          />
+        ) : null}
+        {geoSelection?.radiusMiles ? (
+          <ReviewRow
+            label={t('metaCampaign.review.radius')}
+            value={`${geoSelection.radiusMiles} mi`}
+          />
+        ) : null}
         <ReviewRow
           label={t('metaCampaign.review.audience')}
-          value={`${country} · ${ageMin}–${ageMax}`}
+          value={formatMetaTargetingAgeRange(
+            ageMin,
+            ageMax,
+            specialAdCategoriesRequireFixedAge(META_EMPLOYMENT_SPECIAL_AD_CATEGORIES)
+          )}
         />
-        <ReviewRow label={t('metaCampaign.review.platforms')} value={platforms} />
-        <ReviewRow label={t('metaCampaign.review.destination')} value={destinationType} />
-        <ReviewRow label={t('metaCampaign.review.destinationUrl')} value={destinationUrl || '—'} mono />
-        <ReviewRow label={t('metaCampaign.review.adText')} value={adText} />
-        <ReviewRow label={t('metaCampaign.review.cta')} value={ctaType} />
-        <ReviewRow label={t('metaCampaign.review.status')} value={status} />
-        <ReviewRow label={t('metaCampaign.review.imageHash')} value={imageHash || '—'} mono />
+        <ReviewRow label={t('metaCampaign.review.platforms')} value={platformsLabel} />
+        <ReviewRow label={t('metaCampaign.review.status')} value={statusLabel} />
+        {destinationType === 'job_post_url' ? (
+          <ReviewRow label={t('metaCampaign.review.destinationUrl')} value={destinationUrl || '—'} mono />
+        ) : (
+          <ReviewRow label={t('metaCampaign.review.whatsappLink')} value={destinationUrl || '—'} mono />
+        )}
+        <ReviewRow label={t('metaCampaign.review.creativeMessage')} value={creativeMessage} />
+        <ReviewRow label={t('metaCampaign.review.advancedSummary')} value={`${billingLabel} · ${optimizationLabel} · ${bidLabel}`} />
       </div>
       {imagePreviewUrl ? (
         <div>
           <p className="text-sm font-medium text-gray-800 mb-2">{t('metaCampaign.review.image')}</p>
           <img src={imagePreviewUrl} alt="" className="max-h-48 rounded-lg border border-gray-200" />
         </div>
-      ) : imageHash ? (
+      ) : imageReady ? (
         <p className="text-sm text-gray-600">{t('metaCampaign.review.imageFromMeta')}</p>
       ) : null}
     </div>
