@@ -35,6 +35,8 @@ export interface GetSourcingLeadsParams extends QueryParams {
   jobId?: string | number;
   sourceType?: string;
   minFitScore?: number;
+  from?: string;
+  to?: string;
 }
 
 export async function getSourcingLeads(params?: GetSourcingLeadsParams) {

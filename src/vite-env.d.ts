@@ -5,6 +5,8 @@ interface ImportMetaEnv {
   readonly VITE_SOURCING_WHATSAPP_PHONE?: string;
   /** Public site origin for job post links, e.g. https://app.example.com */
   readonly VITE_PUBLIC_APP_URL?: string;
+  /** Google Maps JavaScript API key (Maps + Places) for Meta campaign location picker */
+  readonly VITE_GOOGLE_MAPS_API_KEY?: string;
 }
 
 declare module '*.png' {

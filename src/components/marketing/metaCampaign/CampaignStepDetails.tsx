@@ -1,30 +1,207 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import TextField from '../../TextField';
 import SelectField from '../../SelectField';
+import MoneyField from '../../MoneyField';
 import type { MetaPlatformChoice } from '../../../types/metaCampaign';
-
-const MAP_CENTER_LAT = 25.6866;
-const MAP_CENTER_LNG = -100.3161;
+import {
+  META_BID_STRATEGIES,
+  META_BILLING_EVENTS,
+  META_CAMPAIGN_OBJECTIVES,
+  META_COUNTRY_OPTIONS,
+  META_OPTIMIZATION_GOALS,
+} from '../../../types/metaCampaign';
 
 interface Props {
   campaignName: string;
   onCampaignName: (v: string) => void;
   objective: string;
   onObjective: (v: string) => void;
-  status: string;
-  onStatus: (v: string) => void;
+  campaignActive: boolean;
+  onCampaignActive: (v: boolean) => void;
+  adSetName: string;
+  onAdSetName: (v: string) => void;
   dailyBudget: number;
   onDailyBudget: (v: number) => void;
+  billingEvent: string;
+  onBillingEvent: (v: string) => void;
+  optimizationGoal: string;
+  onOptimizationGoal: (v: string) => void;
+  bidStrategy: string;
+  onBidStrategy: (v: string) => void;
+  countries: string[];
+  onToggleCountry: (code: string) => void;
   ageMin: number;
   onAgeMin: (v: number) => void;
   ageMax: number;
   onAgeMax: (v: number) => void;
-  country: string;
-  onCountry: (v: string) => void;
   platformChoice: MetaPlatformChoice;
   onPlatformChoice: (v: MetaPlatformChoice) => void;
+  advantageAudience: number;
+  onAdvantageAudience: (v: number) => void;
   fieldErrors: Record<string, string>;
+}
+
+function optionsFrom(values: readonly string[]) {
+  return values.map((value) => ({ value, label: value }));
+}
+
+function clampInt(n: number, min: number, max: number): number {
+  if (!Number.isFinite(n)) return min;
+  return Math.max(min, Math.min(max, Math.trunc(n)));
+}
+
+function AgeRangeSlider({
+  min = 13,
+  max = 65,
+  valueMin,
+  valueMax,
+  onChangeMin,
+  onChangeMax,
+  error,
+  label,
+}: {
+  min?: number;
+  max?: number;
+  valueMin: number;
+  valueMax: number;
+  onChangeMin: (v: number) => void;
+  onChangeMax: (v: number) => void;
+  error?: string;
+  label: string;
+}) {
+  const trackRef = useRef<HTMLDivElement | null>(null);
+  const [dragging, setDragging] = useState<'min' | 'max' | null>(null);
+  const [focused, setFocused] = useState<'min' | 'max' | null>(null);
+
+  let a = clampInt(valueMin, min, max - 1);
+  let b = clampInt(valueMax, min + 1, max);
+  if (a >= b) {
+    b = Math.min(max, a + 1);
+    a = Math.max(min, b - 1);
+  }
+
+  const toPct = (v: number) => ((v - min) / (max - min)) * 100;
+  const leftPct = toPct(a);
+  const rightPct = toPct(b);
+
+  const valueFromClientX = (clientX: number) => {
+    const el = trackRef.current;
+    if (!el) return a;
+    const r = el.getBoundingClientRect();
+    const x = Math.max(0, Math.min(r.width, clientX - r.left));
+    const ratio = r.width > 0 ? x / r.width : 0;
+    const raw = min + ratio * (max - min);
+    return clampInt(Math.round(raw), min, max);
+  };
+
+  const setNearestThumb = (v: number) => {
+    const distMin = Math.abs(v - a);
+    const distMax = Math.abs(v - b);
+    const next = distMin <= distMax ? 'min' : 'max';
+    setDragging(next);
+    return next;
+  };
+
+  const applyValue = (thumb: 'min' | 'max', next: number) => {
+    if (thumb === 'min') {
+      onChangeMin(clampInt(next, min, b - 1));
+    } else {
+      onChangeMax(clampInt(next, a + 1, max));
+    }
+  };
+
+  useEffect(() => {
+    if (!dragging) return;
+    const onMove = (e: PointerEvent) => {
+      const v = valueFromClientX(e.clientX);
+      applyValue(dragging, v);
+    };
+    const onUp = () => setDragging(null);
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    return () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dragging, a, b, min, max]);
+
+  return (
+    <div>
+      <div className="flex items-center justify-between gap-3 mb-2">
+        <p className="text-sm font-medium text-gray-700">{label}</p>
+        <p className="text-sm text-gray-600 tabular-nums">
+          {a}–{b}
+        </p>
+      </div>
+
+      <div className="relative">
+        <div
+          ref={trackRef}
+          className="relative h-12 select-none"
+          onPointerDown={(e) => {
+            const v = valueFromClientX(e.clientX);
+            const thumb = setNearestThumb(v);
+            applyValue(thumb, v);
+          }}
+          role="presentation"
+        >
+          <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-2 rounded-full bg-gray-200" />
+          <div
+            className="absolute top-1/2 -translate-y-1/2 h-2 rounded-full bg-emerald-500"
+            style={{ left: `${leftPct}%`, width: `${Math.max(0, rightPct - leftPct)}%` }}
+          />
+
+          <button
+            type="button"
+            className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 h-6 w-6 rounded-full border bg-white shadow ring-0 transition ${
+              dragging === 'min' || focused === 'min' ? 'border-emerald-600 ring-4 ring-emerald-100' : 'border-gray-300'
+            }`}
+            style={{ left: `${leftPct}%` }}
+            aria-label={`${label} min`}
+            onPointerDown={(e) => {
+              e.stopPropagation();
+              setDragging('min');
+            }}
+            onFocus={() => setFocused('min')}
+            onBlur={() => setFocused((f) => (f === 'min' ? null : f))}
+            onKeyDown={(e) => {
+              const step = e.shiftKey ? 5 : 1;
+              if (e.key === 'ArrowLeft') onChangeMin(clampInt(a - step, min, b - 1));
+              if (e.key === 'ArrowRight') onChangeMin(clampInt(a + step, min, b - 1));
+              if (e.key === 'Home') onChangeMin(min);
+              if (e.key === 'End') onChangeMin(b - 1);
+            }}
+          />
+
+          <button
+            type="button"
+            className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 h-6 w-6 rounded-full border bg-white shadow ring-0 transition ${
+              dragging === 'max' || focused === 'max' ? 'border-emerald-600 ring-4 ring-emerald-100' : 'border-gray-300'
+            }`}
+            style={{ left: `${rightPct}%` }}
+            aria-label={`${label} max`}
+            onPointerDown={(e) => {
+              e.stopPropagation();
+              setDragging('max');
+            }}
+            onFocus={() => setFocused('max')}
+            onBlur={() => setFocused((f) => (f === 'max' ? null : f))}
+            onKeyDown={(e) => {
+              const step = e.shiftKey ? 5 : 1;
+              if (e.key === 'ArrowLeft') onChangeMax(clampInt(b - step, a + 1, max));
+              if (e.key === 'ArrowRight') onChangeMax(clampInt(b + step, a + 1, max));
+              if (e.key === 'Home') onChangeMax(a + 1);
+              if (e.key === 'End') onChangeMax(max);
+            }}
+          />
+        </div>
+      </div>
+
+      {error ? <p className="mt-1.5 text-sm text-red-600">{error}</p> : null}
+    </div>
+  );
 }
 
 export default function CampaignStepDetails({
@@ -32,164 +209,202 @@ export default function CampaignStepDetails({
   onCampaignName,
   objective,
   onObjective,
-  status,
-  onStatus,
+  campaignActive,
+  onCampaignActive,
+  adSetName,
+  onAdSetName,
   dailyBudget,
   onDailyBudget,
+  billingEvent,
+  onBillingEvent,
+  optimizationGoal,
+  onOptimizationGoal,
+  bidStrategy,
+  onBidStrategy,
+  countries,
+  onToggleCountry,
   ageMin,
   onAgeMin,
   ageMax,
   onAgeMax,
-  country,
-  onCountry,
   platformChoice,
   onPlatformChoice,
+  advantageAudience,
+  onAdvantageAudience,
   fieldErrors,
 }: Props) {
   const { t } = useTranslation();
-  const [radiusKm, setRadiusKm] = useState(25);
 
-  const objectiveOpts = [{ value: 'OUTCOME_TRAFFIC', label: 'OUTCOME_TRAFFIC' }];
-  const statusOpts = [{ value: 'PAUSED', label: 'PAUSED' }];
   const platformOpts: { value: MetaPlatformChoice; label: string }[] = [
     { value: 'both', label: t('metaCampaign.details.platformBoth') },
     { value: 'facebook', label: t('metaCampaign.details.platformFacebook') },
     { value: 'instagram', label: t('metaCampaign.details.platformInstagram') },
   ];
-  const googleEmbedUrl = useMemo(() => {
-    const query = encodeURIComponent(`${MAP_CENTER_LAT},${MAP_CENTER_LNG}`);
-    return `https://www.google.com/maps?q=${query}&z=11&output=embed`;
-  }, []);
-  const coverageCircleSizePx = useMemo(() => {
-    const min = 80;
-    const max = 240;
-    const normalized = Math.min(1, Math.max(0, (radiusKm - 5) / 195));
-    return Math.round(min + normalized * (max - min));
-  }, [radiusKm]);
+
+  const objectiveOpts = useMemo(
+    () =>
+      META_CAMPAIGN_OBJECTIVES.map((code) => ({
+        value: code,
+        label: t(`metaCampaign.details.objectives.${code}.label`),
+      })),
+    [t]
+  );
+
+  const objectiveHelpKey = `metaCampaign.details.objectives.${objective}.help`;
+  const objectiveHelp = META_CAMPAIGN_OBJECTIVES.includes(objective as (typeof META_CAMPAIGN_OBJECTIVES)[number])
+    ? t(objectiveHelpKey)
+    : '';
 
   return (
-    <div className="space-y-4">
-      <TextField
-        label={t('metaCampaign.details.campaignName')}
-        value={campaignName}
-        onChange={(e) => onCampaignName(e.target.value)}
-        error={fieldErrors.campaignName}
-      />
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <SelectField
-          label={t('metaCampaign.details.objective')}
-          value={objective}
-          onChange={(e) => onObjective(e.target.value)}
-          options={objectiveOpts}
-        />
-        <SelectField
-          label={t('metaCampaign.details.status')}
-          value={status}
-          onChange={(e) => onStatus(e.target.value)}
-          options={statusOpts}
-        />
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="space-y-8">
+      <section className="space-y-4">
+        <h3 className="text-sm font-semibold text-gray-900">{t('metaCampaign.details.sectionCampaign')}</h3>
         <TextField
-          label={t('metaCampaign.details.dailyBudget')}
-          type="number"
-          min={1}
-          value={Number.isFinite(dailyBudget) ? String(dailyBudget) : ''}
-          onChange={(e) => onDailyBudget(Number(e.target.value))}
-          error={fieldErrors.dailyBudget}
+          label={t('metaCampaign.details.campaignName')}
+          value={campaignName}
+          onChange={(e) => onCampaignName(e.target.value)}
+          error={fieldErrors.campaignName}
         />
-        <TextField
-          label={t('metaCampaign.details.country')}
-          value={country}
-          onChange={(e) => onCountry(e.target.value.toUpperCase().slice(0, 2))}
-          placeholder="US"
-          maxLength={2}
-          error={fieldErrors.country}
-        />
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <TextField
-          label={t('metaCampaign.details.ageMin')}
-          type="number"
-          min={13}
-          max={65}
-          value={String(ageMin)}
-          onChange={(e) => onAgeMin(Number(e.target.value))}
-          error={fieldErrors.ageMin}
-        />
-        <TextField
-          label={t('metaCampaign.details.ageMax')}
-          type="number"
-          min={13}
-          max={65}
-          value={String(ageMax)}
-          onChange={(e) => onAgeMax(Number(e.target.value))}
-          error={fieldErrors.ageMax}
-        />
-      </div>
-      <SelectField
-        label={t('metaCampaign.details.platforms')}
-        value={platformChoice}
-        onChange={(e) => onPlatformChoice(e.target.value as MetaPlatformChoice)}
-        options={platformOpts}
-      />
-      <div className="rounded-xl border border-gray-200 bg-gray-50/60 p-4 space-y-4">
-        <div className="flex items-center justify-between gap-3 flex-wrap">
-          <h4 className="text-sm font-semibold text-gray-900">{t('metaCampaign.details.mapTitle')}</h4>
-        </div>
-        <div className="relative h-64 w-full overflow-hidden rounded-lg border border-slate-300">
-          <iframe
-            title={t('metaCampaign.details.mapAria')}
-            src={googleEmbedUrl}
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-            className="h-full w-full border-0"
-          />
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-            <div
-              className="rounded-full border-2 border-primary bg-primary/15 shadow-[0_0_0_9999px_rgba(15,23,42,0.08)_inset]"
-              style={{ width: `${coverageCircleSizePx}px`, height: `${coverageCircleSizePx}px` }}
+        <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_auto] gap-x-4 gap-y-2">
+          <label htmlFor="meta-campaign-objective" className="text-sm font-medium text-gray-700">
+            {t('metaCampaign.details.objective')}
+          </label>
+          <span className="hidden md:block text-sm font-medium text-gray-700 md:text-right">
+            {t('metaCampaign.details.activeCampaign')}
+          </span>
+
+          <select
+            id="meta-campaign-objective"
+            value={objective}
+            onChange={(e) => onObjective(e.target.value)}
+            className="w-full min-w-0 px-4 py-3 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+          >
+            {objectiveOpts.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+
+          <label className="flex items-center justify-start gap-3 cursor-pointer select-none md:justify-end md:self-center">
+            <input
+              type="checkbox"
+              checked={campaignActive}
+              onChange={(e) => onCampaignActive(e.target.checked)}
+              className="sr-only"
             />
-            <div className="absolute h-3 w-3 rounded-full border border-white bg-primary shadow" />
-          </div>
-          <div className="pointer-events-none absolute right-2 top-2 rounded-md bg-white/90 px-2 py-1 text-xs font-medium text-gray-700 shadow">
-            {radiusKm} km
-          </div>
-          <div className="pointer-events-none absolute left-2 top-2 rounded-md bg-white/90 px-2 py-1 text-xs font-medium text-gray-700 shadow">
-            {t('metaCampaign.details.mapCenterLabel', {
-              lat: MAP_CENTER_LAT.toFixed(4),
-              lng: MAP_CENTER_LNG.toFixed(4),
-            })}
-          </div>
-        </div>
+            <span
+              aria-hidden
+              className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border transition-colors ${
+                campaignActive ? 'bg-emerald-500 border-emerald-600' : 'bg-gray-200 border-gray-300'
+              }`}
+            >
+              <span
+                className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform ${
+                  campaignActive ? 'translate-x-5' : 'translate-x-1'
+                }`}
+              />
+            </span>
+            <span
+              className={`text-sm font-medium whitespace-nowrap md:sr-only ${
+                campaignActive ? 'text-emerald-700' : 'text-gray-700'
+              }`}
+            >
+              {t('metaCampaign.details.activeCampaign')}
+            </span>
+          </label>
 
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <label htmlFor="mock-radius" className="text-sm font-medium text-gray-800">
-              {t('metaCampaign.details.mapRadius')}
-            </label>
-            <span className="text-sm font-semibold text-primary">{radiusKm} km</span>
-          </div>
-          <input
-            id="mock-radius"
-            type="range"
-            min={5}
-            max={200}
-            step={5}
-            value={radiusKm}
-            onChange={(e) => setRadiusKm(Number(e.target.value))}
-            className="w-full accent-primary"
+          {objectiveHelp ? (
+            <p className="text-xs text-gray-500 leading-relaxed md:col-start-1">{objectiveHelp}</p>
+          ) : null}
+        </div>
+      </section>
+
+      <section className="space-y-4 border-t border-gray-100 pt-6">
+        <h3 className="text-sm font-semibold text-gray-900">{t('metaCampaign.details.sectionAdSet')}</h3>
+        <TextField
+          label={t('metaCampaign.details.adSetName')}
+          value={adSetName}
+          onChange={(e) => onAdSetName(e.target.value)}
+          error={fieldErrors.adSetName}
+        />
+        <div className="grid grid-cols-1 gap-4">
+          <MoneyField
+            label={t('metaCampaign.details.dailyBudget')}
+            value={dailyBudget}
+            onValue={onDailyBudget}
+            min={1}
+            max={50}
+            error={fieldErrors.dailyBudget}
           />
         </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <SelectField
+            label={t('metaCampaign.details.billingEvent')}
+            value={billingEvent}
+            onChange={(e) => onBillingEvent(e.target.value)}
+            options={optionsFrom(META_BILLING_EVENTS)}
+          />
+          <SelectField
+            label={t('metaCampaign.details.optimizationGoal')}
+            value={optimizationGoal}
+            onChange={(e) => onOptimizationGoal(e.target.value)}
+            options={optionsFrom(META_OPTIMIZATION_GOALS)}
+          />
+          <SelectField
+            label={t('metaCampaign.details.bidStrategy')}
+            value={bidStrategy}
+            onChange={(e) => onBidStrategy(e.target.value)}
+            options={optionsFrom(META_BID_STRATEGIES)}
+          />
+        </div>
+      </section>
 
-        <p className="text-xs text-gray-600">
-          {t('metaCampaign.details.mapSelectionReady', {
-            lat: MAP_CENTER_LAT.toFixed(4),
-            lng: MAP_CENTER_LNG.toFixed(4),
-            radius: radiusKm,
-          })}
-        </p>
-      </div>
+      <section className="space-y-4 border-t border-gray-100 pt-6">
+        <h3 className="text-sm font-semibold text-gray-900">{t('metaCampaign.details.sectionTargeting')}</h3>
+        <div>
+          <p className="text-sm font-medium text-gray-700 mb-2">{t('metaCampaign.details.countries')}</p>
+          {fieldErrors.countries ? <p className="text-sm text-red-600 mb-2">{fieldErrors.countries}</p> : null}
+          <div className="flex flex-wrap gap-3">
+            {META_COUNTRY_OPTIONS.map((code) => (
+              <label key={code} className="inline-flex items-center gap-2 cursor-pointer text-sm text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={countries.includes(code)}
+                  onChange={() => onToggleCountry(code)}
+                  className="rounded border-gray-300 text-primary focus:ring-primary"
+                />
+                {code}
+              </label>
+            ))}
+          </div>
+        </div>
+        <AgeRangeSlider
+          label={t('metaCampaign.details.ageRange')}
+          min={13}
+          max={65}
+          valueMin={ageMin}
+          valueMax={ageMax}
+          onChangeMin={onAgeMin}
+          onChangeMax={onAgeMax}
+          error={fieldErrors.ageMin || fieldErrors.ageMax}
+        />
+        <SelectField
+          label={t('metaCampaign.details.platforms')}
+          value={platformChoice}
+          onChange={(e) => onPlatformChoice(e.target.value as MetaPlatformChoice)}
+          options={platformOpts}
+        />
+        <label className="inline-flex items-center gap-2 cursor-pointer text-sm text-gray-700">
+          <input
+            type="checkbox"
+            checked={advantageAudience === 1}
+            onChange={(e) => onAdvantageAudience(e.target.checked ? 1 : 0)}
+            className="rounded border-gray-300 text-primary focus:ring-primary"
+          />
+          {t('metaCampaign.details.advantageAudience')}
+        </label>
+      </section>
     </div>
   );
 }

@@ -239,15 +239,14 @@
     "modalTitle": "Configuración de agente"
   },
   "metaCampaign": {
-    "title": "Creador de campañas Meta Ads",
-    "subtitle": "Crea una campaña de Meta para un empleo en pasos. Las campañas nuevas quedan en pausa hasta activarlas en Ads Manager.",
+    "title": "Crear campaña en Meta",
+    "subtitle": "Promociona una vacante en Facebook e Instagram. Nosotros configuramos lo técnico — tú eliges dónde aplican los candidatos.",
     "stepLabel": "Paso {{current}} / {{total}}",
     "steps": {
       "s1": "Empleo",
-      "s2": "Campaña",
-      "s3": "Destino",
-      "s4": "Creativo",
-      "s5": "Revisión"
+      "s2": "Configuración",
+      "s3": "Anuncio",
+      "s4": "Revisión"
     },
     "nav": {
       "back": "Atrás",
@@ -266,44 +265,129 @@
       "status": "Estado",
       "code": "Código"
     },
-    "details": {
+    "setup": {
       "campaignName": "Nombre de campaña",
-      "objective": "Objetivo",
-      "status": "Estado",
-      "dailyBudget": "Presupuesto diario (unidades menores)",
-      "country": "País (ISO)",
-      "ageMin": "Edad mínima",
-      "ageMax": "Edad máxima",
-      "platforms": "Ubicaciones",
-      "platformBoth": "Facebook e Instagram",
-      "platformFacebook": "Solo Facebook",
-      "platformInstagram": "Solo Instagram",
-      "mapTitle": "Target AREA",
-      "mapMockBadge": "Solo mock - sin sync API",
-      "mapHint": "Vista de Google Maps para demo. Usa presets o edita coordenadas para cambiar el area.",
-      "mapAria": "Mapa mock para elegir area objetivo",
-      "mapRadius": "Radio de cobertura",
-      "mapPresetLabel": "Ubicacion rapida",
-      "mapPresetMonterrey": "Monterrey",
-      "mapPresetCdmx": "Ciudad de Mexico",
-      "mapPresetGuadalajara": "Guadalajara",
-      "mapPresetBogota": "Bogota",
-      "mapPresetMadrid": "Madrid",
-      "mapCenterLabel": "Centro: {{lat}}, {{lng}}",
-      "mapSelectionReady": "Area seleccionada: centro {{lat}}, {{lng}} con radio de {{radius}} km.",
-      "mapSelectionEmpty": "Aun no has seleccionado un area."
+      "objective": "Objetivo de campaña",
+      "dailyBudget": "Presupuesto diario (USD)",
+      "ageRange": "Rango de edad",
+      "ageRangeFixed": "18 – 65+",
+      "ageRangeLockedHint": "Meta requiere 18–65+ para anuncios de empleo, vivienda y productos financieros.",
+      "platforms": "Dónde mostrar el anuncio",
+      "activeToggleTitle": "Crear campaña activa",
+      "activeToggleOn": "Campaña, ad set y anuncio quedarán ACTIVOS en Meta.",
+      "activeToggleOff": "Todo se creará en PAUSA — puedes activarlo después en Ads Manager.",
+      "statusActive": "Activa",
+      "statusPaused": "En pausa"
+    },
+    "objectives": {
+      "OUTCOME_TRAFFIC": {
+        "label": "Más visitas al empleo",
+        "help": "Lleva gente a tu página de aplicación. Recomendado para formulario web."
+      },
+      "OUTCOME_LEADS": {
+        "label": "Más candidatos / registros",
+        "help": "Optimiza captación de interés."
+      },
+      "OUTCOME_AWARENESS": {
+        "label": "Dar a conocer la vacante",
+        "help": "Más alcance, menos clics. Bueno para visibilidad."
+      },
+      "OUTCOME_ENGAGEMENT": {
+        "label": "Más interacción",
+        "help": "Útil para WhatsApp y mensajes. Recomendado para destino WhatsApp."
+      }
     },
     "destination": {
-      "type": "Destino",
-      "whatsapp": "WhatsApp (wa.me)",
-      "jobUrl": "URL del empleo",
+      "section": "¿Dónde deben ir los candidatos?",
+      "webTitle": "Formulario en mi web",
+      "webDesc": "Abre la página pública de aplicación al empleo.",
+      "whatsappTitle": "Mensajes por WhatsApp",
+      "whatsappDesc": "Abre un chat de WhatsApp con mensaje prellenado.",
       "message": "Mensaje de WhatsApp",
-      "urlOverride": "Sobrescribir URL (opcional)",
-      "defaultUrlHint": "La URL pública por defecto aparece abajo. Déjala vacía para usarla.",
+      "urlOverride": "URL de aplicación personalizada (opcional)",
+      "urlOverridePlaceholder": "https://…",
+      "defaultUrlHint": "Déjala vacía para usar la URL pública por defecto que aparece abajo.",
       "noWhatsappEnv": "Configura VITE_SOURCING_WHATSAPP_PHONE (solo dígitos) para enlaces de WhatsApp."
     },
+    "geo": {
+      "label": "Ubicación",
+      "mapHint": "Busca la ciudad para mejores resultados. Puedes mover el pin para afinar — colócalo sobre la ciudad, no el mar o carreteras.",
+      "noMatchMap": "Meta no reconoció este punto del mapa. Busca el nombre de la ciudad arriba o coloca el pin en el centro urbano.",
+      "searchPlaceholder": "Buscar ciudad…",
+      "mapAria": "Mapa para elegir ubicación de la campaña",
+      "resolving": "Vinculando ubicación con Meta…",
+      "searching": "Buscando…",
+      "searchFailed": "No se pudo vincular esta ubicación en Meta. Prueba otra ciudad cercana.",
+      "geocodeFailed": "No se pudo leer este punto. Elige una ciudad desde el listado de búsqueda.",
+      "geocodingApiDisabled": "Habilita Geocoding API en Google Cloud (necesaria al hacer clic en el mapa). Buscar ciudad sigue funcionando.",
+      "pickFromList": "Elige una sugerencia del listado (no solo Enter).",
+      "noMatch": "Meta no tiene coincidencia para este lugar. Prueba una ciudad más grande cerca.",
+      "missingApiKey": "Google Maps no está configurado. Agrega VITE_GOOGLE_MAPS_API_KEY al entorno.",
+      "mapLoadFailed": "No se pudo cargar Google Maps.",
+      "clear": "Quitar",
+      "selectedHint": "Segmentación: {{label}}",
+      "radiusHint": "Aprox. {{miles}} mi de radio para ciudad",
+      "radiusLabel": "Radio de audiencia",
+      "radiusUnit": "mi",
+      "radiusRange": "{{min}}–{{max}} millas"
+    },
+    "advanced": {
+      "title": "Ajustes avanzados",
+      "billingLabel": "Facturación",
+      "optimizationLabel": "Optimización",
+      "bidLabel": "Estrategia de puja",
+      "billing": {
+        "IMPRESSIONS": {
+          "label": "Por impresiones",
+          "tooltip": "Pagas por mostrar el anuncio. Recomendado para empezar."
+        },
+        "LINK_CLICKS": {
+          "label": "Por clic en el enlace",
+          "tooltip": "Pagas cuando alguien hace clic en el enlace."
+        }
+      },
+      "optimization": {
+        "LANDING_PAGE_VIEWS": {
+          "label": "Visitas al formulario",
+          "tooltip": "Optimiza para que cargue tu página. Alternativa: clics en el enlace."
+        },
+        "LINK_CLICKS": {
+          "label": "Clics en el enlace",
+          "tooltip": "Optimiza para clics en el enlace del anuncio."
+        },
+        "CONVERSATIONS": {
+          "label": "Conversaciones en WhatsApp",
+          "tooltip": "Optimiza para iniciar chat. Si Meta no lo permite, usa clics en el enlace."
+        },
+        "IMPRESSIONS": {
+          "label": "Impresiones",
+          "tooltip": "Optimiza por impresiones del anuncio."
+        },
+        "REACH": {
+          "label": "Alcance",
+          "tooltip": "Muestra el anuncio al mayor número de personas posible."
+        }
+      },
+      "bid": {
+        "LOWEST_COST_WITHOUT_CAP": {
+          "label": "Menor costo (automático)",
+          "tooltip": "Meta optimiza costo y entrega automáticamente. Recomendado."
+        },
+        "LOWEST_COST_WITH_BID_CAP": {
+          "label": "Menor costo con tope de puja",
+          "tooltip": "Puja automática con límite máximo."
+        },
+        "COST_CAP": {
+          "label": "Tope de costo",
+          "tooltip": "Mantiene el costo promedio cerca de tu objetivo."
+        }
+      }
+    },
     "creative": {
-      "adText": "Texto principal",
+      "intro": "Escribe el texto del anuncio y sube una imagen. Meta exige imagen para guardar la campaña.",
+      "message": "Texto del anuncio",
+      "headline": "Título (link name)",
+      "description": "Descripción",
       "cta": "Llamada a la acción",
       "imageSection": "Imagen",
       "generateDemo": "Generar imagen demo",
@@ -324,22 +408,30 @@
       "imageOnly": "Elige un archivo de imagen."
     },
     "review": {
+      "intro": "Revisa tu campaña antes de enviarla a Meta.",
       "job": "Empleo",
+      "destination": "Destino",
       "campaignName": "Nombre de campaña",
+      "objective": "Objetivo",
       "budget": "Presupuesto diario",
-      "audience": "Audiencia",
+      "location": "Ubicación",
+      "specialAdCategoryCountry": "País categoría especial",
+      "radius": "Radio de audiencia",
+      "audience": "Rango de edad",
       "platforms": "Plataformas",
-      "destination": "Tipo de destino",
-      "destinationUrl": "URL de destino",
-      "adText": "Texto del anuncio",
-      "cta": "CTA",
-      "status": "Estado",
+      "status": "Estado al crear",
+      "destinationUrl": "URL de aplicación",
+      "whatsappLink": "Enlace de WhatsApp",
+      "whatsappPreFill": "Mensaje de aplicación (local)",
+      "metaCreativeLink": "Enlace creative en Meta (Click-to-WhatsApp)",
+      "creativeMessage": "Texto del anuncio",
+      "advancedSummary": "Avanzado (facturación · optimización · puja)",
       "image": "Vista previa",
-      "imageFromMeta": "El creativo usará el hash subido en Meta.",
-      "imageHash": "Hash de imagen"
+      "imageFromMeta": "Imagen subida a Meta."
     },
     "result": {
-      "title": "Campaña creada (en pausa)",
+      "title": "Campaña creada",
+      "localRecordId": "ID registro local",
       "campaignId": "ID de campaña",
       "adSetId": "ID de conjunto",
       "creativeId": "ID de creativo",
@@ -355,12 +447,15 @@
     "validation": {
       "jobRequired": "Selecciona un empleo.",
       "required": "Campo obligatorio.",
-      "budget": "Indica un presupuesto diario de al menos 1.",
-      "country": "Usa un código de país de 2 letras (p. ej. US).",
+      "budget": "Indica un presupuesto diario entre $1 y $50.",
+      "location": "Selecciona una ubicación.",
+      "specialAdCategoryCountry": "Selecciona una ubicación válida o configura el país de la categoría especial.",
+      "platforms": "Selecciona al menos una plataforma (Facebook o Instagram).",
       "age": "Rango de edad inválido (13–65, mínimo menor que máximo).",
       "whatsappEnv": "El número de WhatsApp no está configurado.",
       "destination": "Escribe un mensaje para el enlace de WhatsApp.",
       "url": "Indica una URL http(s) válida.",
+      "publicUrl": "Usa una URL pública https (no localhost ni IP privada). Configura VITE_PUBLIC_APP_URL o pega el enlace de producción del empleo.",
       "orgMissing": "Falta la organización o pega una URL completa del empleo.",
       "image": "Añade una imagen (demo o subida)."
     },
@@ -572,6 +667,7 @@
   "jobs": {
     "title": "Trabajos",
     "newJob": "Nuevo trabajo",
+    "viewPublicJobs": "Ver trabajos públicos",
     "searchPlaceholder": "Buscar trabajos...",
     "empty": "No se encontraron trabajos",
     "status": {
@@ -783,8 +879,23 @@
         "email": "Correo",
         "phoneCountry": "Código país",
         "phoneNumber": "Número",
+        "availability": "Disponibilidad",
+        "experienceYears": "Años de experiencia",
+        "englishLevel": "Nivel de inglés",
+        "spanishLevel": "Nivel de español",
         "source": "¿Cómo te enteraste de este empleo?",
         "resume": "CV"
+      },
+      "options": {
+        "select": "Seleccionar…",
+        "years": "{{count}} años",
+        "yearsPlus": "Más de {{count}} años",
+        "availability": {
+          "immediate": "Inmediata",
+          "oneWeek": "1 semana",
+          "twoWeeks": "2 semanas",
+          "oneMonth": "1 mes"
+        }
       },
       "placeholders": {
         "phoneNumber": "p.ej., 8966 7186"

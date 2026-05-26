@@ -8,7 +8,10 @@ import SelectField from '../SelectField';
 import ErrorMessage from '../ErrorMessage';
 import { createSourcingCampaign, getSourcingCampaign } from '../../api/sourcingApi';
 import type { Job } from '../../types/dashboard';
+import type { SourcingCampaign } from '../../types/sourcing';
 import { SOURCING_PLATFORM_CODES, sourcingPlatformSelectLabels } from '../../lib/sourcingPlatformCodes';
+import LeadStatusPill from './LeadStatusPill';
+import SourceTypeBrandLogo from './SourceTypeBrandLogo';
 import {
   buildWhatsappMeUrl,
   jobPostRef,
@@ -59,6 +62,28 @@ function pickJobTitleFromCampaign(c: unknown): string | null {
   return pick(r.jobTitle) || pick(r.JobTitle) || nestedTitle(r.job) || nestedTitle(r.Job);
 }
 
+function isWhatsappLandingUrl(url: string): boolean {
+  const u = url.trim().toLowerCase();
+  return u.includes('wa.me') || u.includes('api.whatsapp.com');
+}
+
+function campaignPlatformLabel(code: string, t: (key: string) => string): string {
+  const normalized = code.toLowerCase();
+  if ((SOURCING_PLATFORM_CODES as readonly string[]).includes(normalized)) {
+    return t(`sourcing.campaign.platforms.${normalized}`);
+  }
+  return code;
+}
+
+function formatCampaignDateTime(iso: string | null | undefined, locale: string): string {
+  if (!iso) return '';
+  try {
+    return new Date(iso).toLocaleString(locale, { dateStyle: 'medium', timeStyle: 'short' });
+  } catch {
+    return String(iso);
+  }
+}
+
 interface Props {
   isOpen: boolean;
   onClose: () => void;
@@ -70,7 +95,7 @@ interface Props {
 }
 
 export default function CampaignModal({ isOpen, onClose, jobs, campaignId, createMode = 'full', onSuccess }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const readOnly = !!campaignId;
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -79,6 +104,7 @@ export default function CampaignModal({ isOpen, onClose, jobs, campaignId, creat
   const [linkCopied, setLinkCopied] = useState(false);
   /** Title returned with campaign detail when the job is not in `jobs[]`. */
   const [viewJobTitle, setViewJobTitle] = useState<string | null>(null);
+  const [loadedCampaign, setLoadedCampaign] = useState<SourcingCampaign | null>(null);
 
   const [form, setForm] = useState({
     jobId: '',
@@ -100,6 +126,7 @@ export default function CampaignModal({ isOpen, onClose, jobs, campaignId, creat
     setLinkCopied(false);
     if (!campaignId) {
       setViewJobTitle(null);
+      setLoadedCampaign(null);
       setForm({
         jobId: '',
         name: '',
@@ -120,6 +147,7 @@ export default function CampaignModal({ isOpen, onClose, jobs, campaignId, creat
       try {
         const c = await getSourcingCampaign(campaignId);
         if (cancelled || !c) return;
+        setLoadedCampaign(c);
         const landing = String(c.landingPageUrl || '').trim();
         const campaignName = String(c.name || '');
         let jid = pickJobIdFromCampaign(c);
@@ -207,14 +235,11 @@ export default function CampaignModal({ isOpen, onClose, jobs, campaignId, creat
 
   const waMeUrl = useMemo(() => buildWhatsappMeUrl(phoneDigits, applyMessage), [phoneDigits, applyMessage]);
 
-  const displayWaUrl = useMemo(() => {
-    const u = (form.landingPageUrl || '').trim();
-    if (u.includes('wa.me')) return u;
-    if (isWhatsapp && form.jobId && phoneDigits && applyMessage) {
-      return buildWhatsappMeUrl(phoneDigits, applyMessage);
-    }
-    return '';
-  }, [form.landingPageUrl, form.jobId, isWhatsapp, phoneDigits, applyMessage]);
+  const readOnlyLandingUrl = (form.landingPageUrl || '').trim();
+  const showWhatsappDestination = readOnly && isWhatsappLandingUrl(readOnlyLandingUrl);
+  const platformCode = (form.platform || loadedCampaign?.platform || '').trim();
+  const platformLabel = platformCode ? campaignPlatformLabel(platformCode, t) : '';
+  const empty = t('sourcing.campaign.emptyValue');
 
   const copyLink = async (url: string) => {
     if (!url) return;
@@ -311,7 +336,11 @@ export default function CampaignModal({ isOpen, onClose, jobs, campaignId, creat
   );
 
   const subtitle =
-    readOnly ? undefined : isWhatsapp || whatsappOnlyCreate ? t('sourcing.campaign.whatsappSubtitle') : t('sourcing.campaign.subtitle');
+    readOnly
+      ? undefined
+      : isWhatsapp || whatsappOnlyCreate
+        ? t('sourcing.campaign.whatsappSubtitle')
+        : t('sourcing.campaign.subtitle');
 
   return (
     <Modal
@@ -341,37 +370,134 @@ export default function CampaignModal({ isOpen, onClose, jobs, campaignId, creat
         <div className="py-8 text-center text-gray-500">{t('common.loading')}</div>
       ) : (
         <form id="campaign-form" onSubmit={handleSubmit} className="space-y-4">
-          {readOnly && isWhatsapp ? (
-            <div className="space-y-4">
-              {whatsappLinkBlock(displayWaUrl)}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <TextField label={t('sourcing.campaign.job')} value={resolvedJobLabel} onChange={() => {}} disabled />
-                <TextField label={t('sourcing.campaign.name')} value={form.name} onChange={() => {}} disabled />
-                <SelectField label={t('sourcing.campaign.platform')} value={form.platform} onChange={() => {}} options={platformOptions} disabled />
+          {readOnly ? (
+            <div className="space-y-5">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-lg font-semibold text-dark-text">{form.name || empty}</p>
+                  <p className="mt-1 text-sm text-gray-600">{resolvedJobLabel}</p>
+                </div>
+                <LeadStatusPill status={loadedCampaign?.status} />
               </div>
-            </div>
-          ) : readOnly ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <TextField label={t('sourcing.campaign.job')} value={resolvedJobLabel} onChange={() => {}} disabled />
-              <TextField label={t('sourcing.campaign.name')} value={form.name} onChange={() => {}} disabled />
-              <SelectField label={t('sourcing.campaign.platform')} value={form.platform} onChange={() => {}} options={platformOptions} disabled />
-              <TextField label={t('sourcing.campaign.dailyBudget')} type="number" value={form.dailyBudget} onChange={() => {}} disabled />
-              <TextField label={t('sourcing.campaign.totalBudget')} type="number" value={form.totalBudget} onChange={() => {}} disabled />
-              <TextField label={t('sourcing.campaign.currency')} value={form.currency} onChange={() => {}} disabled />
-              <TextField label={t('sourcing.campaign.startDate')} type="date" value={form.startDate} onChange={() => {}} disabled />
-              <TextField label={t('sourcing.campaign.endDate')} type="date" value={form.endDate} onChange={() => {}} disabled />
-              <div className="md:col-span-2">
-                <TextField label={t('sourcing.campaign.landingPageUrl')} type="url" value={form.landingPageUrl} onChange={() => {}} disabled />
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
+                    {t('sourcing.campaign.platform')}
+                  </p>
+                  {platformCode ? (
+                    <div className="flex items-center gap-2" title={platformLabel}>
+                      <SourceTypeBrandLogo sourceTypeCode={platformCode} displayName={platformLabel} size="sm" />
+                      <span className="text-sm text-gray-800">{platformLabel}</span>
+                    </div>
+                  ) : (
+                    <span className="text-sm text-gray-600">{empty}</span>
+                  )}
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
+                    {t('sourcing.campaign.dailyBudget')}
+                  </p>
+                  <p className="text-sm text-gray-800 tabular-nums">
+                    {form.dailyBudget
+                      ? `${form.currency || 'USD'} $${Number(form.dailyBudget).toFixed(2)}`
+                      : empty}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
+                    {t('sourcing.campaign.totalBudget')}
+                  </p>
+                  <p className="text-sm text-gray-800 tabular-nums">
+                    {form.totalBudget
+                      ? `${form.currency || 'USD'} $${Number(form.totalBudget).toFixed(2)}`
+                      : empty}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
+                    {t('sourcing.campaign.currency')}
+                  </p>
+                  <p className="text-sm text-gray-800">{form.currency || empty}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
+                    {t('sourcing.campaign.startDate')}
+                  </p>
+                  <p className="text-sm text-gray-800">
+                    {form.startDate || formatCampaignDateTime(loadedCampaign?.startDate, i18n.language) || empty}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
+                    {t('sourcing.campaign.endDate')}
+                  </p>
+                  <p className="text-sm text-gray-800">
+                    {form.endDate || formatCampaignDateTime(loadedCampaign?.endDate, i18n.language) || empty}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
+                    {t('sourcing.campaign.createdAt')}
+                  </p>
+                  <p className="text-sm text-gray-800">
+                    {formatCampaignDateTime(loadedCampaign?.createdAt, i18n.language) || empty}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
+                    {t('sourcing.campaign.updatedAt')}
+                  </p>
+                  <p className="text-sm text-gray-800">
+                    {formatCampaignDateTime(loadedCampaign?.updatedAt, i18n.language) || empty}
+                  </p>
+                </div>
               </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">{t('sourcing.campaign.trackingCode')}</label>
-                <textarea
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 font-mono text-sm"
-                  rows={3}
-                  value={form.trackingCode}
-                  readOnly
-                />
-              </div>
+
+              {showWhatsappDestination ? (
+                whatsappLinkBlock(readOnlyLandingUrl)
+              ) : readOnlyLandingUrl ? (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {t('sourcing.campaign.destinationLink')}
+                  </label>
+                  <input
+                    readOnly
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-50 font-mono text-xs text-gray-800 break-all"
+                    value={readOnlyLandingUrl}
+                  />
+                </div>
+              ) : null}
+
+              {loadedCampaign?.externalCampaignId || loadedCampaign?.externalAdAccountId ? (
+                <div className="rounded-xl border border-gray-200 bg-gray-50/80 p-4 space-y-3">
+                  <p className="text-sm font-medium text-gray-800">{t('sourcing.campaign.metaIntegration')}</p>
+                  {loadedCampaign.externalCampaignId ? (
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">{t('sourcing.campaign.externalCampaignId')}</p>
+                      <p className="text-sm font-mono text-gray-800 break-all">{loadedCampaign.externalCampaignId}</p>
+                    </div>
+                  ) : null}
+                  {loadedCampaign.externalAdAccountId ? (
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">{t('sourcing.campaign.externalAdAccountId')}</p>
+                      <p className="text-sm font-mono text-gray-800 break-all">{loadedCampaign.externalAdAccountId}</p>
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+
+              {form.trackingCode ? (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{t('sourcing.campaign.trackingCode')}</label>
+                  <textarea
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 font-mono text-sm"
+                    rows={3}
+                    value={form.trackingCode}
+                    readOnly
+                  />
+                </div>
+              ) : null}
             </div>
           ) : isWhatsapp ? (
             <div className="space-y-4">

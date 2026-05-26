@@ -243,20 +243,22 @@ export default function SourcingPage() {
         }}
       />
 
-      <Suspense fallback={null}>
-        <MetaCampaignBuilderModal
-          isOpen={metaCampaignModalOpen}
-          onClose={() => setMetaCampaignModalOpen(false)}
-          jobs={jobsLoading ? [] : jobs}
-          jobsLoading={jobsLoading}
-          onSuccess={() => {
-            bumpRefresh();
-            loadDashboard();
-            setToastSuccess(t('sourcing.toast.campaignCreated'));
-            setTab('campaigns');
-          }}
-        />
-      </Suspense>
+      {metaCampaignModalOpen ? (
+        <Suspense fallback={null}>
+          <MetaCampaignBuilderModal
+            isOpen={metaCampaignModalOpen}
+            onClose={() => setMetaCampaignModalOpen(false)}
+            jobs={jobsLoading ? [] : jobs}
+            jobsLoading={jobsLoading}
+            onSuccess={() => {
+              bumpRefresh();
+              loadDashboard();
+              setToastSuccess(t('sourcing.toast.campaignCreated'));
+              setTab('campaigns');
+            }}
+          />
+        </Suspense>
+      ) : null}
 
       <LeadDetailDrawer
         isOpen={drawerOpen}

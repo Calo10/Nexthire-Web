@@ -7,16 +7,19 @@ interface Props {
 
 export default function CampaignCreationResult({ result }: Props) {
   const { t } = useTranslation();
-  const { campaignId, adSetId, creativeId, adId, adAccountId } = result;
-
-  const manageUrl = adAccountId
-    ? `https://adsmanager.facebook.com/adsmanager/manage/ads?act=${encodeURIComponent(adAccountId)}`
-    : '';
+  const { localRecordId, campaignId, adSetId, creativeId, adId, adsManagerUrl } = result;
+  const manageUrl = adsManagerUrl?.trim() || '';
 
   return (
     <div className="rounded-xl border border-emerald-200 bg-emerald-50/60 p-6 space-y-4">
       <h3 className="text-lg font-semibold text-emerald-900">{t('metaCampaign.result.title')}</h3>
       <ul className="space-y-2 text-sm">
+        {localRecordId ? (
+          <li>
+            <span className="text-gray-600">{t('metaCampaign.result.localRecordId')}</span>{' '}
+            <code className="font-mono text-xs bg-white/80 px-1 rounded break-all">{localRecordId}</code>
+          </li>
+        ) : null}
         <li>
           <span className="text-gray-600">{t('metaCampaign.result.campaignId')}</span>{' '}
           <code className="font-mono text-xs bg-white/80 px-1 rounded">{campaignId || '—'}</code>
