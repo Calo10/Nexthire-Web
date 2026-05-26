@@ -7,7 +7,6 @@ import Button from '../Button';
 import ErrorMessage from '../ErrorMessage';
 import SuccessMessage from '../SuccessMessage';
 import { publicJobsApi } from '../../api/publicJobsApi';
-import type { ApplyJobRequest } from '../../types/publicJobs';
 import { useApplyJob } from '../../hooks/public/useApplyJob';
 import { FALLBACK_PUBLIC_APPLY_SOURCE_TYPES } from '../../lib/publicApplySourceTypes';
 import { getCountryCallingCodeOptions, onlyDigits, toE164Phone } from '../../lib/phone';
@@ -101,13 +100,19 @@ export default function ApplyJobModal({
   const experienceOptions = useMemo(() => experienceYearsOptions(t), [t]);
   const languageLevelOptions = useMemo(() => cefrLevelOptions(t), [t]);
 
-  const [form, setForm] = useState<
-    Omit<ApplyJobRequest, 'phone' | 'resume'> & {
-      phoneCountryCode: string;
-      phoneNationalNumber: string;
-      resume: File | null;
-    }
-  >({
+  const [form, setForm] = useState<{
+    firstName: string;
+    lastName: string;
+    email: string;
+    phoneCountryCode: string;
+    phoneNationalNumber: string;
+    availability: string;
+    experienceYears: string;
+    englishLevel: string;
+    spanishLevel: string;
+    source: string;
+    resume: File | null;
+  }>({
     firstName: '',
     lastName: '',
     email: '',
@@ -168,7 +173,7 @@ export default function ApplyJobModal({
         phone: phoneE164 || null,
         source: form.source?.trim() || null,
         availability: form.availability?.trim() || null,
-        experienceYears: form.experienceYears?.trim() || null,
+        experienceYears: form.experienceYears.trim() || null,
         englishLevel: form.englishLevel?.trim() || null,
         spanishLevel: form.spanishLevel?.trim() || null,
         resume: form.resume,
@@ -251,26 +256,26 @@ export default function ApplyJobModal({
           </div>
           <SelectField
             label={t('publicJobs.apply.fields.availability')}
-            value={form.availability}
+            value={form.availability ?? ''}
             onChange={(e) => setForm({ ...form, availability: e.target.value })}
             options={availOptions}
           />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <SelectField
               label={t('publicJobs.apply.fields.experienceYears')}
-              value={form.experienceYears}
+              value={form.experienceYears ?? ''}
               onChange={(e) => setForm({ ...form, experienceYears: e.target.value })}
               options={experienceOptions}
             />
             <SelectField
               label={t('publicJobs.apply.fields.englishLevel')}
-              value={form.englishLevel}
+              value={form.englishLevel ?? ''}
               onChange={(e) => setForm({ ...form, englishLevel: e.target.value })}
               options={languageLevelOptions}
             />
             <SelectField
               label={t('publicJobs.apply.fields.spanishLevel')}
-              value={form.spanishLevel}
+              value={form.spanishLevel ?? ''}
               onChange={(e) => setForm({ ...form, spanishLevel: e.target.value })}
               options={languageLevelOptions}
             />
