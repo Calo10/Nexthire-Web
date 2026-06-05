@@ -7,9 +7,11 @@ function normalizeRole(raw: Record<string, unknown> | null | undefined): Role | 
   const id = String(raw.id ?? raw.roleId ?? '');
   const name = String(raw.name ?? raw.title ?? '').trim();
   if (!id || !name) return null;
+  const code = raw.code != null ? String(raw.code).trim() : undefined;
   return {
     id,
     name,
+    code: code || undefined,
     description: raw.description != null ? String(raw.description) : null,
   };
 }

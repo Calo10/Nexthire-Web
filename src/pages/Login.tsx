@@ -55,7 +55,7 @@ export default function Login() {
         
         // Navigate based on requiresOrgSetup
         if (result.requiresOrgSetup) {
-          navigate('/onboarding/organization', { replace: true });
+          navigate('/onboarding/company', { replace: true });
         } else {
           navigate('/app/dashboard', { replace: true });
         }
@@ -262,9 +262,9 @@ export default function Login() {
           
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
-              Don't have an account?{' '}
-              <Link to="/login" className="text-primary hover:text-purple-700 font-medium">
-                Sign up
+              {t('login.noAccount')}{' '}
+              <Link to="/register" className="text-primary hover:text-purple-700 font-medium">
+                {t('register.signUpLink')}
               </Link>
             </p>
           </div>

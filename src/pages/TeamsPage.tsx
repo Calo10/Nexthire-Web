@@ -9,12 +9,16 @@ import ErrorMessage from '../components/ErrorMessage';
 import TeamFormModal from '../components/teams/TeamFormModal';
 import TeamsTable from '../components/teams/TeamsTable';
 import TeamMembersPanel from '../components/teams/TeamMembersPanel';
+import OrgUsersPanel from '../components/teams/OrgUsersPanel';
 import UserRolesPanel from '../components/teams/UserRolesPanel';
-import AddMemberModal from '../components/teams/AddMemberModal';
+import CreateOrgUserModal from '../components/teams/CreateOrgUserModal';
+import AddTeamMemberModal from '../components/teams/AddTeamMemberModal';
 import { useAuth } from '../contexts/AuthContext';
 import { useTeams } from '../hooks/useTeams';
 import { useTeamMembers } from '../hooks/useTeamMembers';
+import { useOrgUsers } from '../hooks/useOrgUsers';
 import { useRoles } from '../hooks/useRoles';
+import { orgUserDisplayName } from '../types/orgUsers';
 import { useUserRoles } from '../hooks/useUserRoles';
 import { teamsApi } from '../api/teamsApi';
 import { rolesApi } from '../api/rolesApi';
@@ -31,11 +35,18 @@ export default function TeamsPage() {
   const [selectedMemberUserId, setSelectedMemberUserId] = useState<string | null>(null);
 
   const {
-    data: members,
-    isLoading: membersLoading,
-    error: membersError,
-    refetch: refetchMembers,
+    data: teamMembers,
+    isLoading: teamMembersLoading,
+    error: teamMembersError,
+    refetch: refetchTeamMembers,
   } = useTeamMembers(selectedTeamId, shouldFetch);
+
+  const {
+    data: orgUsers,
+    isLoading: orgUsersLoading,
+    error: orgUsersError,
+    refetch: refetchOrgUsers,
+  } = useOrgUsers(shouldFetch);
 
   const { data: rolesCatalog, isLoading: rolesLoading, error: rolesError } = useRoles(shouldFetch);
 
@@ -54,21 +65,37 @@ export default function TeamsPage() {
   const teamsForTable = useMemo(
     () =>
       teams.map((team) =>
-        team.id === selectedTeamId ? { ...team, memberCount: members.length } : team
+        team.id === selectedTeamId ? { ...team, memberCount: teamMembers.length } : team
       ),
-    [teams, selectedTeamId, members]
+    [teams, selectedTeamId, teamMembers]
   );
 
-  const selectedMember = useMemo(
-    () => (selectedMemberUserId ? members.find((m) => m.userId === selectedMemberUserId) ?? null : null),
-    [members, selectedMemberUserId]
+  const selectedOrgUser = useMemo(
+    () => (selectedMemberUserId ? orgUsers.find((u) => u.id === selectedMemberUserId) ?? null : null),
+    [orgUsers, selectedMemberUserId]
   );
+
+  const selectedTeamMember = useMemo(
+    () => (selectedMemberUserId ? teamMembers.find((m) => m.userId === selectedMemberUserId) ?? null : null),
+    [teamMembers, selectedMemberUserId]
+  );
+
+  const selectedUserLabel = useMemo(() => {
+    if (selectedOrgUser) {
+      return `${orgUserDisplayName(selectedOrgUser)}${selectedOrgUser.email ? ` · ${selectedOrgUser.email}` : ''}`;
+    }
+    if (selectedTeamMember) {
+      return `${selectedTeamMember.displayName}${selectedTeamMember.email ? ` · ${selectedTeamMember.email}` : ''}`;
+    }
+    return null;
+  }, [selectedOrgUser, selectedTeamMember]);
 
   const [formOpen, setFormOpen] = useState(false);
   const [formMode, setFormMode] = useState<'create' | 'edit'>('create');
   const [formTeam, setFormTeam] = useState<Team | null>(null);
 
-  const [addMemberOpen, setAddMemberOpen] = useState(false);
+  const [inviteUserOpen, setInviteUserOpen] = useState(false);
+  const [addToTeamOpen, setAddToTeamOpen] = useState(false);
   const [deleteTeamOpen, setDeleteTeamOpen] = useState(false);
   const [teamToDelete, setTeamToDelete] = useState<Team | null>(null);
   const [removeMemberOpen, setRemoveMemberOpen] = useState(false);
@@ -99,12 +126,12 @@ export default function TeamsPage() {
 
   useEffect(() => {
     if (!selectedMemberUserId) return;
-    if (!membersLoading && members.every((m) => m.userId !== selectedMemberUserId)) {
+    const inOrg = orgUsers.some((u) => u.id === selectedMemberUserId);
+    const inTeam = selectedTeamId ? teamMembers.some((m) => m.userId === selectedMemberUserId) : false;
+    if (!orgUsersLoading && !teamMembersLoading && !inOrg && !inTeam) {
       setSelectedMemberUserId(null);
     }
-  }, [members, membersLoading, selectedMemberUserId]);
-
-  const existingMemberIds = useMemo(() => new Set(members.map((m) => m.userId)), [members]);
+  }, [orgUsers, teamMembers, orgUsersLoading, teamMembersLoading, selectedMemberUserId, selectedTeamId]);
 
   const handleView = (team: Team) => {
     setSelectedTeamId(team.id);
@@ -143,6 +170,7 @@ export default function TeamsPage() {
         });
         refetchTeams();
       }
+      setFormOpen(false);
     } catch (e) {
       if ((e as { status?: number }).status === 401) {
         logout();
@@ -180,13 +208,20 @@ export default function TeamsPage() {
     }
   };
 
-  const handleAddMember = async (userId: string) => {
+  const assignUserToTeam = async (userId: string) => {
     if (!selectedTeamId) return;
+    await teamsApi.addTeamMember(selectedTeamId, { userId, isTeamLead: false });
+    refetchTeamMembers();
+    refetchTeams();
+  };
+
+  const handleOrgUserCreated = async (userId: string) => {
     setPageError(null);
+    refetchOrgUsers();
+    setSelectedMemberUserId(userId);
+    if (!selectedTeamId) return;
     try {
-      await teamsApi.addTeamMember(selectedTeamId, { userId, isTeamLead: false });
-      refetchMembers();
-      refetchTeams();
+      await assignUserToTeam(userId);
     } catch (e) {
       if ((e as { status?: number }).status === 401) {
         logout();
@@ -194,7 +229,15 @@ export default function TeamsPage() {
         return;
       }
       setPageError((e as { message?: string }).message || t('teams.errors.member'));
+      throw e;
     }
+  };
+
+  const handleTeamMemberAdded = async (userId: string) => {
+    setPageError(null);
+    refetchTeamMembers();
+    refetchTeams();
+    setSelectedMemberUserId(userId);
   };
 
   const requestRemoveMember = (userId: string) => {
@@ -210,7 +253,7 @@ export default function TeamsPage() {
       if (selectedMemberUserId === memberToRemove) setSelectedMemberUserId(null);
       setRemoveMemberOpen(false);
       setMemberToRemove(null);
-      refetchMembers();
+      refetchTeamMembers();
       refetchTeams();
     } catch (e) {
       if ((e as { status?: number }).status === 401) {
@@ -228,7 +271,7 @@ export default function TeamsPage() {
     setPageError(null);
     try {
       await teamsApi.setTeamMemberLead(selectedTeamId, userId, next);
-      refetchMembers();
+      refetchTeamMembers();
     } catch (e) {
       if ((e as { status?: number }).status === 401) {
         logout();
@@ -248,6 +291,7 @@ export default function TeamsPage() {
     try {
       await rolesApi.assignUserRole(selectedMemberUserId, { roleId });
       refetchUserRoles();
+      refetchOrgUsers();
     } catch (e) {
       if ((e as { status?: number }).status === 401) {
         logout();
@@ -273,6 +317,7 @@ export default function TeamsPage() {
       setRemoveRoleOpen(false);
       setRoleToRemove(null);
       refetchUserRoles();
+      refetchOrgUsers();
     } catch (e) {
       if ((e as { status?: number }).status === 401) {
         logout();
@@ -283,7 +328,12 @@ export default function TeamsPage() {
     }
   };
 
-  const membersErrorMsg = membersError ? (membersError as { message?: string }).message || t('teams.errors.loadMembers') : null;
+  const teamMembersErrorMsg = teamMembersError
+    ? (teamMembersError as { message?: string }).message || t('teams.errors.loadMembers')
+    : null;
+  const orgUsersErrorMsg = orgUsersError
+    ? (orgUsersError as { message?: string }).message || t('teams.errors.loadOrgUsers')
+    : null;
   const rolesErrMsg = rolesError ? (rolesError as { message?: string }).message || t('teams.errors.loadRoles') : null;
   const userRolesErrMsg = userRolesError
     ? (userRolesError as { message?: string }).message || t('teams.errors.loadUserRoles')
@@ -299,14 +349,24 @@ export default function TeamsPage() {
             <h1 className="text-3xl font-bold text-dark-text">{t('teams.title')}</h1>
             <p className="text-sm text-gray-600 mt-1">{t('teams.subtitle')}</p>
           </div>
-          <Button variant="primary" size="md" onClick={handleNewTeam}>
-            <span className="flex items-center gap-2">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              {t('teams.newTeam')}
-            </span>
-          </Button>
+          <div className="flex flex-wrap gap-3">
+            <Button variant="outline" size="md" onClick={() => setInviteUserOpen(true)}>
+              <span className="flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                </svg>
+                {t('teams.inviteUser.button')}
+              </span>
+            </Button>
+            <Button variant="primary" size="md" onClick={handleNewTeam}>
+              <span className="flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                {t('teams.newTeam')}
+              </span>
+            </Button>
+          </div>
         </div>
 
         {teamsError ? (
@@ -332,24 +392,35 @@ export default function TeamsPage() {
           />
         </Card>
 
+        {selectedTeam ? (
+          <div className="mt-6">
+            <TeamMembersPanel
+              teamName={selectedTeam.name}
+              members={teamMembers}
+              isLoading={teamMembersLoading}
+              error={teamMembersErrorMsg}
+              selectedUserId={selectedMemberUserId}
+              onSelectMember={setSelectedMemberUserId}
+              onAddToTeam={() => setAddToTeamOpen(true)}
+              onRemoveMember={requestRemoveMember}
+              onToggleLead={handleToggleLead}
+              busyUserId={memberBusyUserId}
+            />
+          </div>
+        ) : null}
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-          <TeamMembersPanel
-            teamName={selectedTeam?.name ?? null}
-            members={members}
-            isLoading={!!selectedTeamId && membersLoading}
-            error={selectedTeamId ? membersErrorMsg : null}
+          <OrgUsersPanel
+            users={orgUsers}
+            isLoading={orgUsersLoading}
+            error={orgUsersErrorMsg}
             selectedUserId={selectedMemberUserId}
-            onSelectMember={setSelectedMemberUserId}
-            onAddMember={() => setAddMemberOpen(true)}
-            onRemoveMember={requestRemoveMember}
-            onToggleLead={handleToggleLead}
-            busyUserId={memberBusyUserId}
+            onSelectUser={setSelectedMemberUserId}
+            onInviteUser={() => setInviteUserOpen(true)}
           />
 
           <UserRolesPanel
-            selectedUserLabel={
-              selectedMember ? `${selectedMember.displayName}${selectedMember.email ? ` · ${selectedMember.email}` : ''}` : null
-            }
+            selectedUserLabel={selectedUserLabel}
             rolesCatalog={rolesCatalog}
             assigned={userRoles}
             catalogLoading={rolesLoading}
@@ -370,12 +441,27 @@ export default function TeamsPage() {
         onSubmit={handleFormSubmit}
       />
 
-      <AddMemberModal
-        isOpen={addMemberOpen}
-        existingUserIds={existingMemberIds}
-        onClose={() => setAddMemberOpen(false)}
-        onAdd={handleAddMember}
+      <CreateOrgUserModal
+        isOpen={inviteUserOpen}
+        onClose={() => setInviteUserOpen(false)}
+        roles={rolesCatalog}
+        rolesLoading={rolesLoading}
+        teamName={selectedTeam?.name ?? null}
+        onCreated={handleOrgUserCreated}
       />
+
+      {selectedTeam ? (
+        <AddTeamMemberModal
+          isOpen={addToTeamOpen}
+          onClose={() => setAddToTeamOpen(false)}
+          teamId={selectedTeam.id}
+          teamName={selectedTeam.name}
+          orgUsers={orgUsers}
+          orgUsersLoading={orgUsersLoading}
+          existingMemberIds={teamMembers.map((m) => m.userId)}
+          onAdded={handleTeamMemberAdded}
+        />
+      ) : null}
 
       <Modal
         isOpen={deleteTeamOpen}

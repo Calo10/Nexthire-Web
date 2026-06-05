@@ -78,6 +78,22 @@ export default function PipelineBoard({
 
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Mouse wheel scrolls horizontally when columns overflow (trackpad already works natively).
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const onWheel = (e: WheelEvent) => {
+      if (el.scrollWidth <= el.clientWidth + 1) return;
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+      e.preventDefault();
+      el.scrollLeft += e.deltaY;
+    };
+
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => el.removeEventListener('wheel', onWheel);
+  }, [columns.length]);
+
   const activeCard = useMemo(() => {
     if (!activeId) return null;
     for (const col of columns) {
@@ -131,7 +147,7 @@ export default function PipelineBoard({
       >
         <div
           ref={containerRef}
-          className="flex gap-6 overflow-x-auto overflow-y-hidden px-6 pb-6 mt-[25px] h-full scrollbar-hide"
+          className="flex gap-6 overflow-x-auto overflow-y-hidden px-6 pb-4 mt-[25px] h-full min-h-0 scrollbar-subtle scrollbar-subtle-x"
         >
           {columns.map((col) => (
             <ColumnShell key={col.stageId} stageId={col.stageId} title={col.stageName} count={col.items.length}>

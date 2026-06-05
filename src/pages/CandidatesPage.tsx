@@ -14,6 +14,8 @@ import { candidateSourceSelectOptions } from '../lib/candidateSources';
 import { useCandidatesList } from '../hooks/useCandidatesList';
 import type { Candidate } from '../types/candidates';
 
+const FILTER_CONTROL_CLASS = 'h-12 min-h-12 max-h-12 box-border py-2.5 text-sm min-w-0 w-full';
+
 export default function CandidatesPage() {
   const { t } = useTranslation();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
@@ -119,25 +121,28 @@ export default function CandidatesPage() {
           </div>
         </div>
 
-        {/* Filters Row */}
-        <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Filters Row — equal-width columns (date inputs have a large default min-width) */}
+        <div className="mb-6 grid w-full grid-cols-1 sm:grid-cols-[repeat(3,minmax(0,1fr))] gap-4 items-end">
           <SelectField
             label={t('candidates.filters.source')}
             value={source}
             onChange={(e) => setSource(e.target.value)}
             options={sourceOptions}
+            className={FILTER_CONTROL_CLASS}
           />
           <TextField
             label={t('candidates.filters.from')}
             type="date"
             value={from}
             onChange={(e) => setFrom(e.target.value)}
+            className={FILTER_CONTROL_CLASS}
           />
           <TextField
             label={t('candidates.filters.to')}
             type="date"
             value={to}
             onChange={(e) => setTo(e.target.value)}
+            className={FILTER_CONTROL_CLASS}
           />
         </div>
 

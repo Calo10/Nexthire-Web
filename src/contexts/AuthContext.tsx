@@ -1,5 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { authApi, setUnauthorizedHandler, setLastLoginTime } from '../lib/api';
+import { getAuthCallbackUrl, normalizeOrganization, type StoredOrganization } from '../lib/authSession';
+import { dedupeMagicLinkConsume } from '../lib/magicLinkToken';
 
 interface User {
   id: string;
@@ -7,10 +9,7 @@ interface User {
   name?: string;
 }
 
-interface Org {
-  id: string;
-  name: string;
-}
+type Org = StoredOrganization;
 
 interface Subscription {
   planKey: string;
@@ -25,9 +24,87 @@ interface AuthContextType {
   token: string | null;
   isLoading: boolean;
   loginWithMagicLink: (email: string) => Promise<void>;
+  requestMagicLink: (
+    email: string,
+    options?: { forSignup?: boolean }
+  ) => Promise<{ devToken?: string }>;
   loginWithPassword: (email: string, password: string) => Promise<{ requiresOrgSetup: boolean }>;
   completeMagicLink: (token: string) => Promise<{ requiresOrgSetup: boolean }>;
+  refreshSessionFromStorage: () => void;
   logout: () => void;
+}
+
+function persistAuthResponse(response: {
+  accessToken: string;
+  nexa?: { accessToken?: string; refreshToken?: string; expiresAt?: string };
+  requiresOrgSetup: boolean;
+  user: { id?: string; userId?: string; email: string; name?: string; fullName?: string };
+  organization?: unknown;
+  features?: Record<string, unknown> | null;
+}): { nextHireToken: string; requiresOrgSetup: boolean } {
+  const decodePayload = (jwt: string): Record<string, unknown> | null => {
+    try {
+      const parts = jwt.split('.');
+      if (parts.length !== 3) return null;
+      return JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+    } catch {
+      return null;
+    }
+  };
+
+  const isNextHireJwt = (jwt: string | undefined): boolean => {
+    if (!jwt) return false;
+    const payload = decodePayload(jwt);
+    if (!payload) return false;
+    return payload.iss === 'nexthire-api' || payload.aud === 'nexthire-web' || payload.org_id !== undefined;
+  };
+
+  const candidateTokenA = response.accessToken;
+  const candidateTokenB = response.nexa?.accessToken;
+  const nextHireToken = isNextHireJwt(candidateTokenA)
+    ? candidateTokenA
+    : isNextHireJwt(candidateTokenB)
+      ? (candidateTokenB as string)
+      : candidateTokenA;
+  const nexaTokenToStore =
+    nextHireToken === candidateTokenA ? response.nexa?.accessToken : candidateTokenA;
+
+  localStorage.setItem('nhAccessToken', nextHireToken);
+  if (response.nexa || nexaTokenToStore) {
+    if (nexaTokenToStore) localStorage.setItem('nexaAccessToken', nexaTokenToStore);
+    if (response.nexa?.refreshToken) localStorage.setItem('nexaRefreshToken', response.nexa.refreshToken);
+    if (response.nexa?.expiresAt) localStorage.setItem('nexaExpiresAt', response.nexa.expiresAt);
+  }
+
+  const user = response.user;
+  const userId = user.userId ?? user.id ?? '';
+  localStorage.setItem(
+    'nh_user',
+    JSON.stringify({
+      id: String(userId),
+      email: user.email,
+      name: user.name ?? user.fullName,
+    })
+  );
+
+  const org = normalizeOrganization(response.organization);
+  if (org) {
+    localStorage.setItem('nh_org', JSON.stringify(org));
+  } else {
+    localStorage.removeItem('nh_org');
+  }
+
+  if (response.features) {
+    localStorage.setItem('nh_features', JSON.stringify(response.features));
+  }
+
+  if (response.requiresOrgSetup) {
+    localStorage.setItem('requires_org_setup', 'true');
+  } else {
+    localStorage.removeItem('requires_org_setup');
+  }
+
+  return { nextHireToken, requiresOrgSetup: response.requiresOrgSetup };
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -125,224 +202,74 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const loginWithMagicLink = async (email: string): Promise<void> => {
-    await authApi.requestMagicLink(email);
-    // Success is handled by showing the success message in the UI
+    await authApi.requestMagicLink(email, { callbackUrl: getAuthCallbackUrl() });
   };
+
+  const requestMagicLink = async (
+    email: string,
+    options?: { forSignup?: boolean }
+  ): Promise<{ devToken?: string }> => {
+    const res = await authApi.requestMagicLink(email, { callbackUrl: getAuthCallbackUrl() });
+    const devToken =
+      import.meta.env.DEV && typeof res.token === 'string' && res.token.length > 0 ? res.token : undefined;
+    void options?.forSignup;
+    return { devToken };
+  };
+
+  const refreshSessionFromStorage = useCallback(() => {
+    const storedToken = localStorage.getItem('nhAccessToken');
+    const storedUser = localStorage.getItem('nh_user');
+    const storedOrg = localStorage.getItem('nh_org');
+    const storedSubscription = localStorage.getItem('nh_subscription');
+
+    if (storedToken && storedUser) {
+      setToken(storedToken);
+      setUser(JSON.parse(storedUser));
+      setOrg(storedOrg ? JSON.parse(storedOrg) : null);
+      setSubscription(storedSubscription ? JSON.parse(storedSubscription) : null);
+      setIsAuthenticated(true);
+    }
+  }, []);
 
   const loginWithPassword = async (email: string, password: string): Promise<{
     requiresOrgSetup: boolean;
   }> => {
     const response = await authApi.loginWithPassword(email, password);
-    
-    // Store NextHire access token FIRST - ensure it's saved before anything else
+
     if (!response.accessToken) {
       throw new Error('No access token received from server');
     }
 
-    // Pick the correct NextHire JWT (issued by nexthire-api) if backend ever returns tokens swapped.
-    const decodePayload = (jwt: string): any => {
-      try {
-        const parts = jwt.split('.');
-        if (parts.length !== 3) return null;
-        return JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
-      } catch {
-        return null;
-      }
-    };
-
-    const isNextHireJwt = (jwt: string | undefined): boolean => {
-      if (!jwt) return false;
-      const payload = decodePayload(jwt);
-      if (!payload) return false;
-      return payload.iss === 'nexthire-api' || payload.aud === 'nexthire-web' || payload.org_id !== undefined;
-    };
-
-    const candidateTokenA = response.accessToken;
-    const candidateTokenB = response.nexa?.accessToken;
-    const nextHireToken = isNextHireJwt(candidateTokenA)
-      ? candidateTokenA
-      : isNextHireJwt(candidateTokenB)
-      ? (candidateTokenB as string)
-      : candidateTokenA;
-    const nexaTokenToStore =
-      nextHireToken === candidateTokenA ? response.nexa?.accessToken : candidateTokenA;
-    
-    // TEMP Debug logging (dev only) - Remove before production
-    if (import.meta.env.DEV) {
-      const decoded = (() => {
-        try {
-          const parts = response.accessToken.split('.');
-          if (parts.length !== 3) return {};
-          const header = JSON.parse(atob(parts[0].replace(/-/g, '+').replace(/_/g, '/')));
-          const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
-          return { header, payload };
-        } catch (e) {
-          return {};
-        }
-      })();
-      
-      console.log('[AuthContext] loginWithPassword - Storing tokens', {
-        nextHireTokenLength: response.accessToken.length,
-        nextHireTokenFirst15: response.accessToken.substring(0, 15),
-        nextHireJWT: decoded.header ? {
-          alg: decoded.header.alg,
-          kid: decoded.header.kid,
-          iss: decoded.payload?.iss,
-          aud: decoded.payload?.aud,
-        } : null,
-        hasNexaToken: !!response.nexa?.accessToken,
-        nexaTokenLength: response.nexa?.accessToken?.length || 0,
-        storageKey: 'nhAccessToken',
-      });
-    }
-    
-    // Store NextHire access token (this is the JWT for NextHire API)
-    localStorage.setItem('nhAccessToken', nextHireToken);
+    const { nextHireToken, requiresOrgSetup } = persistAuthResponse(response);
     setToken(nextHireToken);
-
-    // Store Nexa tokens separately (for Nexa API calls, not NextHire)
-    if (response.nexa || nexaTokenToStore) {
-      if (nexaTokenToStore) localStorage.setItem('nexaAccessToken', nexaTokenToStore);
-      if (response.nexa?.refreshToken) localStorage.setItem('nexaRefreshToken', response.nexa.refreshToken);
-      if (response.nexa?.expiresAt) localStorage.setItem('nexaExpiresAt', response.nexa.expiresAt);
-    }
-
-    // Store user data
-    localStorage.setItem('nh_user', JSON.stringify(response.user));
-    setUser(response.user);
-
-    // Store organization data (if present)
-    if (response.organization) {
-      localStorage.setItem('nh_org', JSON.stringify(response.organization));
-      setOrg(response.organization);
-    }
-
-    // Store features if available
-    if (response.features) {
-      localStorage.setItem('nh_features', JSON.stringify(response.features));
-    }
-
-    // Store requiresOrgSetup flag
-    if (response.requiresOrgSetup) {
-      localStorage.setItem('requires_org_setup', 'true');
-    } else {
-      localStorage.removeItem('requires_org_setup');
-    }
-
-    // Set authenticated state LAST - this ensures token is in localStorage first
+    const storedUser = localStorage.getItem('nh_user');
+    const storedOrg = localStorage.getItem('nh_org');
+    if (storedUser) setUser(JSON.parse(storedUser));
+    if (storedOrg) setOrg(JSON.parse(storedOrg));
     setIsAuthenticated(true);
-    
-    // Mark login time to prevent immediate logout on 401 errors
     setLastLoginTime();
 
-    return {
-      requiresOrgSetup: response.requiresOrgSetup,
-    };
+    return { requiresOrgSetup };
   };
 
   const completeMagicLink = async (token: string): Promise<{
     requiresOrgSetup: boolean;
   }> => {
-    const response = await authApi.exchangeToken(token);
-    
-    // TEMP Debug logging (dev only) - Remove before production
-    if (import.meta.env.DEV) {
-      const decoded = (() => {
-        try {
-          const parts = response.accessToken.split('.');
-          if (parts.length !== 3) return {};
-          const header = JSON.parse(atob(parts[0].replace(/-/g, '+').replace(/_/g, '/')));
-          const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
-          return { header, payload };
-        } catch (e) {
-          return {};
-        }
-      })();
-      
-      console.log('[AuthContext] completeMagicLink - Storing tokens', {
-        nextHireTokenLength: response.accessToken.length,
-        nextHireTokenFirst15: response.accessToken.substring(0, 15),
-        nextHireJWT: decoded.header ? {
-          alg: decoded.header.alg,
-          kid: decoded.header.kid,
-          iss: decoded.payload?.iss,
-          aud: decoded.payload?.aud,
-        } : null,
-        hasNexaToken: !!response.nexa?.accessToken,
-        nexaTokenLength: response.nexa?.accessToken?.length || 0,
-        storageKey: 'nhAccessToken',
-      });
-    }
-    
-    // Pick the correct NextHire JWT (issued by nexthire-api) if backend ever returns tokens swapped.
-    const decodePayload = (jwt: string): any => {
-      try {
-        const parts = jwt.split('.');
-        if (parts.length !== 3) return null;
-        return JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
-      } catch {
-        return null;
+    return dedupeMagicLinkConsume(token, async (normalizedToken) => {
+      const response = await authApi.exchangeToken(normalizedToken);
+      if (!response?.accessToken) {
+        throw { message: 'Invalid sign-in response from server.', status: 502 };
       }
-    };
-
-    const isNextHireJwt = (jwt: string | undefined): boolean => {
-      if (!jwt) return false;
-      const payload = decodePayload(jwt);
-      if (!payload) return false;
-      return payload.iss === 'nexthire-api' || payload.aud === 'nexthire-web' || payload.org_id !== undefined;
-    };
-
-    const candidateTokenA = response.accessToken;
-    const candidateTokenB = response.nexa?.accessToken;
-    const nextHireToken = isNextHireJwt(candidateTokenA)
-      ? candidateTokenA
-      : isNextHireJwt(candidateTokenB)
-      ? (candidateTokenB as string)
-      : candidateTokenA;
-    const nexaTokenToStore =
-      nextHireToken === candidateTokenA ? response.nexa?.accessToken : candidateTokenA;
-
-    // Store NextHire access token (this is the JWT for NextHire API)
-    localStorage.setItem('nhAccessToken', nextHireToken);
-    setToken(nextHireToken);
-
-    // Store Nexa tokens separately (for Nexa API calls, not NextHire)
-    if (response.nexa || nexaTokenToStore) {
-      if (nexaTokenToStore) localStorage.setItem('nexaAccessToken', nexaTokenToStore);
-      if (response.nexa?.refreshToken) localStorage.setItem('nexaRefreshToken', response.nexa.refreshToken);
-      if (response.nexa?.expiresAt) localStorage.setItem('nexaExpiresAt', response.nexa.expiresAt);
-    }
-
-    // Store user data
-    localStorage.setItem('nh_user', JSON.stringify(response.user));
-    setUser(response.user);
-
-    // Store organization data (if present)
-    if (response.organization) {
-      localStorage.setItem('nh_org', JSON.stringify(response.organization));
-      setOrg(response.organization);
-    }
-
-    // Store features if available
-    if (response.features) {
-      localStorage.setItem('nh_features', JSON.stringify(response.features));
-    }
-
-    // Store requiresOrgSetup flag
-    if (response.requiresOrgSetup) {
-      localStorage.setItem('requires_org_setup', 'true');
-    } else {
-      localStorage.removeItem('requires_org_setup');
-    }
-
-    setIsAuthenticated(true);
-    
-    // Mark login time to prevent immediate logout on 401 errors
-    setLastLoginTime();
-
-    return {
-      requiresOrgSetup: response.requiresOrgSetup,
-    };
+      const { nextHireToken, requiresOrgSetup } = persistAuthResponse(response);
+      setToken(nextHireToken);
+      const storedUser = localStorage.getItem('nh_user');
+      const storedOrg = localStorage.getItem('nh_org');
+      if (storedUser) setUser(JSON.parse(storedUser));
+      if (storedOrg) setOrg(JSON.parse(storedOrg));
+      setIsAuthenticated(true);
+      setLastLoginTime();
+      return { requiresOrgSetup };
+    });
   };
 
   return (
@@ -355,8 +282,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         token,
         isLoading,
         loginWithMagicLink,
+        requestMagicLink,
         loginWithPassword,
         completeMagicLink,
+        refreshSessionFromStorage,
         logout,
       }}
     >

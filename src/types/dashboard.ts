@@ -34,6 +34,8 @@ export interface ActivityTrend {
   candidates: number;
 }
 
+export type JobLanguage = 'es' | 'en';
+
 export interface Job {
   id: string | number;
   title: string;
@@ -44,6 +46,7 @@ export interface Job {
   // Backend may evolve; keep flexible while UI normalizes values.
   status: string;
   department?: string;
+  language?: JobLanguage | string;
   applicantsCount?: number;
   applicationsCount?: number;
   createdAt: string;

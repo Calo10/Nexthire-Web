@@ -22,6 +22,7 @@ export type SourcingLead = {
   hasTransportation?: boolean | null;
   fitScore?: number | null;
   qualificationNotes?: string | null;
+  dynamicAnswersJson?: string | null;
   status?: string | null;
   jobId?: string | number | null;
   jobTitle?: string | null;
