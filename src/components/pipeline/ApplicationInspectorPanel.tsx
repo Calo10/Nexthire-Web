@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Button from '../Button';
 import type { ApplicationNote, ApplicationStageHistoryItem, KanbanApplicationCard, KanbanStage } from '../../types/applications';
@@ -525,64 +525,88 @@ export default function ApplicationInspectorPanel(props: ApplicationInspectorPan
     };
   }, [application?.id, collapsed, isOpen, historyRefreshKey, onUnauthorized, t, tab]);
 
-  useEffect(() => {
-    if (!isOpen || collapsed) return;
-    if (panelTab !== 'whatsapp') return;
-    const candidateId = String(application?.candidateId || '').trim();
-    const tid = String(tenantId || '').trim();
-    if (!candidateId) {
-      setWaConversation(null);
-      setWaMessages([]);
-      setWaLoading(false);
-      setWaError(null);
-      return;
-    }
-    if (!tid) {
-      setWaConversation(null);
-      setWaMessages([]);
-      setWaLoading(false);
-      setWaError(t('pipeline.inspector.whatsapp.missingTenant'));
-      return;
-    }
+  const loadWhatsappConversation = useCallback(
+    async (opts?: { silent?: boolean }) => {
+      const silent = opts?.silent === true;
+      const candidateId = String(application?.candidateId || '').trim();
+      const tid = String(tenantId || '').trim();
 
-    let cancelled = false;
-    const run = async () => {
-      setWaLoading(true);
-      setWaError(null);
+      if (!candidateId) {
+        if (!silent) {
+          setWaConversation(null);
+          setWaMessages([]);
+          setWaLoading(false);
+          setWaError(null);
+        }
+        return;
+      }
+      if (!tid) {
+        if (!silent) {
+          setWaConversation(null);
+          setWaMessages([]);
+          setWaLoading(false);
+          setWaError(t('pipeline.inspector.whatsapp.missingTenant'));
+        }
+        return;
+      }
+
+      if (!silent) {
+        setWaLoading(true);
+        setWaError(null);
+      }
+
       try {
         const data = await whatsappApi.getConversationByCandidate(tid, candidateId);
-        if (cancelled) return;
         setWaConversation(data.conversation);
         const sorted = [...(data.messages || [])].sort(
           (a, b) => new Date(a.createdAtUtc).getTime() - new Date(b.createdAtUtc).getTime()
         );
-        // Avoid wiping the thread when a overlapping fetch returns [] (race / eventual consistency).
         setWaMessages((prev) => {
           if (sorted.length === 0 && prev.length > 0) return prev;
           return sorted;
         });
       } catch (e) {
-        if (cancelled) return;
         if (isUnauthorized(e)) {
           onUnauthorized?.();
           return;
         }
-        const msg =
-          e && typeof e === 'object' && 'message' in e ? String((e as any).message) : t('pipeline.inspector.whatsapp.loadError');
-        setWaError(msg);
-        setWaConversation(null);
-        setWaMessages([]);
+        if (!silent) {
+          const msg =
+            e && typeof e === 'object' && 'message' in e
+              ? String((e as any).message)
+              : t('pipeline.inspector.whatsapp.loadError');
+          setWaError(msg);
+          setWaConversation(null);
+          setWaMessages([]);
+        }
       } finally {
-        if (!cancelled) setWaLoading(false);
+        if (!silent) setWaLoading(false);
       }
-    };
-    run();
+    },
+    [application?.candidateId, onUnauthorized, t, tenantId]
+  );
+
+  useEffect(() => {
+    if (!isOpen || collapsed || panelTab !== 'whatsapp') return;
+
+    void loadWhatsappConversation();
+
+    const intervalId = window.setInterval(() => {
+      void loadWhatsappConversation({ silent: true });
+    }, 5000);
+
     return () => {
-      cancelled = true;
+      window.clearInterval(intervalId);
     };
-    // Note: omit `t` to avoid refetch loops if i18n `t` identity changes; errors still use current `t` in catch above.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [application?.candidateId, collapsed, historyRefreshKey, isOpen, onUnauthorized, panelTab, tenantId]);
+  }, [
+    application?.candidateId,
+    collapsed,
+    historyRefreshKey,
+    isOpen,
+    loadWhatsappConversation,
+    panelTab,
+    tenantId,
+  ]);
 
   useEffect(() => {
     if (!isOpen || collapsed || panelTab !== 'whatsapp' || !application?.candidateId) {

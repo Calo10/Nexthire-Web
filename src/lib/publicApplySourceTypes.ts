@@ -3,11 +3,15 @@
  * Keep dropdown values and API filter in sync with the DB.
  */
 export const PUBLIC_APPLY_ALLOWED_SOURCE_CODES = new Set([
+  'public_apply',
   'meta_ads',
   'tiktok_ads',
   'linkedin_ads',
   'whatsapp',
 ]);
+
+/** Default source when the apply form no longer asks how the candidate heard about the job. */
+export const PUBLIC_APPLY_DEFAULT_SOURCE_CODE = 'public_apply';
 
 export const PUBLIC_APPLY_SOURCE_ORDER = [
   'meta_ads',

@@ -1,12 +1,9 @@
 import { buildQuery } from '../lib/buildQuery';
-import { normalizeListResponse, unwrapPayload } from '../lib/normalizeApiResponse';
-import {
-  filterAndOrderPublicApplySources,
-  HIDDEN_PUBLIC_APPLY_SOURCE_CODES,
-  PUBLIC_APPLY_ALLOWED_SOURCE_CODES,
-} from '../lib/publicApplySourceTypes';
-import { publicApiRequest, publicRequest } from './publicApiClient';
+import { buildDynamicAnswersPayload, normalizePublicBotQuestions, sortActiveBotQuestions } from '../lib/publicBotQuestions';
+import { PUBLIC_APPLY_DEFAULT_SOURCE_CODE } from '../lib/publicApplySourceTypes';
+import { publicRequest } from './publicApiClient';
 import type { ApplyJobRequest, ApplyJobResponse, JobPublicDTO, ListPublicJobsParams } from '../types/publicJobs';
+import type { JobBotQuestion } from '../types/jobBotQuestions';
 
 function normalizeJob(raw: any): JobPublicDTO | null {
   if (!raw || typeof raw !== 'object') return null;
@@ -25,6 +22,8 @@ function normalizeJob(raw: any): JobPublicDTO | null {
     createdAt: raw.createdAt ?? raw.created_at ?? null,
     updatedAt: raw.updatedAt ?? raw.updated_at ?? null,
     alreadyApplied: raw.alreadyApplied ?? raw.hasApplied ?? null,
+    language: raw.language ?? null,
+    botQuestions: sortActiveBotQuestions(normalizePublicBotQuestions(raw.botQuestions)),
   };
 }
 
@@ -41,13 +40,21 @@ function normalizeList(result: unknown): JobPublicDTO[] {
   return rawItems.map(normalizeJob).filter(Boolean) as JobPublicDTO[];
 }
 
+function appendFormField(form: FormData, name: string, value: string) {
+  form.append(name, value);
+}
+
+/** Single JSON field — do not duplicate camelCase/PascalCase or the server may concatenate invalid JSON. */
+function appendJsonPart(form: FormData, name: string, payload: unknown) {
+  form.append(name, JSON.stringify(payload));
+}
+
 export const publicJobsApi = {
   list: async (orgId: string, params: ListPublicJobsParams): Promise<JobPublicDTO[]> => {
     const effectiveSearch = params.search ?? params.query;
     const query = buildQuery({
       orgId,
       status: params.status,
-      // Support both param names (BE may expect `search`).
       search: effectiveSearch,
       query: effectiveSearch,
       location: params.location,
@@ -56,39 +63,11 @@ export const publicJobsApi = {
       page: params.page,
       pageSize: params.pageSize,
     });
-    // GET /api/public/jobs?orgId=...&status=open&...
     const result = await publicRequest<unknown>(`/jobs${query}`, { method: 'GET' });
     return normalizeList(result);
   },
 
-  /**
-   * Source types the candidate can pick on the apply form (codes must exist for the org in the backend).
-   * GET /api/public/sourcing/source-types?orgId=...
-   */
-  getSourceTypesForApply: async (orgId: string): Promise<{ code: string; name: string }[]> => {
-    try {
-      const q = buildQuery({ orgId: String(orgId) });
-      const raw = await publicRequest<unknown>(`/sourcing/source-types${q}`, { method: 'GET' });
-      const u = unwrapPayload(raw);
-      const items = normalizeListResponse<Record<string, unknown>>(u);
-      const out: { code: string; name: string }[] = [];
-      for (const item of items) {
-        const code = String(
-          item.code ?? item.sourceTypeCode ?? item.Code ?? item.SourceTypeCode ?? ''
-        ).trim();
-        if (!code) continue;
-        if (HIDDEN_PUBLIC_APPLY_SOURCE_CODES.has(code.toLowerCase())) continue;
-        const name = String(item.displayName ?? item.name ?? item.Name ?? item.DisplayName ?? code).trim() || code;
-        out.push({ code, name });
-      }
-      return filterAndOrderPublicApplySources(out);
-    } catch {
-      return [];
-    }
-  },
-
   getById: async (orgId: string, jobId: string): Promise<JobPublicDTO> => {
-    // GET /api/public/jobs/{jobId}?orgId=...
     const query = buildQuery({ orgId });
     const result = await publicRequest<unknown>(`/jobs/${encodeURIComponent(jobId)}${query}`, {
       method: 'GET',
@@ -98,77 +77,73 @@ export const publicJobsApi = {
     return job;
   },
 
-  apply: async (orgId: string, jobId: string, payload: ApplyJobRequest): Promise<ApplyJobResponse> => {
-    // Public apply now creates a sourcing lead.
-    // Backend requires multipart/form-data and Resume file in "Resume".
-    const sourceTypeCode = String(payload.source || '').trim();
-    if (!PUBLIC_APPLY_ALLOWED_SOURCE_CODES.has(sourceTypeCode.toLowerCase())) {
-      throw new Error('Invalid or missing source type for application.');
+  apply: async (
+    orgId: string,
+    jobId: string,
+    payload: ApplyJobRequest,
+    botQuestions: JobBotQuestion[] = []
+  ): Promise<ApplyJobResponse> => {
+    const questions = sortActiveBotQuestions(botQuestions);
+    const values: Record<string, string> = {};
+    const files: Record<string, File> = {};
+
+    for (const answer of payload.botAnswers) {
+      if (answer.file) {
+        files[answer.questionId] = answer.file;
+      } else {
+        values[answer.questionId] = answer.value;
+      }
     }
-    const leadPayload = {
-      orgId: String(orgId),
-      jobId: String(jobId),
-      sourceTypeCode,
-      firstName: String(payload.firstName || '').trim(),
-      lastName: String(payload.lastName || '').trim(),
-      fullName: `${String(payload.firstName || '').trim()} ${String(payload.lastName || '').trim()}`.trim(),
-      email: payload.email ? String(payload.email).trim() : null,
-      phone: payload.phone ? String(payload.phone).trim() : null,
-      qualificationNotes: [
-        'Lead created from public job apply.',
-        `orgId: ${orgId}`,
-        `jobId: ${jobId}`,
-        `sourceTypeCode: ${sourceTypeCode}`,
-      ].join(' '),
-    };
+
+    const dynamicAnswersJson = buildDynamicAnswersPayload(questions, values, {});
 
     const form = new FormData();
-    // Keep both naming conventions for BE compatibility.
-    form.append('OrgId', leadPayload.orgId);
-    form.append('orgId', leadPayload.orgId);
-    form.append('JobId', leadPayload.jobId);
-    form.append('jobId', leadPayload.jobId);
-    form.append('SourceTypeCode', leadPayload.sourceTypeCode);
-    form.append('sourceTypeCode', leadPayload.sourceTypeCode);
-    form.append('FirstName', leadPayload.firstName);
-    form.append('LastName', leadPayload.lastName);
-    form.append('FullName', leadPayload.fullName);
-    form.append('Email', String(leadPayload.email || ''));
-    form.append('Phone', String(leadPayload.phone || ''));
-    form.append('QualificationNotes', String(leadPayload.qualificationNotes || ''));
-    form.append('Source', sourceTypeCode);
-    if (payload.availability?.trim()) {
-      form.append('Availability', payload.availability.trim());
-      form.append('availability', payload.availability.trim());
-    }
-    if (payload.experienceYears != null && String(payload.experienceYears).trim()) {
-      const experienceYears = String(payload.experienceYears).trim();
-      form.append('ExperienceYears', experienceYears);
-      form.append('experienceYears', experienceYears);
-    }
-    if (payload.englishLevel?.trim()) {
-      form.append('EnglishLevel', payload.englishLevel.trim());
-      form.append('englishLevel', payload.englishLevel.trim());
-    }
-    if (payload.spanishLevel?.trim()) {
-      form.append('SpanishLevel', payload.spanishLevel.trim());
-      form.append('spanishLevel', payload.spanishLevel.trim());
-    }
-    if (payload.resume) form.append('Resume', payload.resume);
+    const jobIdStr = String(jobId);
+    const sourceTypeCode = PUBLIC_APPLY_DEFAULT_SOURCE_CODE;
+    const firstName = String(payload.firstName || '').trim();
+    const lastName = String(payload.lastName || '').trim();
+    const email = String(payload.email || '').trim();
+    const phone = payload.phone ? String(payload.phone).trim() : '';
 
-    const result = await publicApiRequest<unknown>('/api/sourcing/leads', {
-      method: 'POST',
-      headers: {
-        accept: 'application/json',
-      },
-      body: form,
-    });
+    appendFormField(form, 'jobId', jobIdStr);
+    appendFormField(form, 'JobId', jobIdStr);
+    appendFormField(form, 'sourceTypeCode', sourceTypeCode);
+    appendFormField(form, 'SourceTypeCode', sourceTypeCode);
+    appendFormField(form, 'firstName', firstName);
+    appendFormField(form, 'FirstName', firstName);
+    appendFormField(form, 'lastName', lastName);
+    appendFormField(form, 'LastName', lastName);
+    appendFormField(form, 'email', email);
+    appendFormField(form, 'Email', email);
+    appendFormField(form, 'phone', phone);
+    appendFormField(form, 'Phone', phone);
+    appendJsonPart(form, 'dynamicAnswersJson', dynamicAnswersJson);
+
+    for (const q of questions) {
+      if (q.answerType !== 'file') continue;
+      const file = files[q.id];
+      if (!file) continue;
+      form.append(`AnswerFile_${q.questionKey}`, file);
+      form.append(`AnswerFile_${q.id}`, file);
+      form.append(`answerFile_${q.questionKey}`, file);
+      form.append(`answerFile_${q.id}`, file);
+    }
+
+    const query = buildQuery({ orgId });
+    const result = await publicRequest<unknown>(
+      `/jobs/${encodeURIComponent(jobId)}/apply${query}`,
+      {
+        method: 'POST',
+        headers: { accept: 'application/json' },
+        body: form,
+      }
+    );
 
     const asObj = result && typeof result === 'object' ? (result as Record<string, unknown>) : {};
     return {
       success: true,
       message: typeof asObj.message === 'string' ? asObj.message : undefined,
+      alreadyApplied: !!asObj.alreadyApplied,
     };
   },
 };
-

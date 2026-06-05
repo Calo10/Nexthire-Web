@@ -6,6 +6,8 @@ import DashboardLayout from './layouts/DashboardLayout';
 import PublicJobsLayout from './layouts/PublicJobsLayout';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
+import RegisterPage from './pages/RegisterPage';
+import RegisterCheckEmailPage from './pages/RegisterCheckEmailPage';
 import AuthCallback from './pages/AuthCallback';
 import AuthVerify from './pages/AuthVerify';
 import Verify from './pages/Verify';
@@ -38,6 +40,9 @@ function App() {
         <Routes>
           {/* Public routes */}
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/trial" element={<RegisterPage />} />
+          <Route path="/register/check-email" element={<RegisterCheckEmailPage />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/security/password" element={<SetPasswordPage />} />
@@ -45,6 +50,7 @@ function App() {
           <Route path="/auth/verify" element={<AuthVerify />} />
           <Route path="/verify" element={<Verify />} />
           <Route path="/onboarding/organization" element={<OrganizationSetupPage />} />
+          <Route path="/onboarding/company" element={<OrganizationSetupPage />} />
           <Route
             path="/"
             element={

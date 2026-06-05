@@ -16,7 +16,7 @@ const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
         </label>
         <input
           ref={ref}
-          className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors ${
+          className={`w-full h-12 px-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors ${
             error ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
           } ${className}`}
           {...props}

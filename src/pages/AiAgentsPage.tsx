@@ -19,6 +19,9 @@ import AiAgentPerformanceModal from '../components/aiAgents/AiAgentPerformanceMo
 
 const STORAGE_KEY = 'nexthire:aiAgents:v1';
 
+/** Full UI remains visible; interactions disabled until backend is ready. */
+const PAGE_UNDER_CONSTRUCTION = true;
+
 function defaultJobConfig(): AiAgentsJobConfig {
   return {
     sourcing: {
@@ -405,11 +408,29 @@ export default function AiAgentsPage() {
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50">
       <TopBar />
 
+      <div className="relative">
+        {PAGE_UNDER_CONSTRUCTION ? (
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-white/55 backdrop-blur-[1px]"
+          >
+            <span className="rotate-[-18deg] select-none rounded-lg border-2 border-dashed border-amber-400/80 bg-amber-50/90 px-6 py-3 text-base font-bold uppercase tracking-wider text-amber-700 shadow-sm">
+              {t('aiAgents.underConstruction.badge')}
+            </span>
+          </div>
+        ) : null}
+
+        <div className={PAGE_UNDER_CONSTRUCTION ? 'pointer-events-none select-none opacity-70' : undefined}>
       <div className="p-8 max-w-7xl mx-auto w-full">
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="min-w-0">
             <h1 className="text-3xl font-bold text-dark-text">{t('aiAgents.title')}</h1>
             <p className="text-sm text-gray-600 mt-1">{t('aiAgents.subtitle')}</p>
+            {PAGE_UNDER_CONSTRUCTION ? (
+              <p className="mt-2 text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 max-w-2xl">
+                {t('aiAgents.underConstruction.message')}
+              </p>
+            ) : null}
           </div>
           <Button type="button" variant="primary" size="sm" className="shrink-0 self-start sm:self-auto" onClick={openNewAgentModal}>
             <span className="flex items-center gap-2">
@@ -612,6 +633,8 @@ export default function AiAgentsPage() {
           </div>
         </div>
       </Modal>
+        </div>
+      </div>
     </div>
   );
 }

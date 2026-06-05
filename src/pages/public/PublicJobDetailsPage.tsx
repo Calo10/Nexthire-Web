@@ -94,6 +94,7 @@ export default function PublicJobDetailsPage() {
           orgSlug={orgId}
           jobId={String(jobId)}
           jobTitle={job.title}
+          botQuestions={job.botQuestions}
           alreadyApplied={alreadyApplied}
           onApplied={() => {
             setData((prev) => (prev ? { ...prev, alreadyApplied: true } : prev));

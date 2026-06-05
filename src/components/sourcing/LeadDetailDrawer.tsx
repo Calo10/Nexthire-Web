@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Button from '../Button';
 import ErrorMessage from '../ErrorMessage';
@@ -10,7 +10,7 @@ import {
 } from '../../api/sourcingApi';
 import type { SourcingLead } from '../../types/sourcing';
 import LeadStatusPill from './LeadStatusPill';
-import { fitScoreTone, leadDisplayName, whatsappHref } from './sourcingUtils';
+import { fitScoreTone, formatDynamicAnswerDisplayValue, leadDisplayName, parseDynamicAnswersJson, whatsappHref } from './sourcingUtils';
 
 interface Props {
   isOpen: boolean;
@@ -87,6 +87,10 @@ export default function LeadDetailDrawer({ isOpen, leadId, onClose, onUpdated }:
   };
 
   const wa = data ? whatsappHref(data.phone) : null;
+  const dynamicAnswers = useMemo(
+    () => parseDynamicAnswersJson(data?.dynamicAnswersJson),
+    [data?.dynamicAnswersJson]
+  );
 
   if (!isOpen) return null;
 
@@ -159,30 +163,23 @@ export default function LeadDetailDrawer({ isOpen, leadId, onClose, onUpdated }:
                 </div>
               </section>
 
-              <section>
-                <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">{t('sourcing.drawer.location')}</h3>
-                <p className="text-sm text-gray-800">
-                  {[data.city, data.state, data.zipCode].filter(Boolean).join(', ') || '—'}
-                </p>
-              </section>
-
-              <section className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <p className="text-xs text-gray-500 uppercase">{t('sourcing.lead.availability')}</p>
-                  <p className="font-medium">{data.availability || '—'}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 uppercase">{t('sourcing.lead.experience')}</p>
-                  <p className="font-medium">{data.experienceYears != null ? `${data.experienceYears} yrs` : '—'}</p>
-                </div>
-              </section>
-
-              <section>
-                <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-2">{t('sourcing.drawer.languages')}</h3>
-                <p className="text-sm">
-                  {t('sourcing.lead.english')}: {data.englishLevel || '—'} · {t('sourcing.lead.spanish')}: {data.spanishLevel || '—'}
-                </p>
-              </section>
+              {dynamicAnswers.length > 0 ? (
+                <section>
+                  <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
+                    {t('sourcing.drawer.applicationAnswers')}
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                    {dynamicAnswers.map((answer) => (
+                      <div key={answer.questionId || answer.key || answer.label}>
+                        <p className="text-xs font-medium text-gray-500">{answer.label}</p>
+                        <p className="font-medium text-gray-800 break-words">
+                          {formatDynamicAnswerDisplayValue(answer.value, t)}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              ) : null}
 
               <section className="flex items-center gap-4">
                 <div>

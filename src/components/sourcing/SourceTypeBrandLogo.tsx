@@ -4,6 +4,28 @@ const SOURCE_LOGOS: { match: RegExp; src: string; alt: string }[] = [
   { match: /tiktok|tik_tok|tik-tok/i, src: 'https://cdn.simpleicons.org/tiktok', alt: 'TikTok' },
 ];
 
+function PublicApplyWebIcon({ className }: { className: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-label="Public apply" role="img">
+      <circle cx="12" cy="12" r="10" fill="#EEF2FF" />
+      <circle cx="12" cy="12" r="9" fill="none" stroke="#6366F1" strokeWidth="1.75" />
+      <ellipse cx="12" cy="12" rx="3.5" ry="9" fill="none" stroke="#6366F1" strokeWidth="1.5" />
+      <path d="M3 12h18" stroke="#6366F1" strokeWidth="1.5" strokeLinecap="round" />
+      <text
+        x="12"
+        y="13.5"
+        textAnchor="middle"
+        fill="#4F46E5"
+        fontSize="7"
+        fontWeight="700"
+        fontFamily="system-ui, -apple-system, sans-serif"
+      >
+        www
+      </text>
+    </svg>
+  );
+}
+
 export interface SourceTypeBrandLogoProps {
   sourceTypeCode: string;
   displayName: string;
@@ -33,6 +55,8 @@ export default function SourceTypeBrandLogo({ sourceTypeCode, displayName, size 
             d="M20.45 20.45h-3.56v-5.57c0-1.33-.03-3.04-1.86-3.04-1.86 0-2.14 1.45-2.14 2.95v5.66H9.33V9h3.42v1.56h.05c.48-.9 1.64-1.86 3.37-1.86 3.6 0 4.27 2.37 4.27 5.46v6.29zM5.31 7.43a2.06 2.06 0 110-4.11 2.06 2.06 0 010 4.11zM7.09 20.45H3.53V9h3.56v11.45zM22.23 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.46c.98 0 1.77-.77 1.77-1.72V1.72C24 .77 23.21 0 22.23 0z"
           />
         </svg>
+      ) : /public_apply/i.test(code) ? (
+        <PublicApplyWebIcon className={iconClass} />
       ) : logo ? (
         <img src={logo.src} alt={logo.alt} className={`${iconClass} object-contain`} loading="lazy" />
       ) : (

@@ -36,19 +36,34 @@ export default function JobsPage() {
   const statusFilterRef = useRef<HTMLDivElement>(null);
   const filtersMenuRef = useRef<HTMLDivElement>(null);
 
+  const jobMatchesDateRange = (createdAt: string | undefined, range: string): boolean => {
+    if (range === 'all') return true;
+    if (!createdAt) return false;
+
+    const created = new Date(createdAt);
+    if (Number.isNaN(created.getTime())) return false;
+
+    let days = 7;
+    if (range === '30d') days = 30;
+    else if (range === '90d') days = 90;
+    else if (range !== '7d') return true;
+
+    const from = new Date();
+    from.setDate(from.getDate() - days);
+    return created.getTime() >= from.getTime();
+  };
+
   // Filter jobs based on search and filters
   const filteredJobs = useMemo(() => {
     if (!jobs || jobs.length === 0) return [];
-    
+
     return jobs.filter((job: Job) => {
       const matchesSearch = job.title.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesStatus = selectedStatus === 'all' || job.status.toLowerCase() === selectedStatus.toLowerCase();
-      
-      // Date filter (if needed in the future)
-      // For now, we'll just return matches for search and status
-      return matchesSearch && matchesStatus;
+      const matchesDate = jobMatchesDateRange(job.createdAt, selectedDate);
+      return matchesSearch && matchesStatus && matchesDate;
     });
-  }, [jobs, searchQuery, selectedStatus]);
+  }, [jobs, searchQuery, selectedStatus, selectedDate]);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -275,6 +290,11 @@ export default function JobsPage() {
         onClose={() => setIsJobDrawerOpen(false)}
         onUpdated={(updated) => {
           setSelectedJob(updated);
+          refetchJobs();
+        }}
+        onDeleted={() => {
+          setSelectedJob(null);
+          setIsJobDrawerOpen(false);
           refetchJobs();
         }}
       />

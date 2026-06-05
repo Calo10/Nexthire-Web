@@ -3,9 +3,11 @@ import { useTranslation } from 'react-i18next';
 import Modal from './Modal';
 import TextField from './TextField';
 import TextareaField from './TextareaField';
+import SelectField from './SelectField';
 import Button from './Button';
 import ErrorMessage from './ErrorMessage';
 import { jobsApi } from '../lib/api';
+import type { JobLanguage } from '../types/dashboard';
 
 interface NewJobModalProps {
   isOpen: boolean;
@@ -19,6 +21,7 @@ interface FormData {
   company: string;
   location: string;
   salary: string; // keep as string for input control; convert on submit
+  language: JobLanguage;
 }
 
 interface FormErrors {
@@ -38,6 +41,7 @@ export default function NewJobModal({ isOpen, onClose, onSuccess }: NewJobModalP
     company: '',
     location: '',
     salary: '',
+    language: 'es',
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -95,6 +99,7 @@ export default function NewJobModal({ isOpen, onClose, onSuccess }: NewJobModalP
         company: formData.company.trim(),
         location: formData.location.trim(),
         salary: Number(formData.salary),
+        language: formData.language,
       });
 
       setCreatedJobTitle(created.title);
@@ -107,6 +112,7 @@ export default function NewJobModal({ isOpen, onClose, onSuccess }: NewJobModalP
         company: '',
         location: '',
         salary: '',
+        language: 'es',
       });
       setErrors({});
 
@@ -136,6 +142,7 @@ export default function NewJobModal({ isOpen, onClose, onSuccess }: NewJobModalP
       company: '',
       location: '',
       salary: '',
+      language: 'es',
     });
     setErrors({});
     setSubmitError(null);
@@ -143,6 +150,11 @@ export default function NewJobModal({ isOpen, onClose, onSuccess }: NewJobModalP
     setCreatedJobTitle(null);
     onClose();
   };
+
+  const languageOptions = [
+    { value: 'es', label: t('jobs.language.es') },
+    { value: 'en', label: t('jobs.language.en') },
+  ];
 
   return (
     <Modal
@@ -213,6 +225,14 @@ export default function NewJobModal({ isOpen, onClose, onSuccess }: NewJobModalP
             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
             placeholder={t('jobs.placeholders.title')}
             error={errors.title}
+          />
+
+          <SelectField
+            label={t('jobs.fields.language')}
+            required
+            value={formData.language}
+            onChange={(e) => setFormData({ ...formData, language: e.target.value as JobLanguage })}
+            options={languageOptions}
           />
 
           {/* Company and Location */}

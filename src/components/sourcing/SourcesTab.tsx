@@ -17,7 +17,15 @@ const FALLBACK_SOURCES: { code: string; name: string }[] = [
 /** Shown only as unified Meta Ads card; connections may still exist under legacy codes. */
 const LEGACY_META_SOURCE_CODES = new Set(['facebook_ads', 'instagram_ads']);
 
-const HIDDEN_SOURCE_CODES = new Set(['landing_page', 'qr_code', 'manual_entry', 'manual', 'referral']);
+/** Internal / non-integration sources — not shown as configurable connection cards */
+const HIDDEN_SOURCE_CODES = new Set([
+  'landing_page',
+  'qr_code',
+  'manual_entry',
+  'manual',
+  'referral',
+  'public_apply',
+]);
 
 const UNDER_CONSTRUCTION_SOURCE_CODES = new Set(['tiktok_ads', 'linkedin_ads']);
 

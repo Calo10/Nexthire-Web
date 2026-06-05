@@ -114,20 +114,6 @@ export default function SourcingPage() {
                 {t('sourcing.header.newLead')}
               </span>
             </Button>
-            <Button variant="outline" size="md" onClick={() => { setCampaignCreateMode('whatsapp-apply'); setCampaignModalOpen(true); }}>
-              <span className="flex items-center gap-2">
-                <img src="https://cdn.simpleicons.org/whatsapp" alt="" className="w-5 h-5" />
-                {t('sourcing.header.createWhatsAppCampaign')}
-              </span>
-            </Button>
-            <Button variant="primary" size="md" onClick={() => setMetaCampaignModalOpen(true)}>
-              <span className="flex items-center gap-2">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                {t('sourcing.header.createCampaign')}
-              </span>
-            </Button>
           </div>
         </div>
 

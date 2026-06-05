@@ -41,6 +41,41 @@
     "checkEmail": "Check your email",
     "emailSent": "We've sent a magic link to {{email}}. Click the link in the email to log in."
   },
+  "register": {
+    "title": "Start your free trial",
+    "subtitle": "Create your company workspace and admin account in one step.",
+    "companyName": "Company name",
+    "companyNamePlaceholder": "e.g. Acme Corp",
+    "timezone": "Timezone (optional)",
+    "timezoneDefault": "Default (America/Costa_Rica)",
+    "adminFullName": "Your full name",
+    "adminFullNamePlaceholder": "Jane Admin",
+    "email": "Work email",
+    "emailPlaceholder": "admin@company.com",
+    "cta": "Create trial",
+    "provisioning": "Creating workspace…",
+    "hint": "We'll email you a secure link to sign in. No password needed.",
+    "hasAccount": "Already have an account?",
+    "signUpLink": "Sign up",
+    "errors": {
+      "companyName": "Company name must be between 2 and 120 characters.",
+      "adminName": "Please enter your full name (at least 2 characters).",
+      "provision": "Could not create your trial. Please try again.",
+      "provisionNotConfigured": "Trial signup is not enabled on the server yet (provisioning not configured). Ask your team to enable onboarding/provision in the API settings, then try again."
+    },
+    "steps": {
+      "aria": "Sign-up progress",
+      "trial": "Your trial",
+      "email": "Sign in"
+    },
+    "checkEmail": {
+      "title": "You're all set",
+      "sent": "We sent a sign-in link to {{email}}. Open it to access your workspace.",
+      "createdNoLink": "Your workspace was created for {{email}}, but we couldn't send the login email. Contact support or try logging in.",
+      "nextStep": "The link expires after a short time. Check spam if you don't see it.",
+      "registerAnother": "Register another company"
+    }
+  },
   "landing": {
     "heroTitle": "Start hiring faster",
     "heroDescription": "The modern recruitment platform that helps you find, track, and hire the best candidates faster than ever.",
@@ -154,6 +189,12 @@
   "aiAgents": {
     "title": "AI Agents",
     "subtitle": "Automate campaign and pipeline steps per job. Configure each stage, then save. (Stored locally until backend sync is available.)",
+    "underConstruction": {
+      "badge": "Under Construction",
+      "subtitle": "Automation agents for your hiring pipeline.",
+      "title": "Coming soon",
+      "message": "We're building AI Agents to automate sourcing, screening, interviews, and offers. This section will be available in a future release."
+    },
     "selectJob": "Job",
     "jobPlaceholder": "Select a job",
     "loadingJobs": "Loading jobs…",
@@ -489,18 +530,42 @@
       "view": "View",
       "edit": "Edit",
       "delete": "Delete",
-      "addMember": "Add member",
+      "inviteUser": "Invite user",
+      "addToTeam": "Add to team",
+      "addMember": "Invite user",
       "removeMember": "Remove",
       "teamLead": "Team lead",
       "addRole": "Add role",
       "removeRole": "Remove"
     },
-    "members": {
+    "orgUsers": {
+      "title": "Organization users",
+      "subtitle": "All users in your org — use their id to assign to a team.",
+      "empty": "No users in this organization yet. Invite someone to get started."
+    },
+    "teamMembers": {
       "title": "Team members",
-      "empty": "No members in this team yet.",
+      "empty": "No members in this team yet. Add users from the organization list."
+    },
+    "members": {
       "name": "Name",
       "email": "Email",
+      "appRoles": "App roles",
+      "statusLabel": "Status",
+      "status": {
+        "active": "Active",
+        "pending_invite": "Pending invite",
+        "inactive": "Inactive"
+      },
       "lead": "Lead"
+    },
+    "addToTeam": {
+      "title": "Add to team",
+      "subtitle": "Assign an organization user to {{team}}.",
+      "hint": "Pick an organization user who is not already on this team.",
+      "selectUser": "Organization user",
+      "selectPlaceholder": "Select a user…",
+      "noEligible": "Everyone in the organization is already on this team."
     },
     "roles": {
       "title": "User roles",
@@ -526,6 +591,31 @@
       "hint": "Only users not already on this team are listed.",
       "noEligible": "Everyone is already on this team."
     },
+    "inviteUser": {
+      "button": "Invite user",
+      "title": "Invite user",
+      "subtitle": "Create a member account for your organization.",
+      "subtitleTeam": "The user will be added to {{team}} after creation.",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "email": "Work email",
+      "emailPlaceholder": "recruiter@company.com",
+      "phone": "Phone (optional)",
+      "phoneCountry": "Country code",
+      "phoneNumber": "Phone number (optional)",
+      "phoneNumberPlaceholder": "e.g., 89667186",
+      "appRole": "App role",
+      "appRoleDefault": "Default role",
+      "appRoleHint": "Org access is member. Pick recruiter, supervisor, etc. — not account admin.",
+      "sendLoginLink": "Send a login link by email",
+      "submit": "Invite user",
+      "sending": "Inviting…",
+      "success": "Invitation sent to {{email}}. They can sign in from the email link.",
+      "errors": {
+        "required": "Email, first name, and last name are required.",
+        "create": "Could not invite this user. Please try again."
+      }
+    },
     "confirm": {
       "deleteTeam": "Delete this team? Members will be removed from the team.",
       "removeMember": "Remove this member from the team?",
@@ -534,6 +624,7 @@
     "errors": {
       "loadTeams": "Failed to load teams",
       "loadMembers": "Failed to load members",
+      "loadOrgUsers": "Failed to load organization users",
       "loadRoles": "Failed to load roles",
       "loadUserRoles": "Failed to load user roles",
       "saveTeam": "Could not save team",
@@ -707,7 +798,12 @@
       "location": "Location",
       "salary": "Salary",
       "status": "Status",
-      "description": "Description"
+      "description": "Description",
+      "language": "Language"
+    },
+    "language": {
+      "es": "Spanish",
+      "en": "English"
     },
     "placeholders": {
       "title": "e.g., Senior Software Engineer",
@@ -726,18 +822,88 @@
     },
     "errors": {
       "loadJobs": "Failed to load jobs",
-      "createJob": "Failed to create job. Please try again."
+      "createJob": "Failed to create job. Please try again.",
+      "deleteJob": "Failed to delete job. Please try again.",
+      "deleteJobHasApplications": "This job cannot be deleted because it has applications linked to it."
     },
     "drawer": {
       "title": "Job",
       "details": "Details",
+      "actions": "Actions",
+      "botQuestions": "Bot questions",
       "metadata": "Metadata",
       "created": "Created",
       "updatedAt": "Updated",
       "updated": "Job updated successfully.",
       "validation": "Please provide a job title.",
+      "confirmDelete": "Delete this job? This action cannot be undone.",
       "errors": {
         "save": "Failed to save changes."
+      }
+    },
+    "botQuestions": {
+      "title": "Bot questions — {{jobTitle}}",
+      "subtitle": "These questions will be asked via WhatsApp when a candidate applies to this job.",
+      "showInactive": "Show inactive",
+      "addQuestion": "Add question",
+      "addFirst": "Add first question",
+      "empty": "No bot questions configured for this job yet.",
+      "retry": "Retry",
+      "yes": "Yes",
+      "no": "No",
+      "inactiveBadge": "Inactive",
+      "confirmDelete": "Delete this question? Candidates will no longer see it on WhatsApp.",
+      "table": {
+        "order": "Order",
+        "question": "Question",
+        "key": "Key",
+        "type": "Type",
+        "required": "Required",
+        "active": "Active",
+        "actions": "Actions"
+      },
+      "fields": {
+        "questionKey": "Key",
+        "questionKeyAuto": "Auto-generated key:",
+        "questionKeyTooltip": "Internal identifier. Generated on create and cannot be changed afterward.",
+        "questionText": "Question",
+        "answerType": "Answer type",
+        "sortOrder": "Order",
+        "isRequired": "Required",
+        "isActive": "Active"
+      },
+      "placeholders": {
+        "questionKey": "e.g., english_level",
+        "questionText": "What is your English level?",
+        "sortOrder": "Auto-assigned if left empty"
+      },
+      "form": {
+        "createTitle": "New question",
+        "editTitle": "Edit question",
+        "save": "Save"
+      },
+      "answerTypes": {
+        "text": "Free text",
+        "number": "Number",
+        "yes_no": "Yes / No",
+        "file": "File (CV, PDF, etc.)"
+      },
+      "validation": {
+        "questionKeyRequired": "Key is required.",
+        "questionKeyFormat": "Use lowercase letters, numbers, and underscores only (2–80 characters).",
+        "questionTextRequired": "Question text is required.",
+        "questionTextLength": "Text must be between 2 and 2000 characters.",
+        "answerTypeRequired": "Select an answer type.",
+        "sortOrderInvalid": "Order must be an integer greater than or equal to 0."
+      },
+      "toast": {
+        "saved": "Question saved",
+        "deleted": "Question deleted"
+      },
+      "errors": {
+        "load": "Failed to load bot questions.",
+        "save": "Failed to save question.",
+        "delete": "Failed to delete question."
       }
     }
   },
@@ -873,6 +1039,7 @@
       "error": "Failed to submit application.",
       "alreadyApplied": "You already applied for this job.",
       "alreadyAppliedCta": "Already applied",
+      "botQuestionsSection": "Additional questions",
       "fields": {
         "firstName": "First name",
         "lastName": "Last name",
@@ -888,6 +1055,8 @@
       },
       "options": {
         "select": "Select…",
+        "yes": "Yes",
+        "no": "No",
         "years": "{{count}} years",
         "yearsPlus": "{{count}}+ years",
         "availability": {
@@ -911,7 +1080,8 @@
         "name": "First name and last name are required.",
         "email": "Please enter a valid email.",
         "resume": "Please upload your resume.",
-        "source": "Please select how you heard about this job."
+        "source": "Please select how you heard about this job.",
+        "requiredField": "This field is required."
       }
     },
     "footer": {
@@ -1054,7 +1224,8 @@
       "title": "e.g., Schedule interview",
       "notes": "Add notes...",
       "applicationId": "e.g., app_123",
-      "applicationSearch": "Search application..."
+      "applicationSearch": "Search application...",
+      "applicationSelect": "Select an application..."
     },
     "validation": {
       "titleRequired": "Title is required",
@@ -1268,13 +1439,19 @@
     "sendNewLink": "Send a new link"
   },
   "onboarding": {
-    "title": "Set up your organization",
-    "description": "Create your workspace to start managing hires.",
-    "organizationName": "Organization name",
-    "organizationNamePlaceholder": "Enter organization name",
-    "timezone": "Timezone",
+    "title": "Set up your company",
+    "description": "One last step — tell us about your organization.",
+    "organizationName": "Company name",
+    "organizationNamePlaceholder": "e.g. Nexa Software",
+    "nameHint": "Between 2 and 120 characters.",
+    "timezone": "Timezone (optional)",
+    "timezoneDefault": "Default (America/Costa_Rica)",
     "createWorkspace": "Create workspace",
     "creating": "Creating...",
-    "logOut": "Log out"
+    "logOut": "Log out",
+    "errors": {
+      "nameLength": "Company name must be between 2 and 120 characters.",
+      "createFailed": "Could not create your organization. Please try again."
+    }
   }
 }

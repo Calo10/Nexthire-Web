@@ -7,8 +7,9 @@ import SelectField from '../SelectField';
 import ErrorMessage from '../ErrorMessage';
 import SuccessMessage from '../SuccessMessage';
 import StatusPill from '../StatusPill';
-import type { Job } from '../../types/dashboard';
-import { jobsApi } from '../../lib/api';
+import type { Job, JobLanguage } from '../../types/dashboard';
+import { jobsApi, type ApiError } from '../../lib/api';
+import JobBotQuestionsModal from './JobBotQuestionsModal';
 
 function formatDate(dateString: string | undefined, locale: string) {
   if (!dateString) return '-';
@@ -30,9 +31,10 @@ interface JobDetailDrawerProps {
   job: Job | null;
   onClose: () => void;
   onUpdated?: (job: Job) => void;
+  onDeleted?: () => void;
 }
 
-export default function JobDetailDrawer({ isOpen, job, onClose, onUpdated }: JobDetailDrawerProps) {
+export default function JobDetailDrawer({ isOpen, job, onClose, onUpdated, onDeleted }: JobDetailDrawerProps) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language || 'en';
 
@@ -40,13 +42,14 @@ export default function JobDetailDrawer({ isOpen, job, onClose, onUpdated }: Job
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [botQuestionsOpen, setBotQuestionsOpen] = useState(false);
 
   const [draft, setDraft] = useState({
     title: '',
-    department: '',
     location: '',
     description: '',
     status: 'open',
+    language: 'es' as JobLanguage,
   });
 
   useEffect(() => {
@@ -54,16 +57,17 @@ export default function JobDetailDrawer({ isOpen, job, onClose, onUpdated }: Job
     setIsEditing(false);
     setSaveError(null);
     setSuccess(null);
+    setBotQuestionsOpen(false);
   }, [isOpen]);
 
   useEffect(() => {
     if (!job) return;
     setDraft({
       title: job.title || '',
-      department: job.department || '',
       location: job.location || '',
       description: job.description || '',
       status: (job.status || 'open') as string,
+      language: (job.language === 'en' ? 'en' : 'es') as JobLanguage,
     });
   }, [job]);
 
@@ -80,6 +84,43 @@ export default function JobDetailDrawer({ isOpen, job, onClose, onUpdated }: Job
     { value: 'on_hold', label: t('jobs.status.on_hold') },
   ];
 
+  const languageOptions = [
+    { value: 'es', label: t('jobs.language.es') },
+    { value: 'en', label: t('jobs.language.en') },
+  ];
+
+  const languageLabel = (language?: string) => {
+    if (language === 'en') return t('jobs.language.en');
+    if (language === 'es') return t('jobs.language.es');
+    return language || '-';
+  };
+
+  const handleDelete = async () => {
+    if (!job) return;
+    const ok = window.confirm(t('jobs.drawer.confirmDelete'));
+    if (!ok) return;
+
+    setSaveError(null);
+    setSuccess(null);
+    setIsSaving(true);
+    try {
+      await jobsApi.deleteJob(String(job.id));
+      onDeleted?.();
+      onClose();
+    } catch (err) {
+      const apiErr = err as ApiError;
+      if (apiErr && typeof apiErr === 'object' && apiErr.status === 409) {
+        setSaveError(t('jobs.errors.deleteJobHasApplications'));
+      } else {
+        const message =
+          err && typeof err === 'object' && 'message' in err ? String((err as any).message) : t('jobs.errors.deleteJob');
+        setSaveError(message);
+      }
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const handleSave = async () => {
     if (!job) return;
     setSaveError(null);
@@ -93,10 +134,10 @@ export default function JobDetailDrawer({ isOpen, job, onClose, onUpdated }: Job
     try {
       const updated = await jobsApi.updateJob(String(job.id), {
         title: draft.title.trim(),
-        department: draft.department.trim() || undefined,
         location: draft.location.trim() || undefined,
         description: draft.description.trim() || undefined,
         status: draft.status,
+        language: draft.language,
       });
       setIsEditing(false);
       setSuccess(t('jobs.drawer.updated'));
@@ -105,10 +146,10 @@ export default function JobDetailDrawer({ isOpen, job, onClose, onUpdated }: Job
         const u: any = updated;
         setDraft({
           title: u.title ?? draft.title,
-          department: u.department ?? draft.department,
           location: u.location ?? draft.location,
           description: u.description ?? draft.description,
           status: u.status ?? draft.status,
+          language: (u.language === 'en' ? 'en' : 'es') as JobLanguage,
         });
       }
       onUpdated?.(updated as Job);
@@ -122,6 +163,7 @@ export default function JobDetailDrawer({ isOpen, job, onClose, onUpdated }: Job
   };
 
   return (
+    <>
     <div
       className="fixed inset-0 z-50"
       onClick={(e) => {
@@ -134,7 +176,7 @@ export default function JobDetailDrawer({ isOpen, job, onClose, onUpdated }: Job
         <div className="p-6 border-b border-gray-200 flex items-start justify-between gap-4">
           <div className="min-w-0">
             <h2 className="text-xl font-bold text-dark-text truncate">{job?.title || t('jobs.drawer.title')}</h2>
-            <p className="text-sm text-gray-600 truncate">{job?.location || job?.department || ''}</p>
+            <p className="text-sm text-gray-600 truncate">{job?.location || ''}</p>
           </div>
           <button
             onClick={onClose}
@@ -166,23 +208,22 @@ export default function JobDetailDrawer({ isOpen, job, onClose, onUpdated }: Job
                 value={draft.title}
                 onChange={(e) => setDraft({ ...draft, title: e.target.value })}
               />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <TextField
-                  label={t('jobs.fields.department')}
-                  value={draft.department}
-                  onChange={(e) => setDraft({ ...draft, department: e.target.value })}
-                />
-                <TextField
-                  label={t('jobs.fields.location')}
-                  value={draft.location}
-                  onChange={(e) => setDraft({ ...draft, location: e.target.value })}
-                />
-              </div>
+              <TextField
+                label={t('jobs.fields.location')}
+                value={draft.location}
+                onChange={(e) => setDraft({ ...draft, location: e.target.value })}
+              />
               <SelectField
                 label={t('jobs.fields.status')}
                 value={draft.status}
                 onChange={(e) => setDraft({ ...draft, status: e.target.value })}
                 options={statusOptions}
+              />
+              <SelectField
+                label={t('jobs.fields.language')}
+                value={draft.language}
+                onChange={(e) => setDraft({ ...draft, language: e.target.value as JobLanguage })}
+                options={languageOptions}
               />
               <TextareaField
                 label={t('jobs.fields.description')}
@@ -192,19 +233,17 @@ export default function JobDetailDrawer({ isOpen, job, onClose, onUpdated }: Job
             </div>
           ) : (
             <div className="space-y-5">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <p className="text-xs font-semibold text-gray-500 uppercase mb-1">{t('jobs.fields.department')}</p>
-                  <p className="text-sm text-dark-text">{job?.department || '-'}</p>
-                </div>
-                <div>
-                  <p className="text-xs font-semibold text-gray-500 uppercase mb-1">{t('jobs.fields.location')}</p>
-                  <p className="text-sm text-dark-text">{job?.location || '-'}</p>
-                </div>
+              <div>
+                <p className="text-xs font-semibold text-gray-500 uppercase mb-1">{t('jobs.fields.location')}</p>
+                <p className="text-sm text-dark-text">{job?.location || '-'}</p>
               </div>
               <div>
                 <p className="text-xs font-semibold text-gray-500 uppercase mb-1">{t('jobs.fields.status')}</p>
                 {job?.status ? <StatusPill status={job.status} /> : <p className="text-sm text-dark-text">-</p>}
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-gray-500 uppercase mb-1">{t('jobs.fields.language')}</p>
+                <p className="text-sm text-dark-text">{languageLabel(job?.language)}</p>
               </div>
               <div>
                 <p className="text-xs font-semibold text-gray-500 uppercase mb-1">{t('jobs.fields.description')}</p>
@@ -212,6 +251,28 @@ export default function JobDetailDrawer({ isOpen, job, onClose, onUpdated }: Job
               </div>
             </div>
           )}
+
+          <div className="pt-4 border-t border-gray-200">
+            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">{t('jobs.drawer.actions')}</h3>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={!job || isSaving}
+              onClick={() => setBotQuestionsOpen(true)}
+            >
+              <span className="inline-flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                  />
+                </svg>
+                {t('jobs.drawer.botQuestions')}
+              </span>
+            </Button>
+          </div>
 
           <div className="pt-4 border-t border-gray-200">
             <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">{t('jobs.drawer.metadata')}</h3>
@@ -228,16 +289,34 @@ export default function JobDetailDrawer({ isOpen, job, onClose, onUpdated }: Job
           </div>
         </div>
 
-        <div className="p-6 border-t border-gray-200 flex items-center justify-end gap-3">
-          <Button variant="secondary" onClick={onClose} disabled={isSaving}>
-            {t('common.actions.close')}
+        <div className="p-6 border-t border-gray-200 flex items-center justify-between gap-3">
+          <Button
+            variant="primary"
+            className="bg-red-600 hover:bg-red-700 from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 focus:ring-red-600"
+            onClick={handleDelete}
+            disabled={!job || isSaving}
+          >
+            {t('common.actions.delete')}
           </Button>
-          <Button variant="primary" onClick={handleSave} disabled={!job || !canSave}>
-            {isSaving ? t('common.actions.saving') : t('common.actions.saveChanges')}
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button variant="secondary" onClick={onClose} disabled={isSaving}>
+              {t('common.actions.close')}
+            </Button>
+            <Button variant="primary" onClick={handleSave} disabled={!job || !canSave || isSaving}>
+              {isSaving ? t('common.actions.saving') : t('common.actions.saveChanges')}
+            </Button>
+          </div>
         </div>
       </div>
     </div>
+
+    <JobBotQuestionsModal
+      isOpen={botQuestionsOpen}
+      jobId={job ? String(job.id) : null}
+      jobTitle={job?.title || ''}
+      onClose={() => setBotQuestionsOpen(false)}
+    />
+    </>
   );
 }
 

@@ -49,3 +49,74 @@ export function isSameLocalDay(iso: string | null | undefined, yyyyMmDd: string)
   const day = String(d.getDate()).padStart(2, '0');
   return `${y}-${m}-${day}` === yyyyMmDd;
 }
+
+export interface LeadDynamicAnswer {
+  questionId?: string;
+  key?: string;
+  label: string;
+  value: string;
+  answeredAtUtc?: string;
+}
+
+interface LeadDynamicAnswersPayload {
+  version?: number;
+  answers?: Array<{
+    questionId?: string;
+    key?: string;
+    label?: string;
+    value?: unknown;
+    answeredAtUtc?: string;
+  }>;
+}
+
+function normalizeDynamicAnswerValue(value: unknown): string {
+  if (value == null) return '';
+  if (typeof value === 'boolean') return value ? 'yes' : 'no';
+  return String(value).trim();
+}
+
+export function parseDynamicAnswersJson(raw: unknown): LeadDynamicAnswer[] {
+  if (raw == null) return [];
+
+  let parsed: unknown = raw;
+  if (typeof raw === 'string') {
+    const trimmed = raw.trim();
+    if (!trimmed) return [];
+    try {
+      parsed = JSON.parse(trimmed);
+    } catch {
+      return [];
+    }
+  }
+
+  if (!parsed || typeof parsed !== 'object') return [];
+
+  const answers = (parsed as LeadDynamicAnswersPayload).answers;
+  if (!Array.isArray(answers)) return [];
+
+  return answers
+    .filter((answer) => answer && typeof answer === 'object')
+    .map((answer) => {
+      const label = String(answer.label || answer.key || '').trim();
+      const value = normalizeDynamicAnswerValue(answer.value);
+      return {
+        questionId: answer.questionId,
+        key: answer.key,
+        label,
+        value,
+        answeredAtUtc: answer.answeredAtUtc,
+      };
+    })
+    .filter((answer) => answer.label);
+}
+
+export function formatDynamicAnswerDisplayValue(
+  value: string,
+  translate: (key: string) => string
+): string {
+  if (!value) return '—';
+  const normalized = value.trim().toLowerCase();
+  if (normalized === 'yes') return translate('sourcing.dynamicAnswers.yes');
+  if (normalized === 'no') return translate('sourcing.dynamicAnswers.no');
+  return value;
+}
