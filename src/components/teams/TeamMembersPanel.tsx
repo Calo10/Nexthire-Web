@@ -3,13 +3,13 @@ import Button from '../Button';
 import type { TeamMember } from '../../types/teams';
 
 interface TeamMembersPanelProps {
-  teamName: string | null;
+  teamName: string;
   members: TeamMember[];
   isLoading: boolean;
   error: string | null;
   selectedUserId: string | null;
   onSelectMember: (userId: string) => void;
-  onAddMember: () => void;
+  onAddToTeam: () => void;
   onRemoveMember: (userId: string) => void;
   onToggleLead: (userId: string, next: boolean) => void;
   busyUserId: string | null;
@@ -22,7 +22,7 @@ export default function TeamMembersPanel({
   error,
   selectedUserId,
   onSelectMember,
-  onAddMember,
+  onAddToTeam,
   onRemoveMember,
   onToggleLead,
   busyUserId,
@@ -33,15 +33,15 @@ export default function TeamMembersPanel({
     <div className="flex flex-col h-full min-h-[280px] border border-gray-200 rounded-lg bg-white overflow-hidden">
       <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-gray-200 bg-gray-50/80">
         <div className="min-w-0">
-          <h2 className="text-base font-semibold text-dark-text truncate">{t('teams.members.title')}</h2>
-          {teamName ? <p className="text-xs text-gray-500 truncate mt-0.5">{teamName}</p> : null}
+          <h2 className="text-base font-semibold text-dark-text truncate">{t('teams.teamMembers.title')}</h2>
+          <p className="text-xs text-gray-500 truncate mt-0.5">{teamName}</p>
         </div>
-        <Button size="sm" variant="outline" onClick={onAddMember} disabled={!teamName}>
+        <Button size="sm" variant="outline" onClick={onAddToTeam}>
           <span className="flex items-center gap-1.5">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            {t('teams.actions.addMember')}
+            {t('teams.actions.addToTeam')}
           </span>
         </Button>
       </div>
@@ -55,10 +55,8 @@ export default function TeamMembersPanel({
               <div key={i} className="h-10 bg-gray-100 rounded animate-pulse" />
             ))}
           </div>
-        ) : !teamName ? (
-          <p className="text-sm text-gray-500">{t('teams.selectTeam')}</p>
         ) : members.length === 0 ? (
-          <p className="text-sm text-gray-500">{t('teams.members.empty')}</p>
+          <p className="text-sm text-gray-500">{t('teams.teamMembers.empty')}</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">

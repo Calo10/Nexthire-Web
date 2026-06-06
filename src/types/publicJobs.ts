@@ -1,3 +1,5 @@
+import type { JobBotQuestion } from './jobBotQuestions';
+
 export type PublicJobStatus = 'open' | 'closed' | 'draft' | 'on_hold' | string;
 
 export interface JobPublicDTO {
@@ -8,10 +10,12 @@ export interface JobPublicDTO {
   department?: string | null;
   type?: string | null;
   status: PublicJobStatus;
+  language?: string | null;
   postedAt?: string | null;
   createdAt?: string | null;
   updatedAt?: string | null;
   alreadyApplied?: boolean | null;
+  botQuestions?: JobBotQuestion[];
 }
 
 export interface ListPublicJobsParams {
@@ -25,17 +29,18 @@ export interface ListPublicJobsParams {
   pageSize?: number;
 }
 
+export interface ApplyJobDynamicAnswer {
+  questionId: string;
+  value: string;
+  file?: File | null;
+}
+
 export interface ApplyJobRequest {
   firstName: string;
   lastName: string;
   email: string;
   phone?: string | null;
-  source?: string | null;
-  resume?: File | null;
-  availability?: string | null;
-  experienceYears?: string | number | null;
-  englishLevel?: string | null;
-  spanishLevel?: string | null;
+  botAnswers: ApplyJobDynamicAnswer[];
 }
 
 export interface ApplyJobResponse {
@@ -43,4 +48,5 @@ export interface ApplyJobResponse {
   message?: string;
   alreadyApplied?: boolean;
 }
+
 

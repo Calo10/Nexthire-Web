@@ -6,41 +6,14 @@ import SelectField from '../SelectField';
 import Button from '../Button';
 import ErrorMessage from '../ErrorMessage';
 import SuccessMessage from '../SuccessMessage';
-import { publicJobsApi } from '../../api/publicJobsApi';
+import PublicBotQuestionFields from './PublicBotQuestionFields';
 import { useApplyJob } from '../../hooks/public/useApplyJob';
-import { FALLBACK_PUBLIC_APPLY_SOURCE_TYPES } from '../../lib/publicApplySourceTypes';
+import { sortActiveBotQuestions } from '../../lib/publicBotQuestions';
 import { getCountryCallingCodeOptions, onlyDigits, toE164Phone } from '../../lib/phone';
+import type { JobBotQuestion } from '../../types/jobBotQuestions';
 
 function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
-}
-
-const CEFR_LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as const;
-
-function availabilityOptions(t: (k: string) => string) {
-  return [
-    { value: '', label: t('publicJobs.apply.options.select') },
-    { value: 'immediate', label: t('publicJobs.apply.options.availability.immediate') },
-    { value: '1_week', label: t('publicJobs.apply.options.availability.oneWeek') },
-    { value: '2_weeks', label: t('publicJobs.apply.options.availability.twoWeeks') },
-    { value: '1_month', label: t('publicJobs.apply.options.availability.oneMonth') },
-  ];
-}
-
-function experienceYearsOptions(t: (k: string, opts?: { count: number }) => string) {
-  const opts = [{ value: '', label: t('publicJobs.apply.options.select') }];
-  for (let i = 0; i <= 20; i += 1) {
-    opts.push({ value: String(i), label: t('publicJobs.apply.options.years', { count: i }) });
-  }
-  opts.push({ value: '20+', label: t('publicJobs.apply.options.yearsPlus', { count: 20 }) });
-  return opts;
-}
-
-function cefrLevelOptions(t: (k: string) => string) {
-  return [
-    { value: '', label: t('publicJobs.apply.options.select') },
-    ...CEFR_LEVELS.map((level) => ({ value: level, label: level })),
-  ];
 }
 
 export default function ApplyJobModal({
@@ -49,6 +22,7 @@ export default function ApplyJobModal({
   orgSlug,
   jobId,
   jobTitle,
+  botQuestions = [],
   alreadyApplied,
   onApplied,
 }: {
@@ -57,86 +31,75 @@ export default function ApplyJobModal({
   orgSlug: string;
   jobId: string;
   jobTitle: string;
+  botQuestions?: JobBotQuestion[];
   alreadyApplied: boolean;
   onApplied: () => void;
 }) {
   const { t } = useTranslation();
   const formRef = useRef<HTMLFormElement>(null);
 
-  const { submit, isSubmitting, error, success } = useApplyJob(orgSlug, jobId);
+  const activeQuestions = useMemo(() => sortActiveBotQuestions(botQuestions), [botQuestions]);
+
+  const { submit, isSubmitting, error, success } = useApplyJob(orgSlug, jobId, activeQuestions);
 
   const countryOptions = useMemo(() => getCountryCallingCodeOptions(), []);
 
-  const [sourceTypeRows, setSourceTypeRows] = useState<{ code: string; name: string }[]>([]);
-
-  useEffect(() => {
-    if (!isOpen || !orgSlug) return;
-    let cancelled = false;
-    (async () => {
-      const fromApi = await publicJobsApi.getSourceTypesForApply(orgSlug);
-      if (cancelled) return;
-      if (fromApi.length > 0) {
-        setSourceTypeRows(fromApi);
-        return;
-      }
-      setSourceTypeRows(
-        FALLBACK_PUBLIC_APPLY_SOURCE_TYPES.map((row) => ({
-          code: row.code,
-          name: t(row.labelKey),
-        }))
-      );
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [isOpen, orgSlug, t]);
-
-  const sourceOptions = useMemo(() => {
-    const opts = sourceTypeRows.map((row) => ({ value: row.code, label: row.name }));
-    return [{ value: '', label: t('publicJobs.apply.sources.select') }, ...opts];
-  }, [sourceTypeRows, t]);
-
-  const availOptions = useMemo(() => availabilityOptions(t), [t]);
-  const experienceOptions = useMemo(() => experienceYearsOptions(t), [t]);
-  const languageLevelOptions = useMemo(() => cefrLevelOptions(t), [t]);
-
-  const [form, setForm] = useState<{
-    firstName: string;
-    lastName: string;
-    email: string;
-    phoneCountryCode: string;
-    phoneNationalNumber: string;
-    availability: string;
-    experienceYears: string;
-    englishLevel: string;
-    spanishLevel: string;
-    source: string;
-    resume: File | null;
-  }>({
+  const [form, setForm] = useState({
     firstName: '',
     lastName: '',
     email: '',
     phoneCountryCode: '506',
     phoneNationalNumber: '',
-    availability: '',
-    experienceYears: '',
-    englishLevel: '',
-    spanishLevel: '',
-    source: '',
-    resume: null,
   });
+  const [dynamicValues, setDynamicValues] = useState<Record<string, string>>({});
+  const [dynamicFiles, setDynamicFiles] = useState<Record<string, File | null>>({});
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [localError, setLocalError] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    setForm({
+      firstName: '',
+      lastName: '',
+      email: '',
+      phoneCountryCode: '506',
+      phoneNationalNumber: '',
+    });
+    setDynamicValues({});
+    setDynamicFiles({});
+    setFieldErrors({});
+    setLocalError(null);
+  }, [isOpen, jobId]);
+
+  const validateDynamicFields = (): boolean => {
+    const errors: Record<string, string> = {};
+    for (const q of activeQuestions) {
+      if (!q.isRequired) continue;
+      if (q.answerType === 'file') {
+        if (!dynamicFiles[q.id]) {
+          errors[q.id] = t('publicJobs.apply.validation.requiredField');
+        }
+      } else if (!String(dynamicValues[q.id] ?? '').trim()) {
+        errors[q.id] = t('publicJobs.apply.validation.requiredField');
+      }
+    }
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const canSubmit = useMemo(() => {
-    if (alreadyApplied) return false;
-    return (
-      !!form.firstName.trim() &&
-      !!form.lastName.trim() &&
-      isValidEmail(form.email) &&
-      !!form.source?.trim() &&
-      !isSubmitting
-    );
-  }, [alreadyApplied, form.email, form.firstName, form.lastName, form.source, isSubmitting]);
+    if (alreadyApplied || isSubmitting) return false;
+    if (!form.firstName.trim() || !form.lastName.trim() || !isValidEmail(form.email)) return false;
+    for (const q of activeQuestions) {
+      if (!q.isRequired) continue;
+      if (q.answerType === 'file') {
+        if (!dynamicFiles[q.id]) return false;
+      } else if (!String(dynamicValues[q.id] ?? '').trim()) {
+        return false;
+      }
+    }
+    return true;
+  }, [activeQuestions, alreadyApplied, dynamicFiles, dynamicValues, form, isSubmitting]);
 
   const handleClose = () => {
     setLocalError(null);
@@ -154,29 +117,24 @@ export default function ApplyJobModal({
       setLocalError(t('publicJobs.apply.validation.email'));
       return;
     }
-    if (!form.resume) {
-      setLocalError(t('publicJobs.apply.validation.resume'));
-      return;
-    }
-    if (!form.source?.trim()) {
-      setLocalError(t('publicJobs.apply.validation.source'));
-      return;
-    }
+    if (!validateDynamicFields()) return;
     if (alreadyApplied) return;
 
     try {
       const phoneE164 = toE164Phone(form.phoneCountryCode, form.phoneNationalNumber);
+      const botAnswers = activeQuestions.map((q) => {
+        if (q.answerType === 'file') {
+          return { questionId: q.id, value: '', file: dynamicFiles[q.id] ?? null };
+        }
+        return { questionId: q.id, value: String(dynamicValues[q.id] ?? '').trim(), file: null };
+      });
+
       await submit({
         firstName: form.firstName.trim(),
         lastName: form.lastName.trim(),
         email: form.email.trim(),
         phone: phoneE164 || null,
-        source: form.source?.trim() || null,
-        availability: form.availability?.trim() || null,
-        experienceYears: form.experienceYears.trim() || null,
-        englishLevel: form.englishLevel?.trim() || null,
-        spanishLevel: form.spanishLevel?.trim() || null,
-        resume: form.resume,
+        botAnswers,
       });
       onApplied();
       setTimeout(() => handleClose(), 1200);
@@ -233,6 +191,7 @@ export default function ApplyJobModal({
           <TextField
             label={t('publicJobs.apply.fields.email')}
             required
+            type="email"
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
           />
@@ -254,54 +213,29 @@ export default function ApplyJobModal({
               />
             </div>
           </div>
-          <SelectField
-            label={t('publicJobs.apply.fields.availability')}
-            value={form.availability ?? ''}
-            onChange={(e) => setForm({ ...form, availability: e.target.value })}
-            options={availOptions}
+
+          <PublicBotQuestionFields
+            questions={activeQuestions}
+            values={dynamicValues}
+            files={dynamicFiles}
+            errors={fieldErrors}
+            onValueChange={(questionId, value) => {
+              setDynamicValues((prev) => ({ ...prev, [questionId]: value }));
+              setFieldErrors((prev) => {
+                const next = { ...prev };
+                delete next[questionId];
+                return next;
+              });
+            }}
+            onFileChange={(questionId, file) => {
+              setDynamicFiles((prev) => ({ ...prev, [questionId]: file }));
+              setFieldErrors((prev) => {
+                const next = { ...prev };
+                delete next[questionId];
+                return next;
+              });
+            }}
           />
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <SelectField
-              label={t('publicJobs.apply.fields.experienceYears')}
-              value={form.experienceYears ?? ''}
-              onChange={(e) => setForm({ ...form, experienceYears: e.target.value })}
-              options={experienceOptions}
-            />
-            <SelectField
-              label={t('publicJobs.apply.fields.englishLevel')}
-              value={form.englishLevel ?? ''}
-              onChange={(e) => setForm({ ...form, englishLevel: e.target.value })}
-              options={languageLevelOptions}
-            />
-            <SelectField
-              label={t('publicJobs.apply.fields.spanishLevel')}
-              value={form.spanishLevel ?? ''}
-              onChange={(e) => setForm({ ...form, spanishLevel: e.target.value })}
-              options={languageLevelOptions}
-            />
-          </div>
-          <SelectField
-            label={t('publicJobs.apply.fields.source')}
-            required
-            value={String(form.source || '')}
-            onChange={(e) => setForm({ ...form, source: e.target.value })}
-            options={sourceOptions}
-          />
-          <div className="w-full">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {t('publicJobs.apply.fields.resume')}
-              <span className="text-red-500 ml-1">*</span>
-            </label>
-            <div className="rounded-lg border border-gray-300 bg-white px-4 py-3">
-              <input
-                type="file"
-                accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                onChange={(e) => setForm({ ...form, resume: e.target.files?.[0] || null })}
-                className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
-              />
-              {form.resume ? <p className="mt-2 text-xs text-gray-500">{form.resume.name}</p> : null}
-            </div>
-          </div>
         </form>
       ) : null}
     </Modal>

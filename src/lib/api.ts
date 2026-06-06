@@ -16,6 +16,8 @@ export const AUTH_ROUTES = {
   PASSWORD_SET: '/auth/password/set', // May not exist - check Swagger
 } as const;
 
+import type { ProvisionTrialRequest, ProvisionTrialResponse } from '../types/onboarding';
+
 export interface ApiError {
   message: string;
   status?: number;
@@ -336,19 +338,26 @@ export const apiClient = new ApiClient();
 // Auth API endpoints
 
 export const authApi = {
-  requestMagicLink: async (email: string): Promise<{ success: boolean; message?: string }> => {
+  requestMagicLink: async (
+    email: string,
+    options?: { callbackUrl?: string }
+  ): Promise<{ success?: boolean; message?: string; token?: string }> => {
     // Use direct fetch to avoid triggering onUnauthorized on 401
     // This is a public endpoint and 401 shouldn't cause logout/redirect
     // No Authorization header required for public endpoints
     const url = `${API_BASE_URL}${AUTH_ROUTES.MAGIC_LINK}`;
-    
+    const body: { email: string; callbackUrl?: string } = { email };
+    if (options?.callbackUrl) {
+      body.callbackUrl = options.callbackUrl;
+    }
+
     try {
       const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify(body),
       });
 
       if (!response.ok) {
@@ -646,15 +655,62 @@ export const authApi = {
 
 // Onboarding API endpoints
 export const onboardingApi = {
+  /** Trial signup — public, no auth. Creates org + admin and optionally emails magic link. */
+  provisionTrial: async (data: ProvisionTrialRequest): Promise<ProvisionTrialResponse> => {
+    const url = `${API_BASE_URL}/onboarding/provision`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: data.name.trim(),
+        adminEmail: data.adminEmail.trim(),
+        adminFullName: data.adminFullName.trim(),
+        sendLoginLink: data.sendLoginLink !== false,
+        loginCallbackUrl: data.loginCallbackUrl,
+        ...(data.timezone?.trim() ? { timezone: data.timezone.trim() } : {}),
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({
+        message: `HTTP error! status: ${response.status}`,
+      }));
+      const apiMessage =
+        (typeof errorData.message === 'string' && errorData.message) ||
+        (typeof errorData.error === 'string' && errorData.error) ||
+        (typeof errorData.title === 'string' && errorData.title) ||
+        '';
+      const provisioningDisabled =
+        response.status === 503 ||
+        /provisioning is not configured/i.test(apiMessage);
+      throw {
+        message: provisioningDisabled
+          ? '__PROVISIONING_NOT_CONFIGURED__'
+          : apiMessage ||
+            (response.status === 409
+              ? 'An account with this email may already exist.'
+              : 'Could not create your trial.'),
+        status: response.status,
+      } as ApiError;
+    }
+
+    return await response.json();
+  },
+
   createOrganization: async (data: {
     name: string;
-    timezone: string;
+    timezone?: string;
   }): Promise<{
     organization: {
-      id: string;
+      organizationId?: string;
+      id?: string;
       name: string;
+      slug?: string;
+      createdAt?: string;
+      role?: string;
+      isActive?: boolean;
     };
-    features: any[];
+    features: Record<string, unknown> | unknown[];
     requiresOrgSetup: boolean;
   }> => {
     const nhToken = localStorage.getItem('nhAccessToken');
@@ -673,10 +729,16 @@ export const onboardingApi = {
       headers['X-Nexa-Access-Token'] = nexaToken;
     }
 
+    const payload: { name: string; timezone?: string } = {
+      name: data.name.trim(),
+    };
+    const tz = data.timezone?.trim();
+    if (tz) payload.timezone = tz;
+
     const response = await fetch(url, {
       method: 'POST',
       headers,
-      body: JSON.stringify(data),
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
@@ -801,6 +863,7 @@ export const jobsApi = {
     company: string;
     location: string;
     salary: number;
+    language: 'es' | 'en';
   }): Promise<{
     id: number;
     title: string;
@@ -808,6 +871,7 @@ export const jobsApi = {
     company: string;
     location: string;
     salary: number;
+    language: 'es' | 'en';
     status: string;
     createdAt: string;
   }> => {
@@ -821,7 +885,8 @@ export const jobsApi = {
   //   "department": "string",
   //   "location": "string",
   //   "description": "string",
-  //   "status": "string"
+  //   "status": "string",
+  //   "language": "es" | "en"
   // }
   updateJob: async (
     id: string,
@@ -831,10 +896,16 @@ export const jobsApi = {
       location?: string;
       description?: string;
       status: string;
+      language?: 'es' | 'en';
     }
   ): Promise<unknown> => {
     // Skip global unauthorized handler to show local drawer error if API misconfigured.
     return apiClient.put(`/jobs/${encodeURIComponent(id)}`, payload, true);
+  },
+
+  // DELETE /api/jobs/{id}
+  deleteJob: async (id: string): Promise<void> => {
+    await apiClient.delete(`/jobs/${encodeURIComponent(id)}`, true);
   },
 };
 

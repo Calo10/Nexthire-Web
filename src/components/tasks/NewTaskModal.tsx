@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import Modal from '../Modal';
 import TextField from '../TextField';
 import SelectField from '../SelectField';
+import SearchableSelect from '../SearchableSelect';
 import Button from '../Button';
 import ErrorMessage from '../ErrorMessage';
 import { createTask } from '../../api/tasks';
@@ -19,6 +20,7 @@ interface NewTaskModalProps {
 interface FormData {
   title: string;
   applicationId: string;
+  applicationLabel: string;
   dueAt: string;
   status: TaskStatus;
 }
@@ -28,14 +30,21 @@ interface FormErrors {
   applicationId?: string;
 }
 
+function applicationLabel(app: ApplicationListItem, fallback: string): string {
+  const main = [app.candidateName || null, app.jobTitle || null].filter(Boolean).join(' • ');
+  return main || fallback;
+}
+
+const FILTER_CONTROL_CLASS = 'h-12 min-h-12 max-h-12 box-border py-2.5 text-sm min-w-0 w-full';
+
 export default function NewTaskModal({ isOpen, onClose, onSuccess }: NewTaskModalProps) {
   const { t } = useTranslation();
   const formRef = useRef<HTMLFormElement>(null);
-  const appPickerRef = useRef<HTMLDivElement>(null);
 
   const [formData, setFormData] = useState<FormData>({
     title: '',
     applicationId: '',
+    applicationLabel: '',
     dueAt: '',
     status: 'todo',
   });
@@ -46,8 +55,7 @@ export default function NewTaskModal({ isOpen, onClose, onSuccess }: NewTaskModa
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [createdTaskTitle, setCreatedTaskTitle] = useState<string | null>(null);
 
-  const [appOpen, setAppOpen] = useState(false);
-  const [appInput, setAppInput] = useState(''); // what user sees/types (candidate + job)
+  const [appSearchQuery, setAppSearchQuery] = useState('');
   const [apps, setApps] = useState<ApplicationListItem[]>([]);
   const [appsLoading, setAppsLoading] = useState(false);
   const [appsError, setAppsError] = useState<string | null>(null);
@@ -59,17 +67,24 @@ export default function NewTaskModal({ isOpen, onClose, onSuccess }: NewTaskModa
     { value: 'done', label: t('tasks.kanban.done') },
   ];
 
-  const appSearch = useMemo(() => (appInput ?? '').trim(), [appInput]);
+  const unknownAppLabel = t('tasks.applications.unknown');
 
-  const validate = (): boolean => {
-    const next: FormErrors = {};
-    if (!formData.title.trim()) next.title = t('tasks.validation.titleRequired');
-    if (!formData.applicationId.trim()) next.applicationId = t('tasks.validation.applicationRequired');
-    setErrors(next);
-    return Object.keys(next).length === 0;
-  };
+  const applicationOptions = useMemo(() => {
+    const fromApi = apps.map((app) => ({
+      value: String(app.id || ''),
+      label: applicationLabel(app, unknownAppLabel),
+    }));
 
-  // Load applications list for picker (debounced search).
+    if (formData.applicationId && !fromApi.some((o) => o.value === formData.applicationId)) {
+      return [
+        { value: formData.applicationId, label: formData.applicationLabel || unknownAppLabel },
+        ...fromApi,
+      ];
+    }
+
+    return fromApi;
+  }, [apps, formData.applicationId, formData.applicationLabel, unknownAppLabel]);
+
   useEffect(() => {
     if (!isOpen || showSuccess) return;
     let cancelled = false;
@@ -78,15 +93,15 @@ export default function NewTaskModal({ isOpen, onClose, onSuccess }: NewTaskModa
       setAppsError(null);
       try {
         const items = await applicationsApi.list({
-          search: appSearch || undefined,
+          search: appSearchQuery || undefined,
           page: 1,
-          pageSize: 25,
+          pageSize: 50,
         });
         if (!cancelled) setApps(items);
       } catch (e) {
         const msg =
           e && typeof e === 'object' && 'message' in e
-            ? String((e as any).message)
+            ? String((e as { message: string }).message)
             : t('tasks.errors.loadApplications');
         if (!cancelled) {
           setApps([]);
@@ -101,19 +116,15 @@ export default function NewTaskModal({ isOpen, onClose, onSuccess }: NewTaskModa
       cancelled = true;
       window.clearTimeout(handle);
     };
-  }, [isOpen, showSuccess, appSearch]);
+  }, [isOpen, showSuccess, appSearchQuery, t]);
 
-  // Close picker on outside click
-  useEffect(() => {
-    if (!isOpen || !appOpen) return;
-    const onMouseDown = (e: MouseEvent) => {
-      const el = appPickerRef.current;
-      if (!el) return;
-      if (!el.contains(e.target as Node)) setAppOpen(false);
-    };
-    document.addEventListener('mousedown', onMouseDown);
-    return () => document.removeEventListener('mousedown', onMouseDown);
-  }, [isOpen, appOpen]);
+  const validate = (): boolean => {
+    const next: FormErrors = {};
+    if (!formData.title.trim()) next.title = t('tasks.validation.titleRequired');
+    if (!formData.applicationId.trim()) next.applicationId = t('tasks.validation.applicationRequired');
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -133,16 +144,15 @@ export default function NewTaskModal({ isOpen, onClose, onSuccess }: NewTaskModa
       setCreatedTaskTitle(formData.title.trim());
       setShowSuccess(true);
 
-      // Reset form
       setFormData({
         title: '',
         applicationId: '',
+        applicationLabel: '',
         dueAt: '',
         status: 'todo',
       });
       setErrors({});
 
-      // Close modal after showing success message
       setTimeout(() => {
         setShowSuccess(false);
         setCreatedTaskTitle(null);
@@ -152,7 +162,7 @@ export default function NewTaskModal({ isOpen, onClose, onSuccess }: NewTaskModa
     } catch (err) {
       const message =
         err && typeof err === 'object' && 'message' in err
-          ? String((err as any).message)
+          ? String((err as { message: string }).message)
           : t('tasks.errors.save');
       setSubmitError(message);
     } finally {
@@ -164,17 +174,19 @@ export default function NewTaskModal({ isOpen, onClose, onSuccess }: NewTaskModa
     setFormData({
       title: '',
       applicationId: '',
+      applicationLabel: '',
       dueAt: '',
       status: 'todo',
     });
-    setAppInput('');
+    setAppSearchQuery('');
     setErrors({});
     setSubmitError(null);
     setShowSuccess(false);
     setCreatedTaskTitle(null);
-    setAppOpen(false);
     onClose();
   };
+
+  const applicationEmptyText = appsError || t('tasks.applications.empty');
 
   return (
     <Modal
@@ -240,84 +252,42 @@ export default function NewTaskModal({ isOpen, onClose, onSuccess }: NewTaskModa
             placeholder={t('tasks.placeholders.title')}
           />
 
-          <div className="w-full" ref={appPickerRef}>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {t('tasks.fields.applicationId')}
-              <span className="text-red-500 ml-1">*</span>
-            </label>
-            <div className="relative">
-              <input
-                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors ${
-                  errors.applicationId ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
-                }`}
-                placeholder={t('tasks.placeholders.applicationSearch')}
-                value={appInput}
-                onChange={(e) => {
-                  const next = e.target.value;
-                  setAppInput(next);
-                  // When typing, clear the selected id until the user picks an option.
-                  setFormData((prev) => ({ ...prev, applicationId: '' }));
-                  if (errors.applicationId) setErrors((prev) => ({ ...prev, applicationId: undefined }));
-                  if (!appOpen) setAppOpen(true);
-                }}
-                onFocus={() => setAppOpen(true)}
-              />
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
+          <SearchableSelect
+            label={t('tasks.fields.applicationId')}
+            required
+            value={formData.applicationId}
+            onChange={(id, option) => {
+              setFormData((prev) => ({
+                ...prev,
+                applicationId: id,
+                applicationLabel: option.label,
+              }));
+              if (errors.applicationId) setErrors((prev) => ({ ...prev, applicationId: undefined }));
+            }}
+            options={applicationOptions}
+            placeholder={t('tasks.placeholders.applicationSelect')}
+            searchPlaceholder={t('tasks.placeholders.applicationSearch')}
+            loading={appsLoading}
+            loadingText={t('common.loading')}
+            emptyText={applicationEmptyText}
+            error={errors.applicationId}
+            onSearchQueryChange={setAppSearchQuery}
+          />
 
-              {appOpen && (
-                <div className="absolute z-50 mt-2 w-full bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
-                  <div className="max-h-64 overflow-y-auto py-1">
-                    {appsLoading ? (
-                      <div className="px-4 py-3 text-sm text-gray-600">{t('common.loading')}</div>
-                    ) : appsError ? (
-                      <div className="px-4 py-3 text-sm text-red-700">{appsError}</div>
-                    ) : apps.length === 0 ? (
-                      <div className="px-4 py-3 text-sm text-gray-600">{t('tasks.applications.empty')}</div>
-                    ) : (
-                      apps.map((app, idx) => {
-                        const main = [app.candidateName || null, app.jobTitle || null].filter(Boolean).join(' • ');
-                        return (
-                          <button
-                            key={`${String(app.id || 'app')}-${idx}`}
-                            type="button"
-                            className="w-full text-left px-4 py-2 hover:bg-gray-50"
-                            onClick={() => {
-                              const id = String(app.id || '');
-                              const display = main || t('tasks.applications.unknown');
-                              setFormData((prev) => ({ ...prev, applicationId: id }));
-                              setAppInput(display);
-                              setErrors((prev) => ({ ...prev, applicationId: undefined }));
-                              setAppOpen(false);
-                            }}
-                          >
-                            <div className="text-sm font-medium text-dark-text">{main || t('tasks.applications.unknown')}</div>
-                          </button>
-                        );
-                      })
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-            {errors.applicationId && <p className="mt-1 text-sm text-red-600">{errors.applicationId}</p>}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid w-full grid-cols-1 sm:grid-cols-[repeat(2,minmax(0,1fr))] gap-6 items-end">
             <TextField
               label={t('tasks.fields.dueDate')}
               type="date"
               value={formData.dueAt}
               onChange={(e) => setFormData({ ...formData, dueAt: e.target.value })}
+              className={FILTER_CONTROL_CLASS}
             />
             <SelectField
               label={t('tasks.fields.status')}
               value={formData.status}
               onChange={(e) => setFormData({ ...formData, status: e.target.value as TaskStatus })}
               options={statusOptions}
+              className={FILTER_CONTROL_CLASS}
             />
           </div>
         </form>
@@ -325,4 +295,3 @@ export default function NewTaskModal({ isOpen, onClose, onSuccess }: NewTaskModa
     </Modal>
   );
 }
-

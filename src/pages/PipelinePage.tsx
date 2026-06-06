@@ -92,6 +92,22 @@ export default function PipelinePage() {
     if (selectedJobId) localStorage.setItem('nhPipelineJobId', selectedJobId);
   }, [selectedJobId]);
 
+  // Default to first job when none selected or previous selection is invalid.
+  useEffect(() => {
+    if (jobsLoading || !jobs?.length) return;
+
+    const validIds = new Set(jobs.map((j) => String(j.id)));
+
+    if (jobIdParam && validIds.has(jobIdParam)) {
+      if (selectedJobId !== jobIdParam) setSelectedJobId(jobIdParam);
+      return;
+    }
+
+    if (selectedJobId && validIds.has(selectedJobId)) return;
+
+    setSelectedJobId(String(jobs[0].id));
+  }, [jobs, jobsLoading, jobIdParam, selectedJobId]);
+
   const selectedJob: Job | null = useMemo(() => {
     if (!selectedJobId) return null;
     return (jobs || []).find((j) => String(j.id) === String(selectedJobId)) || null;
@@ -194,9 +210,9 @@ export default function PipelinePage() {
   }, [applicationIdParam, columns]);
 
   const jobOptions = useMemo(() => {
-    const opts = [{ value: '', label: t('pipeline.selectJob') }];
-    for (const j of jobs || []) opts.push({ value: String(j.id), label: j.title });
-    return opts;
+    const list = jobs || [];
+    if (!list.length) return [{ value: '', label: t('pipeline.selectJob') }];
+    return list.map((j) => ({ value: String(j.id), label: j.title }));
   }, [jobs, t]);
 
   const handleMove = async (applicationId: string, toStageId: string) => {
@@ -603,7 +619,7 @@ export default function PipelinePage() {
               <div className="p-10 text-center text-sm text-gray-600">{t('pipeline.selectJob')}</div>
             ) : isLoading ? (
               <div className="p-6">
-                <div className="flex gap-6 overflow-x-auto">
+                <div className="flex gap-6 overflow-x-auto scrollbar-subtle scrollbar-subtle-x pb-2">
                   {[1, 2, 3, 4].map((i) => (
                     <div key={i} className="w-[320px] shrink-0 bg-white rounded-2xl shadow-sm border border-gray-200 p-4 min-h-[560px]">
                       <div className="h-6 bg-gray-200 rounded w-2/3 animate-pulse mb-4" />

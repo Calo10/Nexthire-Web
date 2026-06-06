@@ -276,8 +276,11 @@
   "drawer": {
     "lead": "Lead",
     "contact": "Contacto",
-    "location": "Ubicación",
-    "languages": "Idiomas",
+    "applicationAnswers": "Respuestas",
     "notFound": "Lead no encontrado."
+  },
+  "dynamicAnswers": {
+    "yes": "Sí",
+    "no": "No"
   }
 }
