@@ -25,7 +25,6 @@ interface NewCandidateFormState {
   phoneNationalNumber: string;
   source: string;
   resume: File | null;
-  resumeUrl: string;
 }
 
 interface FormErrors {
@@ -49,7 +48,6 @@ export default function NewCandidateModal({ isOpen, onClose, onCreated }: NewCan
     phoneNationalNumber: '',
     source: '',
     resume: null,
-    resumeUrl: '',
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -78,7 +76,6 @@ export default function NewCandidateModal({ isOpen, onClose, onCreated }: NewCan
       phoneNationalNumber: '',
       source: '',
       resume: null,
-      resumeUrl: '',
     });
     setResumeFileKey((k) => k + 1);
     setErrors({});
@@ -116,7 +113,6 @@ export default function NewCandidateModal({ isOpen, onClose, onCreated }: NewCan
             email: formData.email.trim(),
             phone: phoneE164 || undefined,
             source: formData.source.trim() || undefined,
-            resumeUrl: formData.resumeUrl.trim() || undefined,
           });
       setCreatedName(`${created.firstName || ''} ${created.lastName || ''}`.trim() || created.email);
       setShowSuccess(true);
@@ -130,7 +126,6 @@ export default function NewCandidateModal({ isOpen, onClose, onCreated }: NewCan
         phoneNationalNumber: '',
         source: '',
         resume: null,
-        resumeUrl: '',
       });
       setResumeFileKey((k) => k + 1);
       setErrors({});
@@ -266,19 +261,6 @@ export default function NewCandidateModal({ isOpen, onClose, onCreated }: NewCan
               {formData.resume ? <p className="mt-2 text-xs text-gray-500">{formData.resume.name}</p> : null}
             </div>
           </div>
-
-          <TextField
-            label={t('candidates.fields.resumeUrl')}
-            value={formData.resumeUrl}
-            onChange={(e) => setFormData({ ...formData, resumeUrl: e.target.value })}
-            placeholder={t('common.placeholders.url')}
-            disabled={!!formData.resume}
-          />
-          {formData.resume ? (
-            <p className="text-xs text-gray-500 -mt-4">{t('candidates.modal.resumeUrlDisabledWhenFile')}</p>
-          ) : (
-            <p className="text-xs text-gray-500 -mt-4">{t('candidates.modal.resumeUrlFallbackHint')}</p>
-          )}
         </form>
       )}
     </Modal>

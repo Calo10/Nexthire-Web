@@ -58,6 +58,7 @@ export function PipelineCardView({
   locale,
   isSelected = false,
   isDragging = false,
+  showActionsAlways = false,
   onClick,
   onAddNote,
   onSendMessage,
@@ -73,6 +74,7 @@ export function PipelineCardView({
   locale: string;
   isSelected?: boolean;
   isDragging?: boolean;
+  showActionsAlways?: boolean;
   onClick?: () => void;
   onAddNote?: () => void;
   onSendMessage?: () => void;
@@ -139,7 +141,9 @@ export function PipelineCardView({
           >
             <button
               type="button"
-              className="w-9 h-9 rounded-lg hover:bg-gray-100 text-gray-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+              className={`w-9 h-9 rounded-lg hover:bg-gray-100 text-gray-500 flex items-center justify-center transition-opacity ${
+                showActionsAlways ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+              }`}
               aria-label={t('pipeline.inspector.menu.aria')}
               data-pipeline-card-menu-button="true"
               onPointerDown={(e) => {
