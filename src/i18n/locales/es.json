@@ -77,21 +77,175 @@
     }
   },
   "landing": {
+    "heroBadge": "ATS con IA para equipos en crecimiento",
     "heroTitle": "Comienza a contratar más rápido",
-    "heroDescription": "La plataforma de reclutamiento moderna que te ayuda a encontrar, rastrear y contratar a los mejores candidatos más rápido que nunca.",
+    "heroDescription": "NextHire combina automatización con IA, campañas multicanal en Instagram, Facebook, LinkedIn y TikTok, bots de aplicación por WhatsApp y un ATS completo — para atraer, filtrar y contratar talento desde una sola plataforma.",
+    "heroTrialNote": "Prueba gratuita de 14 días · Sin tarjeta de crédito",
     "viewPricing": "Ver precios",
+    "startTrial": "Iniciar prueba gratis",
+    "stats": {
+      "modules": {
+        "value": "9+",
+        "label": "Módulos de reclutamiento"
+      },
+      "trial": {
+        "value": "14 días",
+        "label": "Prueba gratuita incluida"
+      },
+      "ai": {
+        "value": "IA",
+        "label": "Agentes y automatización inteligente"
+      },
+      "channels": {
+        "value": "5+",
+        "label": "Canales sociales y chat"
+      }
+    },
     "featuresTitle": "Todo lo que necesitas para contratar de manera más inteligente",
-    "featuresDescription": "Optimiza tu proceso de contratación con herramientas poderosas diseñadas para reclutadores modernos.",
-    "jobs": "Trabajos",
-    "jobsDescription": "Crea y gestiona publicaciones de trabajo con facilidad. Rastrea aplicaciones y encuentra los candidatos perfectos.",
-    "pipeline": "Pipeline",
-    "pipelineDescription": "Visualiza tu pipeline de candidatos. Mueve candidatos a través de etapas y nunca pierdas el rastro del progreso.",
-    "candidates": "Candidatos",
-    "candidatesDescription": "Gestiona perfiles de candidatos, currículums y notas en un solo lugar. Toma decisiones de contratación informadas.",
+    "featuresDescription": "Desde la primera vacante hasta la oferta firmada, NextHire le da a tu equipo las herramientas para avanzar con claridad y control.",
+    "featureItems": {
+      "dashboard": {
+        "title": "Dashboard y analítica",
+        "description": "Visualiza vacantes activas, volumen del pipeline, entrevistas y contrataciones con gráficos y actividad reciente."
+      },
+      "jobs": {
+        "title": "Gestión de vacantes",
+        "description": "Crea y administra publicaciones, preguntas de aplicación y detalles de contratación desde un workspace centralizado."
+      },
+      "candidates": {
+        "title": "Perfiles de candidatos",
+        "description": "Guarda currículums, notas, datos de contacto e historial de evaluación de cada postulante en un solo lugar."
+      },
+      "pipeline": {
+        "title": "Pipeline visual",
+        "description": "Mueve candidatos por etapas personalizables con tableros kanban y flujos basados en stages."
+      },
+      "tasks": {
+        "title": "Tareas y seguimiento",
+        "description": "Asigna tareas de reclutamiento, controla plazos y mantén al equipo alineado en los próximos pasos."
+      },
+      "sourcing": {
+        "title": "Sourcing y campañas",
+        "description": "Lanza campañas en Instagram, Facebook, LinkedIn y TikTok — rastrea leads y conecta cada canal con tus vacantes abiertas."
+      },
+      "templates": {
+        "title": "Plantillas de mensajes",
+        "description": "Guarda plantillas reutilizables de correo y mensajería para responder con consistencia y ahorrar tiempo."
+      },
+      "aiAgents": {
+        "title": "Agentes de IA",
+        "description": "Agentes impulsados por IA automatizan sourcing, screening, entrevistas y ofertas — con revisión humana integrada."
+      },
+      "teams": {
+        "title": "Equipos y permisos",
+        "description": "Invita compañeros, administra usuarios de la organización y controla el acceso en tu workspace de contratación."
+      },
+      "publicJobs": {
+        "title": "Páginas públicas de empleo",
+        "description": "Publica vacantes con tu marca y deja que los candidatos apliquen en la web o mediante bots de WhatsApp."
+      }
+    },
+    "aiSection": {
+      "badge": "Impulsado por IA",
+      "title": "Inteligencia artificial integrada en el reclutamiento",
+      "description": "NextHire utiliza IA en todo el ciclo de contratación — no como un adorno, sino como automatización práctica que ahorra horas a tu equipo cada semana.",
+      "capabilities": {
+        "0": "Agentes de IA para etapas de sourcing, screening, entrevista y oferta",
+        "1": "Redacción inteligente de mensajes para outreach y seguimiento",
+        "2": "Sugerencias de flujo de trabajo según la actividad del pipeline",
+        "3": "Cadencias configurables para que la IA trabaje en tu horario",
+        "4": "Revisión humana antes de enviar mensajes o tomar decisiones"
+      }
+    },
+    "campaignsSection": {
+      "title": "Crea campañas en cada canal principal",
+      "description": "Alcanza candidatos donde ya pasan su tiempo. Crea y da seguimiento a campañas de reclutamiento en Instagram, Facebook, LinkedIn y TikTok — vinculadas directamente a tus vacantes.",
+      "bullets": {
+        "0": "Constructor de campañas multicanal vinculado a vacantes",
+        "1": "Instagram y Facebook mediante flujos de campañas Meta",
+        "2": "Seguimiento de anuncios en LinkedIn y TikTok en un solo inbox",
+        "3": "Analítica de fuentes desde el clic hasta la aplicación"
+      },
+      "platforms": {
+        "instagram": "Instagram",
+        "facebook": "Facebook",
+        "linkedin": "LinkedIn",
+        "tiktok": "TikTok"
+      }
+    },
+    "whatsappSection": {
+      "badge": "Bots de aplicación por WhatsApp",
+      "title": "Deja que los candidatos apliquen por WhatsApp",
+      "description": "Conecta con el talento en el canal que usan a diario. Los bots de WhatsApp de NextHire guían a los candidatos por preguntas de screening específicas de la vacante y envían las aplicaciones directo a tu pipeline.",
+      "bullets": {
+        "0": "Enlaces de WhatsApp y códigos QR compartibles por vacante",
+        "1": "Flujo de aplicación guiado por bot con preguntas personalizadas",
+        "2": "Mensajes de aplicación prefijados vinculados a la vacante correcta",
+        "3": "Las aplicaciones llegan al pipeline automáticamente — sin captura manual"
+      }
+    },
+    "howItWorksTitle": "Cómo funciona NextHire",
+    "howItWorksDescription": "Lanza tu workspace de reclutamiento en tres pasos sencillos.",
+    "steps": {
+      "0": {
+        "title": "Crea tu workspace",
+        "description": "Regístrate, configura tu organización e invita a tu equipo de contratación en minutos."
+      },
+      "1": {
+        "title": "Publica vacantes y atrae talento",
+        "description": "Publica roles, comparte páginas de empleo y recibe candidatos desde campañas y aplicaciones."
+      },
+      "2": {
+        "title": "Da seguimiento, colabora y contrata",
+        "description": "Mueve postulantes por tu pipeline, asigna tareas y toma decisiones de contratación con datos."
+      }
+    },
+    "showcaseTitle": "Diseñado para flujos reales de reclutamiento",
+    "showcaseDescription": "Descubre cómo los equipos usan NextHire día a día — desde el pipeline hasta sourcing y analítica.",
+    "showcases": {
+      "pipeline": {
+        "title": "Un pipeline que mantiene a todos alineados",
+        "description": "Mueve candidatos entre etapas, revisa aplicaciones y entiende el estado de cada vacante sin cambiar de herramienta.",
+        "bullets": {
+          "0": "Vistas kanban y por etapas",
+          "1": "Detalles de aplicación y notas en contexto",
+          "2": "Visibilidad clara desde postulación hasta contratación"
+        }
+      },
+      "sourcing": {
+        "title": "Sourcing conectado a tus vacantes",
+        "description": "Lanza campañas en Instagram, Facebook, LinkedIn y TikTok — luego rastrea leads y conversiones junto a tus vacantes abiertas.",
+        "bullets": {
+          "0": "Constructor de campañas para Instagram, Facebook, LinkedIn y TikTok",
+          "1": "Bandeja de leads y seguimiento de fuentes",
+          "2": "Analítica de conversión y alcance"
+        }
+      },
+      "analytics": {
+        "title": "Analítica que impulsa decisiones",
+        "description": "Monitorea aplicaciones por etapa, velocidad de contratación y actividad del equipo desde un dashboard pensado para reclutadores.",
+        "bullets": {
+          "0": "Métricas de pipeline y actividad",
+          "1": "Candidatos recientes y tareas próximas",
+          "2": "Filtros por vacante y rango de fechas"
+        }
+      }
+    },
+    "teamsTitle": "Colaboración pensada para equipos de contratación",
+    "teamsDescription": "Reclutar es un trabajo en equipo. NextHire ayuda a reclutadores, hiring managers y administradores a colaborar con visibilidad compartida y acceso controlado.",
+    "teamsBullets": {
+      "0": "Workspaces organizacionales con acceso por roles",
+      "1": "Registros compartidos de candidatos y vacantes",
+      "2": "Tareas asignadas a las personas correctas",
+      "3": "Plantillas y flujos que todo el equipo puede usar"
+    },
     "pricingTitle": "Precios simples y transparentes",
     "pricingDescription": "Elige el plan que se ajuste a tu equipo. Comienza gratis y actualiza a medida que creces.",
     "learnMore": "Saber más",
-    "viewAllPricing": "Ver todos los detalles de precios"
+    "viewAllPricing": "Ver todos los detalles de precios",
+    "ctaTitle": "¿Listo para contratar de forma más inteligente?",
+    "ctaDescription": "Inicia tu prueba gratuita hoy y pon agentes de IA, campañas sociales y bots de WhatsApp a trabajar para tu equipo de contratación.",
+    "ctaButton": "Inicia tu prueba gratuita"
   },
   "pricing": {
     "title": "Precios simples y transparentes",
@@ -172,6 +326,10 @@
       "last30Days": "Últimos 30 días",
       "last90Days": "Últimos 90 días",
       "allTime": "Todo el tiempo"
+    },
+    "mobile": {
+      "menu": "Menú",
+      "more": "Más"
     }
   },
   "navigation": {
@@ -652,6 +810,10 @@
     "empty": {
       "title": "Aún no hay aplicaciones",
       "subtitle": "Agrega un candidato para empezar a gestionar tu pipeline."
+    },
+    "mobile": {
+      "moveTo": "Mover a etapa",
+      "emptyStage": "No hay aplicaciones en esta etapa"
     },
     "errors": {
       "load": "No se pudo cargar el pipeline",

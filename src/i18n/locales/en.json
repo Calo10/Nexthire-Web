@@ -77,21 +77,175 @@
     }
   },
   "landing": {
+    "heroBadge": "AI-powered ATS for growing teams",
     "heroTitle": "Start hiring faster",
-    "heroDescription": "The modern recruitment platform that helps you find, track, and hire the best candidates faster than ever.",
+    "heroDescription": "NextHire combines AI automation, multi-channel campaigns on Instagram, Facebook, LinkedIn and TikTok, WhatsApp apply bots, and a full ATS — so you can attract, screen, and hire top talent from one platform.",
+    "heroTrialNote": "14-day free trial · No credit card required",
     "viewPricing": "View pricing",
+    "startTrial": "Start free trial",
+    "stats": {
+      "modules": {
+        "value": "9+",
+        "label": "Recruiting modules"
+      },
+      "trial": {
+        "value": "14 days",
+        "label": "Free trial included"
+      },
+      "ai": {
+        "value": "AI",
+        "label": "Agents & smart automation"
+      },
+      "channels": {
+        "value": "5+",
+        "label": "Social & chat channels"
+      }
+    },
     "featuresTitle": "Everything you need to hire smarter",
-    "featuresDescription": "Streamline your hiring process with powerful tools designed for modern recruiters.",
-    "jobs": "Jobs",
-    "jobsDescription": "Create and manage job postings with ease. Track applications and find the perfect candidates.",
-    "pipeline": "Pipeline",
-    "pipelineDescription": "Visualize your candidate pipeline. Move candidates through stages and never lose track of progress.",
-    "candidates": "Candidates",
-    "candidatesDescription": "Manage candidate profiles, resumes, and notes all in one place. Make informed hiring decisions.",
+    "featuresDescription": "From the first job posting to the signed offer, NextHire gives your team the tools to move faster with clarity and control.",
+    "featureItems": {
+      "dashboard": {
+        "title": "Dashboard & analytics",
+        "description": "See active jobs, pipeline volume, interviews, and hires at a glance with charts and recent activity."
+      },
+      "jobs": {
+        "title": "Job management",
+        "description": "Create and manage job postings, application questions, and hiring details from a centralized workspace."
+      },
+      "candidates": {
+        "title": "Candidate profiles",
+        "description": "Store resumes, notes, contact details, and evaluation history for every applicant in one place."
+      },
+      "pipeline": {
+        "title": "Visual pipeline",
+        "description": "Move candidates through customizable stages with kanban boards and stage-based workflows."
+      },
+      "tasks": {
+        "title": "Tasks & follow-ups",
+        "description": "Assign recruiting tasks, track deadlines, and keep your team aligned on next steps."
+      },
+      "sourcing": {
+        "title": "Sourcing & campaigns",
+        "description": "Launch campaigns on Instagram, Facebook, LinkedIn, and TikTok — track leads and connect every channel to open roles."
+      },
+      "templates": {
+        "title": "Message templates",
+        "description": "Save reusable email and messaging templates to respond consistently and save time."
+      },
+      "aiAgents": {
+        "title": "AI agents",
+        "description": "AI-powered agents automate sourcing, screening, interviews, and offers — with human review built in."
+      },
+      "teams": {
+        "title": "Teams & permissions",
+        "description": "Invite teammates, manage organization users, and control access across your hiring workspace."
+      },
+      "publicJobs": {
+        "title": "Public career pages",
+        "description": "Publish branded job listings and let candidates apply on the web or through WhatsApp apply bots."
+      }
+    },
+    "aiSection": {
+      "badge": "AI-powered",
+      "title": "Artificial intelligence built into hiring",
+      "description": "NextHire uses AI across the recruiting lifecycle — not as a gimmick, but as practical automation that saves your team hours every week.",
+      "capabilities": {
+        "0": "AI agents for sourcing, screening, interview, and offer stages",
+        "1": "Smart message drafting for candidate outreach and follow-ups",
+        "2": "Automated workflow suggestions based on pipeline activity",
+        "3": "Configurable cadences so AI runs on your schedule",
+        "4": "Human-in-the-loop review before messages and decisions go out"
+      }
+    },
+    "campaignsSection": {
+      "title": "Create campaigns on every major channel",
+      "description": "Reach candidates where they already spend time. Build and track recruiting campaigns on Instagram, Facebook, LinkedIn, and TikTok — linked directly to your open jobs.",
+      "bullets": {
+        "0": "Multi-platform campaign builder tied to job postings",
+        "1": "Instagram & Facebook via Meta campaign workflows",
+        "2": "LinkedIn and TikTok ads tracking in one inbox",
+        "3": "Lead source analytics from click to application"
+      },
+      "platforms": {
+        "instagram": "Instagram",
+        "facebook": "Facebook",
+        "linkedin": "LinkedIn",
+        "tiktok": "TikTok"
+      }
+    },
+    "whatsappSection": {
+      "badge": "WhatsApp apply bots",
+      "title": "Let candidates apply on WhatsApp",
+      "description": "Meet talent on the channel they use every day. NextHire WhatsApp apply bots guide candidates through your job-specific screening questions and send applications straight into your pipeline.",
+      "bullets": {
+        "0": "Shareable WhatsApp links and QR codes per job",
+        "1": "Bot-driven application flow with custom screening questions",
+        "2": "Prefilled apply messages linked to the correct job posting",
+        "3": "Applications land in your pipeline automatically — no manual entry"
+      }
+    },
+    "howItWorksTitle": "How NextHire works",
+    "howItWorksDescription": "Launch your recruiting workspace in three simple steps.",
+    "steps": {
+      "0": {
+        "title": "Create your workspace",
+        "description": "Sign up, set up your organization, and invite your hiring team in minutes."
+      },
+      "1": {
+        "title": "Publish jobs & attract talent",
+        "description": "Post roles, share public career pages, and bring in candidates from campaigns and applications."
+      },
+      "2": {
+        "title": "Track, collaborate & hire",
+        "description": "Move applicants through your pipeline, assign tasks, and make data-informed hiring decisions."
+      }
+    },
+    "showcaseTitle": "Built for real recruiting workflows",
+    "showcaseDescription": "See how teams use NextHire day to day — from pipeline management to sourcing and analytics.",
+    "showcases": {
+      "pipeline": {
+        "title": "Pipeline that keeps everyone in sync",
+        "description": "Drag candidates across stages, inspect applications, and understand where every role stands without switching tools.",
+        "bullets": {
+          "0": "Kanban and stage-based views",
+          "1": "Application details and notes in context",
+          "2": "Clear visibility from applied to hired"
+        }
+      },
+      "sourcing": {
+        "title": "Sourcing connected to your roles",
+        "description": "Launch campaigns on Instagram, Facebook, LinkedIn, and TikTok — then track leads and conversions alongside your open jobs.",
+        "bullets": {
+          "0": "Campaign builder for Instagram, Facebook, LinkedIn & TikTok",
+          "1": "Lead inbox and source tracking",
+          "2": "Analytics on conversion and reach"
+        }
+      },
+      "analytics": {
+        "title": "Analytics that drive decisions",
+        "description": "Monitor applications by stage, hiring velocity, and team activity from a dashboard built for recruiters.",
+        "bullets": {
+          "0": "Pipeline and activity metrics",
+          "1": "Recent candidates and upcoming tasks",
+          "2": "Filters by job and date range"
+        }
+      }
+    },
+    "teamsTitle": "Collaboration built for hiring teams",
+    "teamsDescription": "Recruiting is a team sport. NextHire helps recruiters, hiring managers, and admins work together with shared visibility and controlled access.",
+    "teamsBullets": {
+      "0": "Organization workspaces with role-based access",
+      "1": "Shared candidate and job records",
+      "2": "Tasks assigned to the right teammates",
+      "3": "Templates and workflows the whole team can use"
+    },
     "pricingTitle": "Simple, transparent pricing",
     "pricingDescription": "Choose the plan that fits your team. Start free and upgrade as you grow.",
     "learnMore": "Learn more",
-    "viewAllPricing": "View all pricing details"
+    "viewAllPricing": "View all pricing details",
+    "ctaTitle": "Ready to hire smarter?",
+    "ctaDescription": "Start your free trial today and put AI agents, social campaigns, and WhatsApp apply bots to work for your hiring team.",
+    "ctaButton": "Start your free trial"
   },
   "pricing": {
     "title": "Simple, transparent pricing",
@@ -172,6 +326,10 @@
       "last30Days": "Last 30 days",
       "last90Days": "Last 90 days",
       "allTime": "All time"
+    },
+    "mobile": {
+      "menu": "Menu",
+      "more": "More"
     }
   },
   "navigation": {
@@ -652,6 +810,10 @@
     "empty": {
       "title": "No applications yet",
       "subtitle": "Add a candidate to start tracking your pipeline."
+    },
+    "mobile": {
+      "moveTo": "Move to stage",
+      "emptyStage": "No applications in this stage"
     },
     "errors": {
       "load": "Failed to load pipeline",
