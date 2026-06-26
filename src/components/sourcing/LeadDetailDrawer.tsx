@@ -10,7 +10,8 @@ import {
 } from '../../api/sourcingApi';
 import type { SourcingLead } from '../../types/sourcing';
 import LeadStatusPill from './LeadStatusPill';
-import { fitScoreTone, formatDynamicAnswerDisplayValue, leadDisplayName, parseDynamicAnswersJson, whatsappHref } from './sourcingUtils';
+import { fitScoreTone, formatDynamicAnswerDisplayValue, leadDisplayName, parseDynamicAnswersJson } from './sourcingUtils';
+import { useBackdropDismiss } from '../../hooks/useBackdropDismiss';
 
 interface Props {
   isOpen: boolean;
@@ -21,6 +22,7 @@ interface Props {
 
 export default function LeadDetailDrawer({ isOpen, leadId, onClose, onUpdated }: Props) {
   const { t } = useTranslation();
+  const backdropDismiss = useBackdropDismiss(onClose);
   const [data, setData] = useState<SourcingLead | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -86,7 +88,6 @@ export default function LeadDetailDrawer({ isOpen, leadId, onClose, onUpdated }:
     }
   };
 
-  const wa = data ? whatsappHref(data.phone) : null;
   const dynamicAnswers = useMemo(
     () => parseDynamicAnswersJson(data?.dynamicAnswersJson),
     [data?.dynamicAnswersJson]
@@ -95,13 +96,8 @@ export default function LeadDetailDrawer({ isOpen, leadId, onClose, onUpdated }:
   if (!isOpen) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-    >
-      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
+    <div className="fixed inset-0 z-50">
+      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" {...backdropDismiss} />
       <div className="absolute right-0 top-0 h-full w-full max-w-xl bg-white shadow-2xl flex flex-col border-l border-gray-200">
         <div className="p-6 border-b border-gray-200 flex items-start justify-between gap-4">
           <div className="min-w-0">
@@ -150,16 +146,6 @@ export default function LeadDetailDrawer({ isOpen, leadId, onClose, onUpdated }:
                     <span className="text-gray-500">{t('sourcing.leadForm.email')}: </span>
                     <span className="text-gray-900">{data.email || '—'}</span>
                   </p>
-                  {wa ? (
-                    <a
-                      href={wa}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-2 text-emerald-700 font-medium hover:underline"
-                    >
-                      💬 {t('sourcing.actions.whatsApp')}
-                    </a>
-                  ) : null}
                 </div>
               </section>
 

@@ -7,7 +7,7 @@
     "pricing": "Pricing",
     "terms": "Terms of Service",
     "privacy": "Privacy Policy",
-    "copyright": "© 2024 NextHire. All rights reserved.",
+    "copyright": "© 2026 NextHire. All rights reserved.",
     "loading": "Loading...",
     "optional": "Optional",
     "none": "—",
@@ -1056,7 +1056,8 @@
         "questionTextRequired": "Question text is required.",
         "questionTextLength": "Text must be between 2 and 2000 characters.",
         "answerTypeRequired": "Select an answer type.",
-        "sortOrderInvalid": "Order must be an integer greater than or equal to 0."
+        "sortOrderInvalid": "Order must be an integer greater than or equal to 0.",
+        "fileQuestionLimit": "Only one file upload question is allowed per job."
       },
       "toast": {
         "saved": "Question saved",
@@ -1256,6 +1257,9 @@
       "helpCenter": "Help Center",
       "support": "Support",
       "contact": "Contact Us",
+      "website": "Website",
+      "email": "Email",
+      "phone": "Phone",
       "events": "Events",
       "forums": "Forums",
       "developers": "Developers"
@@ -1576,8 +1580,54 @@
     "description": "Manage your account settings and preferences",
     "profile": {
       "title": "Profile",
-      "description": "Manage your profile information",
-      "comingSoon": "Profile settings coming soon..."
+      "description": "Manage your profile and organization branding for public careers pages."
+    },
+    "branding": {
+      "title": "Organization branding",
+      "description": "Customize how your public careers and apply pages look to candidates.",
+      "forbidden": "Only organization owners and admins can manage branding settings.",
+      "nexaOrgNameHint": "Nexa organization name: {{name}}. The display name below is shown on public pages only.",
+      "contactSection": "Contact information",
+      "fields": {
+        "displayName": "Public display name",
+        "website": "Website",
+        "contactEmail": "Contact email",
+        "contactPhone": "Contact phone",
+        "logo": "Organization logo",
+        "colorPalette": "Color palette"
+      },
+      "placeholders": {
+        "displayName": "e.g., ACME Talent",
+        "website": "https://acme.com",
+        "contactEmail": "talent@acme.com",
+        "contactPhone": "+506 2222-3333"
+      },
+      "logoHint": "PNG, JPEG, or WebP. Max 512 KB.",
+      "noLogo": "No logo",
+      "removeLogo": "Remove logo",
+      "noPalettes": "No color palettes available.",
+      "preview": "Preview",
+      "previewTitle": "Your organization",
+      "previewSubtitle": "Public careers page preview",
+      "previewButton": "Apply now",
+      "save": "Save branding",
+      "validation": {
+        "logoTooLarge": "Logo must be 512 KB or smaller.",
+        "logoInvalidType": "Logo must be PNG, JPEG, or WebP.",
+        "logoReadFailed": "Could not read the selected logo file.",
+        "websiteInvalid": "Website must be a valid http or https URL.",
+        "websiteMaxLength": "Website must be 500 characters or fewer.",
+        "contactEmailInvalid": "Contact email is not a valid email address.",
+        "contactEmailMaxLength": "Contact email must be 320 characters or fewer.",
+        "contactPhoneMaxLength": "Contact phone must be 80 characters or fewer."
+      },
+      "toast": {
+        "saved": "Organization branding saved"
+      },
+      "errors": {
+        "load": "Failed to load organization branding.",
+        "save": "Failed to save organization branding."
+      }
     },
     "security": {
       "title": "Set Password",

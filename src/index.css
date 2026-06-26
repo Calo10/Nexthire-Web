@@ -63,6 +63,111 @@
   .scrollbar-subtle-x::-webkit-scrollbar-thumb:hover {
     background-color: rgba(139, 92, 246, 0.5);
   }
+
+  .public-org-branding {
+    color: var(--brand-body, #343a40);
+  }
+
+  .public-org-branding .brand-page-bg {
+    background-color: #f7fafc;
+  }
+
+  .public-org-branding .brand-surface {
+    background-color: #ffffff;
+  }
+
+  .public-org-branding .brand-heading {
+    color: var(--brand-heading, #0a2540);
+  }
+
+  .public-org-branding .brand-body {
+    color: var(--brand-body, #343a40);
+  }
+
+  .public-org-branding .brand-muted {
+    color: var(--brand-muted, #6c757d);
+  }
+
+  .public-org-branding .brand-border {
+    border-color: var(--brand-border, #e9ecef);
+  }
+
+  .public-org-branding .brand-card {
+    background-color: #ffffff;
+    border: 1px solid var(--brand-border, #e9ecef);
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.06);
+  }
+
+  .public-org-branding .brand-input {
+    background-color: #ffffff;
+    border: 1px solid var(--brand-border, #e9ecef);
+    color: var(--brand-body, #343a40);
+  }
+
+  .public-org-branding .brand-input:focus {
+    outline: none;
+    border-color: transparent;
+    box-shadow: 0 0 0 2px var(--brand-primary, #00d9a3);
+  }
+
+  .public-org-branding button[class*='bg-gradient-to-r'] {
+    background-image: none !important;
+    background-color: var(--brand-primary, #00d9a3) !important;
+    color: var(--brand-primary-fg, #ffffff) !important;
+  }
+
+  .public-org-branding button[class*='bg-gradient-to-r']:hover {
+    opacity: 0.92 !important;
+  }
+
+  .public-org-branding button.border-2 {
+    border-color: var(--brand-border, #e9ecef) !important;
+    color: var(--brand-body, #343a40) !important;
+  }
+
+  .public-org-branding button.border-2:hover {
+    background-color: var(--brand-page-bg, #f7fafc) !important;
+  }
+
+  .public-org-branding a.brand-link:hover {
+    color: var(--brand-primary, #00d9a3);
+  }
+
+  .public-org-branding .brand-footer {
+    background-color: var(--brand-footer-bg, #021926);
+    color: var(--brand-footer-text, #ffffff);
+    border-color: color-mix(in srgb, var(--brand-footer-text, #ffffff) 18%, transparent);
+  }
+
+  .public-org-branding .brand-footer .brand-footer-heading {
+    color: var(--brand-footer-text, #ffffff);
+  }
+
+  .public-org-branding .brand-footer .brand-footer-muted {
+    color: color-mix(in srgb, var(--brand-footer-text, #ffffff) 72%, transparent);
+  }
+
+  .public-org-branding .brand-footer .brand-footer-label {
+    color: var(--brand-footer-accent, #00d9a3);
+  }
+
+  .public-org-branding .brand-footer a.brand-footer-link {
+    color: color-mix(in srgb, var(--brand-footer-text, #ffffff) 72%, transparent);
+    transition: color 0.15s ease;
+  }
+
+  .public-org-branding .brand-footer a.brand-footer-link:hover {
+    color: var(--brand-footer-accent, #00d9a3);
+  }
+
+  .public-org-branding .brand-footer .brand-footer-border {
+    border-color: color-mix(in srgb, var(--brand-footer-text, #ffffff) 18%, transparent);
+  }
+
+  .public-org-branding .brand-footer .brand-footer-icon {
+    border-color: color-mix(in srgb, var(--brand-footer-text, #ffffff) 25%, transparent);
+    color: color-mix(in srgb, var(--brand-footer-text, #ffffff) 72%, transparent);
+  }
 }
 
 @keyframes blob {

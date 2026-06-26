@@ -10,6 +10,7 @@ import StatusPill from '../StatusPill';
 import type { Job, JobLanguage } from '../../types/dashboard';
 import { jobsApi, type ApiError } from '../../lib/api';
 import JobBotQuestionsModal from './JobBotQuestionsModal';
+import { useBackdropDismiss } from '../../hooks/useBackdropDismiss';
 
 function formatDate(dateString: string | undefined, locale: string) {
   if (!dateString) return '-';
@@ -36,6 +37,7 @@ interface JobDetailDrawerProps {
 
 export default function JobDetailDrawer({ isOpen, job, onClose, onUpdated, onDeleted }: JobDetailDrawerProps) {
   const { t, i18n } = useTranslation();
+  const backdropDismiss = useBackdropDismiss(onClose);
   const locale = i18n.language || 'en';
 
   const [isEditing, setIsEditing] = useState(false);
@@ -164,13 +166,8 @@ export default function JobDetailDrawer({ isOpen, job, onClose, onUpdated, onDel
 
   return (
     <>
-    <div
-      className="fixed inset-0 z-50"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-    >
-      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
+    <div className="fixed inset-0 z-50">
+      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" {...backdropDismiss} />
 
       <div className="absolute right-0 top-0 h-full w-full max-w-xl bg-white shadow-2xl flex flex-col border-l border-gray-200">
         <div className="p-6 border-b border-gray-200 flex items-start justify-between gap-4">

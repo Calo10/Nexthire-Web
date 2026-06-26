@@ -26,6 +26,7 @@ export interface ApiError {
 // Callback for 401 handling
 let onUnauthorized: (() => void) | null = null;
 let lastLoginTime: number = 0;
+let unauthorizedHandled = false;
 const LOGIN_GRACE_PERIOD = 30000; // 30 seconds after login, don't auto-logout on 401
 
 export function setUnauthorizedHandler(handler: () => void) {
@@ -34,6 +35,27 @@ export function setUnauthorizedHandler(handler: () => void) {
 
 export function setLastLoginTime() {
   lastLoginTime = Date.now();
+  unauthorizedHandled = false;
+}
+
+function triggerUnauthorizedIfNeeded(token: string | null): void {
+  if (!token || !onUnauthorized || unauthorizedHandled) return;
+
+  const storedToken = localStorage.getItem('nhAccessToken');
+  if (!storedToken || token !== storedToken) return;
+
+  const msSinceLogin = Date.now() - lastLoginTime;
+  if (lastLoginTime && msSinceLogin < LOGIN_GRACE_PERIOD) {
+    if (import.meta.env.DEV) {
+      console.warn('[ApiClient] Suppressing onUnauthorized due to login grace period', {
+        msSinceLogin,
+      });
+    }
+    return;
+  }
+
+  unauthorizedHandled = true;
+  onUnauthorized();
 }
 
 // ApiClient: Automatically adds Authorization header for protected endpoints
@@ -92,6 +114,10 @@ class ApiClient {
     // For protected endpoints (dashboard, jobs, /me, etc.), always add Authorization if token exists
     if (token && !isPublicAuthEndpoint) {
       headers['Authorization'] = `Bearer ${token}`;
+      const nexaToken = localStorage.getItem('nexaAccessToken');
+      if (nexaToken) {
+        headers['X-Nexa-Access-Token'] = nexaToken;
+      }
     }
 
     // Safe auth/header logging for ALL NextHire API requests (dev only)
@@ -194,47 +220,19 @@ class ApiClient {
           });
         }
 
-        // Only trigger logout handler if skipUnauthorizedHandler is false
-        // Dashboard endpoints should skip this to prevent logout on API errors
-        // IMPORTANT: Only treat as 401 if it's actually an authentication error, not a server error
-        if (response.status === 401 && token && onUnauthorized && !skipUnauthorizedHandler) {
-          const storedToken = localStorage.getItem('nhAccessToken');
-          // Only logout if token matches (means it was sent but rejected)
-          if (storedToken && token === storedToken) {
-            // Don't auto-logout immediately after login (backend may still be warming up / token propagation)
-            const msSinceLogin = Date.now() - lastLoginTime;
-            if (lastLoginTime && msSinceLogin < LOGIN_GRACE_PERIOD) {
-              if (import.meta.env.DEV) {
-                console.warn('[ApiClient] Suppressing onUnauthorized due to login grace period', {
-                  method: options.method || 'GET',
-                  url,
-                  msSinceLogin,
-                });
-              }
-            } else {
-              onUnauthorized();
-            }
-          }
+        if (response.status === 401) {
+          triggerUnauthorizedIfNeeded(token);
         }
-        
+
         // Provide user-friendly error messages
         // IMPORTANT: Distinguish between 401 (auth) and 500 (server) errors
         let errorMessage = 'An error occurred. Please try again.';
-        
+
         if (response.status === 401) {
-          if (skipUnauthorizedHandler) {
-            // Dashboard endpoints - don't suggest logout, just show API error
-            // Override any "session expired" messages from backend for dashboard endpoints
-            const backendMessage = errorData.message || errorData.error || '';
-            if (backendMessage.toLowerCase().includes('session') || backendMessage.toLowerCase().includes('expired') || backendMessage.toLowerCase().includes('unauthorized')) {
-              errorMessage = 'Unable to load data. Please try again.';
-            } else {
-              errorMessage = backendMessage || 'Unable to load data. Please try again.';
-            }
-          } else {
-            // Other endpoints - can suggest logout
-            errorMessage = errorData.message || errorData.error || 'Your session has expired. Please log in again.';
-          }
+          errorMessage =
+            errorData.message ||
+            errorData.error ||
+            'Your session has expired. Please log in again.';
         } else if (response.status === 400) {
           errorMessage = errorData.message || errorData.error || 'Please check your input and try again.';
         } else if (response.status === 403) {
@@ -746,10 +744,8 @@ export const onboardingApi = {
         message: `HTTP error! status: ${response.status}`,
       }));
       
-      // Handle 401 Unauthorized - only trigger logout if we had a token
-      if (response.status === 401 && nhToken && onUnauthorized) {
-        // Only call onUnauthorized if we actually sent a token
-        onUnauthorized();
+      if (response.status === 401) {
+        triggerUnauthorizedIfNeeded(nhToken);
       }
       
       throw {

@@ -198,6 +198,16 @@ export default function JobBotQuestionsModal({ isOpen, jobId, jobTitle, onClose 
     [questions]
   );
 
+  const hasExistingFileQuestion = useMemo(
+    () => questions.some((question) => question.answerType === 'file' && question.id !== editingId),
+    [questions, editingId]
+  );
+
+  const availableAnswerTypeOptions = useMemo(() => {
+    if (!hasExistingFileQuestion) return answerTypeOptions;
+    return answerTypeOptions.filter((option) => option.value !== 'file');
+  }, [answerTypeOptions, hasExistingFileQuestion]);
+
   const generatedQuestionKey = useMemo(() => {
     if (formMode !== 'create') return '';
     return buildQuestionKey(form.questionText, existingQuestionKeys);
@@ -220,6 +230,8 @@ export default function JobBotQuestionsModal({ isOpen, jobId, jobTitle, onClose 
 
     if (!form.answerType) {
       errors.answerType = t('jobs.botQuestions.validation.answerTypeRequired');
+    } else if (form.answerType === 'file' && hasExistingFileQuestion) {
+      errors.answerType = t('jobs.botQuestions.validation.fileQuestionLimit');
     }
 
     if (form.sortOrder.trim() !== '') {
@@ -395,7 +407,8 @@ export default function JobBotQuestionsModal({ isOpen, jobId, jobTitle, onClose 
                   label={t('jobs.botQuestions.fields.answerType')}
                   value={form.answerType}
                   onChange={(e) => setForm({ ...form, answerType: e.target.value as JobBotAnswerType })}
-                  options={answerTypeOptions}
+                  options={availableAnswerTypeOptions}
+                  error={formErrors.answerType}
                 />
                 <TextField
                   label={t('jobs.botQuestions.fields.sortOrder')}
