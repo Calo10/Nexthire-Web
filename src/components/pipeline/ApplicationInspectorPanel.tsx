@@ -11,6 +11,7 @@ import SuccessMessage from '../SuccessMessage';
 import Modal from '../Modal';
 import { candidatesApi } from '../../api/candidatesApi';
 import { whatsappApi, type WhatsappConversationDto, type WhatsappMessageDto } from '../../api/whatsappApi';
+import { useBackdropDismiss } from '../../hooks/useBackdropDismiss';
 
 type TabKey = 'history' | 'notes' | 'tasks';
 type PanelTabKey = 'activity' | 'whatsapp';
@@ -133,6 +134,7 @@ export default function ApplicationInspectorPanel(props: ApplicationInspectorPan
     onUnauthorized,
   } = props;
   const { t } = useTranslation();
+  const backdropDismiss = useBackdropDismiss(onClose);
   // Default to Notes to avoid extra calls on open
   const [tab, setTab] = useState<TabKey>('notes');
   const [panelTab, setPanelTab] = useState<PanelTabKey>('activity');
@@ -1219,7 +1221,7 @@ export default function ApplicationInspectorPanel(props: ApplicationInspectorPan
     <>
       {/* Mobile overlay */}
       <div className="lg:hidden fixed inset-0 z-50">
-        <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
+        <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" {...backdropDismiss} />
         <div className="absolute right-0 top-0 h-full w-full max-w-md">{panel}</div>
       </div>
 

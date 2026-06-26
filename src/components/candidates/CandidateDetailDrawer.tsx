@@ -12,6 +12,7 @@ import { useCandidate } from '../../hooks/useCandidate';
 import { candidatesApi } from '../../api/candidatesApi';
 import Modal from '../Modal';
 import SourcePill from './SourcePill';
+import { useBackdropDismiss } from '../../hooks/useBackdropDismiss';
 
 function formatDate(dateString: string, locale: string) {
   try {
@@ -60,6 +61,7 @@ export default function CandidateDetailDrawer({
   onDeleted,
 }: CandidateDetailDrawerProps) {
   const { t, i18n } = useTranslation();
+  const backdropDismiss = useBackdropDismiss(onClose);
   const shouldFetch = isOpen && !!candidateId;
   const { data, isLoading, error, refetch } = useCandidate(shouldFetch, candidateId);
   const [isEditing, setIsEditing] = useState(false);
@@ -277,14 +279,9 @@ export default function CandidateDetailDrawer({
 
   return (
     <>
-    <div
-      className="fixed inset-0 z-50"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-    >
+    <div className="fixed inset-0 z-50">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" {...backdropDismiss} />
 
       {/* Drawer */}
       <div className="absolute right-0 top-0 h-full w-full max-w-xl bg-white shadow-2xl flex flex-col border-l border-gray-200">

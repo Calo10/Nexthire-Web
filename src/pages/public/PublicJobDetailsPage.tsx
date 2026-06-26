@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router-dom';
-import Card from '../../components/Card';
 import Button from '../../components/Button';
 import ErrorMessage from '../../components/ErrorMessage';
 import ApplyJobModal from '../../components/public/ApplyJobModal';
@@ -17,11 +16,10 @@ function Description({ description }: { description: string | null | undefined }
     return markdownToSafeHtml(raw);
   }, [raw]);
 
-  if (!safeHtml) return <p className="text-sm text-gray-600">—</p>;
+  if (!safeHtml) return <p className="text-sm brand-muted">—</p>;
   return (
     <div
-      className="prose prose-sm max-w-none text-gray-800"
-      // sanitized by sanitizeHtml/markdownToSafeHtml
+      className="prose prose-sm max-w-none brand-body"
       dangerouslySetInnerHTML={{ __html: safeHtml }}
     />
   );
@@ -37,10 +35,13 @@ export default function PublicJobDetailsPage() {
   const alreadyApplied = !!job?.alreadyApplied;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50">
+    <div className="min-h-full">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="mb-6">
-          <Link to={`/org/${encodeURIComponent(String(orgId || ''))}/jobs`} className="text-sm font-medium text-primary hover:underline">
+          <Link
+            to={`/org/${encodeURIComponent(String(orgId || ''))}/jobs`}
+            className="text-sm font-medium brand-link brand-heading hover:opacity-80"
+          >
             ← {t('publicJobs.details.back')}
           </Link>
         </div>
@@ -48,16 +49,16 @@ export default function PublicJobDetailsPage() {
         {error ? (
           <ErrorMessage message={error.message || t('publicJobs.details.error')} />
         ) : isLoading || !job ? (
-          <Card className="p-8">
+          <div className="brand-card rounded-2xl p-8">
             <div className="h-6 bg-gray-200 rounded w-2/3 animate-pulse" />
             <div className="h-4 bg-gray-200 rounded w-1/2 mt-4 animate-pulse" />
             <div className="h-40 bg-gray-200 rounded-2xl mt-8 animate-pulse" />
-          </Card>
+          </div>
         ) : (
-          <Card className="p-8">
+          <div className="brand-card rounded-2xl p-8">
             <div className="min-w-0">
-              <h1 className="text-2xl md:text-3xl font-bold text-dark-text">{job.title}</h1>
-              <div className="mt-3 flex flex-wrap gap-2 text-sm text-gray-600">
+              <h1 className="text-2xl md:text-3xl font-bold brand-heading">{job.title}</h1>
+              <div className="mt-3 flex flex-wrap gap-2 text-sm brand-muted">
                 {job.location ? <span>{job.location}</span> : null}
                 {job.department ? <span>• {job.department}</span> : null}
                 {job.type ? <span>• {job.type}</span> : null}
@@ -71,7 +72,9 @@ export default function PublicJobDetailsPage() {
             ) : null}
 
             <div className="mt-8">
-              <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">{t('publicJobs.details.description')}</h2>
+              <h2 className="text-sm font-semibold brand-heading uppercase tracking-wide mb-3">
+                {t('publicJobs.details.description')}
+              </h2>
               <Description description={job.description} />
             </div>
 
@@ -83,7 +86,7 @@ export default function PublicJobDetailsPage() {
                 {t('publicJobs.details.backToTop')}
               </Button>
             </div>
-          </Card>
+          </div>
         )}
       </div>
 
@@ -104,4 +107,3 @@ export default function PublicJobDetailsPage() {
     </div>
   );
 }
-

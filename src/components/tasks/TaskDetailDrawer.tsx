@@ -6,6 +6,7 @@ import SuccessMessage from '../SuccessMessage';
 import TaskStatusPill from './TaskStatusPill';
 import { tasksApi } from '../../api/tasksApi';
 import type { Task } from '../../types/tasks';
+import { useBackdropDismiss } from '../../hooks/useBackdropDismiss';
 
 function formatDate(dateString: string | null | undefined, locale: string) {
   if (!dateString) return '-';
@@ -32,6 +33,7 @@ interface TaskDetailDrawerProps {
 
 export default function TaskDetailDrawer({ isOpen, taskId, onClose, onRefresh, onEdit }: TaskDetailDrawerProps) {
   const { t, i18n } = useTranslation();
+  const backdropDismiss = useBackdropDismiss(onClose);
   const [task, setTask] = useState<Task | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -106,13 +108,8 @@ export default function TaskDetailDrawer({ isOpen, taskId, onClose, onRefresh, o
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-    >
-      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
+    <div className="fixed inset-0 z-50">
+      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" {...backdropDismiss} />
 
       <div className="absolute right-0 top-0 h-full w-full max-w-xl bg-white shadow-2xl flex flex-col border-l border-gray-200">
         <div className="p-6 border-b border-gray-200 flex items-start justify-between gap-4">

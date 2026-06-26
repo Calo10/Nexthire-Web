@@ -1,6 +1,12 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { authApi, setUnauthorizedHandler, setLastLoginTime } from '../lib/api';
-import { getAuthCallbackUrl, normalizeOrganization, type StoredOrganization } from '../lib/authSession';
+import {
+  clearStoredAuthSession,
+  getAuthCallbackUrl,
+  isJwtExpired,
+  normalizeOrganization,
+  type StoredOrganization,
+} from '../lib/authSession';
 import { dedupeMagicLinkConsume } from '../lib/magicLinkToken';
 
 interface User {
@@ -125,16 +131,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Ignore errors - logout locally regardless
     }
 
-    // Clear local storage
-    localStorage.removeItem('nhAccessToken');
-    localStorage.removeItem('nh_user');
-    localStorage.removeItem('nh_org');
-    localStorage.removeItem('nh_subscription');
-    localStorage.removeItem('nh_features');
-    localStorage.removeItem('nexaAccessToken');
-    localStorage.removeItem('nexaRefreshToken');
-    localStorage.removeItem('nexaExpiresAt');
-    localStorage.removeItem('requires_org_setup');
+    clearStoredAuthSession();
     
     // Clear state
     setUser(null);
@@ -176,26 +173,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const storedSubscription = localStorage.getItem('nh_subscription');
 
     if (storedToken && storedUser) {
-      try {
-        setToken(storedToken);
-        setUser(JSON.parse(storedUser));
-        if (storedOrg) {
-          setOrg(JSON.parse(storedOrg));
+      if (isJwtExpired(storedToken)) {
+        clearStoredAuthSession();
+      } else {
+        try {
+          setToken(storedToken);
+          setUser(JSON.parse(storedUser));
+          if (storedOrg) {
+            setOrg(JSON.parse(storedOrg));
+          }
+          if (storedSubscription) {
+            setSubscription(JSON.parse(storedSubscription));
+          }
+          setIsAuthenticated(true);
+        } catch (error) {
+          clearStoredAuthSession();
         }
-        if (storedSubscription) {
-          setSubscription(JSON.parse(storedSubscription));
-        }
-        setIsAuthenticated(true);
-      } catch (error) {
-        // Invalid stored data, clear it
-        localStorage.removeItem('nhAccessToken');
-        localStorage.removeItem('nh_user');
-        localStorage.removeItem('nh_org');
-        localStorage.removeItem('nh_subscription');
-        localStorage.removeItem('nh_features');
-        localStorage.removeItem('nexaAccessToken');
-        localStorage.removeItem('nexaRefreshToken');
-        localStorage.removeItem('nexaExpiresAt');
       }
     }
     setIsLoading(false);
