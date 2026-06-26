@@ -7,7 +7,7 @@
     "pricing": "Precios",
     "terms": "Términos de Servicio",
     "privacy": "Política de Privacidad",
-    "copyright": "© 2024 NextHire. Todos los derechos reservados.",
+    "copyright": "© 2026 NextHire. Todos los derechos reservados.",
     "loading": "Cargando...",
     "optional": "Opcional",
     "none": "—",
@@ -1056,7 +1056,8 @@
         "questionTextRequired": "El texto de la pregunta es requerido.",
         "questionTextLength": "El texto debe tener entre 2 y 2000 caracteres.",
         "answerTypeRequired": "Selecciona un tipo de respuesta.",
-        "sortOrderInvalid": "El orden debe ser un entero mayor o igual a 0."
+        "sortOrderInvalid": "El orden debe ser un entero mayor o igual a 0.",
+        "fileQuestionLimit": "Solo se permite una pregunta de tipo archivo por vacante."
       },
       "toast": {
         "saved": "Pregunta guardada",
@@ -1256,6 +1257,9 @@
       "helpCenter": "Centro de ayuda",
       "support": "Soporte",
       "contact": "Contacto",
+      "website": "Sitio web",
+      "email": "Correo",
+      "phone": "Teléfono",
       "events": "Eventos",
       "forums": "Foros",
       "developers": "Desarrolladores"
@@ -1576,8 +1580,54 @@
     "description": "Administra la configuración y preferencias de tu cuenta",
     "profile": {
       "title": "Perfil",
-      "description": "Administra la información de tu perfil",
-      "comingSoon": "Configuración de perfil próximamente..."
+      "description": "Administra tu perfil y el branding de la organización para las páginas públicas de vacantes."
+    },
+    "branding": {
+      "title": "Branding de organización",
+      "description": "Personaliza cómo se ven tus páginas públicas de vacantes y aplicación para candidatos.",
+      "forbidden": "Solo owners y admins de la organización pueden administrar el branding.",
+      "nexaOrgNameHint": "Nombre de la organización en Nexa: {{name}}. El nombre público abajo solo se muestra en páginas públicas.",
+      "contactSection": "Información de contacto",
+      "fields": {
+        "displayName": "Nombre público",
+        "website": "Sitio web",
+        "contactEmail": "Email de contacto",
+        "contactPhone": "Teléfono de contacto",
+        "logo": "Logo de la organización",
+        "colorPalette": "Paleta de colores"
+      },
+      "placeholders": {
+        "displayName": "p.ej., ACME Talent",
+        "website": "https://acme.com",
+        "contactEmail": "talento@acme.com",
+        "contactPhone": "+506 2222-3333"
+      },
+      "logoHint": "PNG, JPEG o WebP. Máximo 512 KB.",
+      "noLogo": "Sin logo",
+      "removeLogo": "Quitar logo",
+      "noPalettes": "No hay paletas de colores disponibles.",
+      "preview": "Vista previa",
+      "previewTitle": "Tu organización",
+      "previewSubtitle": "Vista previa de la página pública de vacantes",
+      "previewButton": "Aplicar ahora",
+      "save": "Guardar branding",
+      "validation": {
+        "logoTooLarge": "El logo debe pesar 512 KB o menos.",
+        "logoInvalidType": "El logo debe ser PNG, JPEG o WebP.",
+        "logoReadFailed": "No se pudo leer el archivo de logo seleccionado.",
+        "websiteInvalid": "El sitio web debe ser una URL válida con http o https.",
+        "websiteMaxLength": "El sitio web debe tener 500 caracteres o menos.",
+        "contactEmailInvalid": "El email de contacto no es válido.",
+        "contactEmailMaxLength": "El email de contacto debe tener 320 caracteres o menos.",
+        "contactPhoneMaxLength": "El teléfono de contacto debe tener 80 caracteres o menos."
+      },
+      "toast": {
+        "saved": "Branding de organización guardado"
+      },
+      "errors": {
+        "load": "No se pudo cargar el branding de la organización.",
+        "save": "No se pudo guardar el branding de la organización."
+      }
     },
     "security": {
       "title": "Establecer Contraseña",

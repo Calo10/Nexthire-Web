@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { appNavItems } from '../../config/appNavItems';
 import { useAuth } from '../../contexts/AuthContext';
 import LanguageSwitcher from '../LanguageSwitcher';
+import { useBackdropDismiss } from '../../hooks/useBackdropDismiss';
 
 interface MobileSidebarDrawerProps {
   isOpen: boolean;
@@ -12,13 +13,14 @@ interface MobileSidebarDrawerProps {
 export default function MobileSidebarDrawer({ isOpen, onClose }: MobileSidebarDrawerProps) {
   const { t } = useTranslation();
   const { user, logout } = useAuth();
+  const backdropDismiss = useBackdropDismiss(onClose);
 
   return (
     <>
       {isOpen && (
         <div
           className="fixed inset-0 bg-black/40 z-40 lg:hidden"
-          onClick={onClose}
+          {...backdropDismiss}
           aria-hidden="true"
         />
       )}

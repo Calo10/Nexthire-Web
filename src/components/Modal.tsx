@@ -1,5 +1,6 @@
 import { useEffect, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useBackdropDismiss } from '../hooks/useBackdropDismiss';
 
 interface ModalProps {
   isOpen: boolean;
@@ -24,6 +25,8 @@ export default function Modal({
   width = 'md',
 }: ModalProps) {
   const { t } = useTranslation();
+  const backdropDismiss = useBackdropDismiss(onClose);
+
   // Handle ESC key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -54,22 +57,16 @@ export default function Modal({
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      onClick={(e) => {
-        // Close when clicking backdrop
-        if (e.target === e.currentTarget) {
-          onClose();
-        }
-      }}
-    >
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+      <div
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        {...backdropDismiss}
+      />
 
       {/* Modal Content */}
       <div
         className={`relative bg-white rounded-2xl shadow-xl w-full ${widthClasses[width]} max-h-[90vh] flex flex-col`}
-        onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-start justify-between gap-4 p-6 border-b border-gray-200">
