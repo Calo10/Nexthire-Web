@@ -91,10 +91,21 @@ interface Props {
   campaignId?: string | number | null;
   /** When `whatsapp-apply`, only the job is required; platform is fixed to WhatsApp. */
   createMode?: 'full' | 'whatsapp-apply';
+  twilioReady?: boolean;
+  onGoToSources?: () => void;
   onSuccess: () => void;
 }
 
-export default function CampaignModal({ isOpen, onClose, jobs, campaignId, createMode = 'full', onSuccess }: Props) {
+export default function CampaignModal({
+  isOpen,
+  onClose,
+  jobs,
+  campaignId,
+  createMode = 'full',
+  twilioReady = true,
+  onGoToSources,
+  onSuccess,
+}: Props) {
   const { t, i18n } = useTranslation();
   const readOnly = !!campaignId;
   const [loading, setLoading] = useState(false);
@@ -352,21 +363,37 @@ export default function CampaignModal({ isOpen, onClose, jobs, campaignId, creat
       subtitle={subtitle}
       width="lg"
       footer={
-        <div className="flex justify-end gap-3">
-          <Button variant="outline" type="button" onClick={onClose}>
-            {t('common.actions.close')}
-          </Button>
-          {!readOnly ? (
-            <Button variant="primary" type="submit" form="campaign-form" disabled={saving}>
-              {saving ? t('common.actions.creating') : t('sourcing.campaign.submit')}
+        whatsappOnlyCreate && !twilioReady ? null : (
+          <div className="flex justify-end gap-3">
+            <Button variant="outline" type="button" onClick={onClose}>
+              {t('common.actions.close')}
             </Button>
-          ) : null}
-        </div>
+            {!readOnly ? (
+              <Button variant="primary" type="submit" form="campaign-form" disabled={saving}>
+                {saving ? t('common.actions.creating') : t('sourcing.campaign.submit')}
+              </Button>
+            ) : null}
+          </div>
+        )
       }
     >
       {loadError ? <ErrorMessage message={loadError} /> : null}
       {submitError ? <ErrorMessage message={submitError} /> : null}
-      {loading ? (
+      {whatsappOnlyCreate && !twilioReady ? (
+        <div className="space-y-4">
+          <ErrorMessage message={t('sourcing.twilio.configureRequired')} />
+          <div className="flex flex-wrap justify-end gap-2">
+            {onGoToSources ? (
+              <Button type="button" variant="primary" onClick={onGoToSources}>
+                {t('sourcing.twilio.goToSources')}
+              </Button>
+            ) : null}
+            <Button type="button" variant="outline" onClick={onClose}>
+              {t('common.actions.close')}
+            </Button>
+          </div>
+        </div>
+      ) : loading ? (
         <div className="py-8 text-center text-gray-500">{t('common.loading')}</div>
       ) : (
         <form id="campaign-form" onSubmit={handleSubmit} className="space-y-4">

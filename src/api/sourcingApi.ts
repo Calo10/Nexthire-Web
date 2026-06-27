@@ -52,7 +52,7 @@ export async function getSourcingLead(id: string | number): Promise<SourcingLead
   return null;
 }
 
-export async function createSourcingLead(payload: Record<string, unknown>): Promise<unknown> {
+export async function createSourcingLead(payload: Record<string, unknown> | FormData): Promise<unknown> {
   return apiClient.post('/sourcing/leads', payload);
 }
 

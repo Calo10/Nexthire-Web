@@ -1,7 +1,7 @@
 import type { TFunction } from 'i18next';
 
 /** Canonical sourcing/campaign platform codes (filters + campaign creation). */
-export const SOURCING_PLATFORM_CODES = ['meta_ads', 'tiktok_ads', 'linkedin_ads', 'whatsapp'] as const;
+export const SOURCING_PLATFORM_CODES = ['meta_ads', 'tiktok_ads', 'linkedin_ads', 'twilio', 'whatsapp'] as const;
 
 export type SourcingPlatformCode = (typeof SOURCING_PLATFORM_CODES)[number];
 
@@ -13,6 +13,7 @@ export function normalizeSourcingPlatformCode(raw: string | null | undefined): s
     .replace(/\s+/g, '_');
   if (!s) return '';
   if (s === 'meta' || s === 'meta_ads' || s === 'facebook_ads' || s.startsWith('meta_')) return 'meta_ads';
+  if (s.includes('twilio')) return 'twilio';
   if (s.includes('whatsapp')) return 'whatsapp';
   if (s.includes('tiktok')) return 'tiktok_ads';
   if (s.includes('linkedin')) return 'linkedin_ads';

@@ -15,11 +15,17 @@ import { normalizeSourcingPlatformCode, SOURCING_PLATFORM_CODES } from '../../li
 import CampaignModal from './CampaignModal';
 import LeadStatusPill from './LeadStatusPill';
 import SourceTypeBrandLogo from './SourceTypeBrandLogo';
+import HoverTooltip from '../HoverTooltip';
 
 interface Props {
   shouldFetch: boolean;
   refreshKey: number;
   jobs: Job[];
+  metaAdsReady: boolean;
+  metaAdsLoading?: boolean;
+  twilioReady: boolean;
+  twilioLoading?: boolean;
+  onGoToSources?: () => void;
   onToastSuccess: (msg: string) => void;
   onToastError: (msg: string) => void;
   onOpenCreateCampaign: (mode?: 'full' | 'whatsapp-apply') => void;
@@ -46,6 +52,11 @@ export default function CampaignsTab({
   shouldFetch,
   refreshKey,
   jobs,
+  metaAdsReady,
+  metaAdsLoading = false,
+  twilioReady,
+  twilioLoading = false,
+  onGoToSources,
   onToastSuccess,
   onToastError,
   onOpenCreateCampaign,
@@ -150,23 +161,93 @@ export default function CampaignsTab({
     }
   };
 
+  const metaCreateDisabled = metaAdsLoading || !metaAdsReady;
+  const showMetaTooltip = !metaAdsReady && !metaAdsLoading;
+
+  const metaTooltipContent = (
+    <>
+      {t('sourcing.metaAds.configureRequired')}
+      {onGoToSources ? (
+        <>
+          {' '}
+          <button
+            type="button"
+            className="font-medium text-violet-300 underline hover:text-white"
+            onClick={onGoToSources}
+          >
+            {t('sourcing.metaAds.goToSources')}
+          </button>
+        </>
+      ) : null}
+    </>
+  );
+
+  const metaCreateButton = (tooltipAlign: 'center' | 'end' = 'end') => (
+    <HoverTooltip show={showMetaTooltip} content={metaTooltipContent} align={tooltipAlign}>
+      <Button
+        variant="primary"
+        size="md"
+        onClick={() => onOpenCreateCampaign('full')}
+        disabled={metaCreateDisabled}
+        className={`disabled:opacity-45 disabled:cursor-not-allowed disabled:hover:opacity-45 ${
+          metaCreateDisabled ? 'pointer-events-none' : ''
+        }`}
+      >
+        <span className="flex items-center justify-center gap-2">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          {t('sourcing.header.createCampaign')}
+        </span>
+      </Button>
+    </HoverTooltip>
+  );
+
+  const whatsappCreateDisabled = twilioLoading || !twilioReady;
+  const showWhatsappTooltip = !twilioReady && !twilioLoading;
+
+  const whatsappTooltipContent = (
+    <>
+      {t('sourcing.twilio.configureRequired')}
+      {onGoToSources ? (
+        <>
+          {' '}
+          <button
+            type="button"
+            className="font-medium text-violet-300 underline hover:text-white"
+            onClick={onGoToSources}
+          >
+            {t('sourcing.twilio.goToSources')}
+          </button>
+        </>
+      ) : null}
+    </>
+  );
+
+  const whatsappCreateButton = (tooltipAlign: 'center' | 'end' = 'end') => (
+    <HoverTooltip show={showWhatsappTooltip} content={whatsappTooltipContent} align={tooltipAlign}>
+      <Button
+        variant="outline"
+        size="md"
+        onClick={() => onOpenCreateCampaign('whatsapp-apply')}
+        disabled={whatsappCreateDisabled}
+        className={`disabled:opacity-45 disabled:cursor-not-allowed disabled:hover:opacity-45 ${
+          whatsappCreateDisabled ? 'pointer-events-none' : ''
+        }`}
+      >
+        <span className="flex items-center justify-center gap-2">
+          <img src="https://cdn.simpleicons.org/whatsapp" alt="" className="w-5 h-5" />
+          {t('sourcing.header.createWhatsAppCampaign')}
+        </span>
+      </Button>
+    </HoverTooltip>
+  );
+
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap justify-end gap-2">
-        <Button variant="outline" size="md" onClick={() => onOpenCreateCampaign('whatsapp-apply')}>
-          <span className="flex items-center gap-2">
-            <img src="https://cdn.simpleicons.org/whatsapp" alt="" className="w-5 h-5" />
-            {t('sourcing.header.createWhatsAppCampaign')}
-          </span>
-        </Button>
-        <Button variant="primary" size="md" onClick={() => onOpenCreateCampaign('full')}>
-          <span className="flex items-center gap-2">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            {t('sourcing.header.createCampaign')}
-          </span>
-        </Button>
+      <div className="flex flex-wrap justify-end items-start gap-2">
+        {whatsappCreateButton('end')}
+        {metaCreateButton('end')}
       </div>
 
       {error ? <ErrorMessage message={error} /> : null}
@@ -181,13 +262,9 @@ export default function CampaignsTab({
         <div className="text-center py-16 px-6 rounded-2xl border border-dashed border-purple-200 bg-white/60">
           <h3 className="text-lg font-semibold text-dark-text mb-2">{t('sourcing.empty.noCampaignsTitle')}</h3>
           <p className="text-sm text-gray-600 mb-6">{t('sourcing.empty.noCampaignsSubtitle')}</p>
-          <div className="flex flex-wrap justify-center gap-2">
-            <Button variant="outline" onClick={() => onOpenCreateCampaign('whatsapp-apply')}>
-              {t('sourcing.header.createWhatsAppCampaign')}
-            </Button>
-            <Button variant="primary" onClick={() => onOpenCreateCampaign('full')}>
-              {t('sourcing.header.createCampaign')}
-            </Button>
+          <div className="flex flex-wrap justify-center items-start gap-2">
+            {whatsappCreateButton('center')}
+            {metaCreateButton('center')}
           </div>
         </div>
       ) : (

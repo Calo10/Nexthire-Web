@@ -7,9 +7,25 @@ import Modal from '../components/Modal';
 import TextareaField from '../components/TextareaField';
 import TextField from '../components/TextField';
 import CreateApplicationModal from '../components/pipeline/CreateApplicationModal';
+import HoverTooltip from '../components/HoverTooltip';
 
 export default function PipelinePage() {
   const page = usePipelinePage();
+  const whatsappChannelDisabled = page.twilioLoading || !page.twilioReady;
+  const showWhatsappChannelTooltip = !page.twilioReady && !page.twilioLoading;
+
+  const whatsappChannelTooltip = (
+    <>
+      {page.t('pipeline.message.whatsappConfigureRequired')}{' '}
+      <button
+        type="button"
+        className="font-medium text-violet-300 underline hover:text-white"
+        onClick={page.goToSourcingSources}
+      >
+        {page.t('sourcing.twilio.goToSources')}
+      </button>
+    </>
+  );
 
   return (
     <>
@@ -136,15 +152,18 @@ export default function PipelinePage() {
               >
                 Email
               </button>
-              <button
-                type="button"
-                onClick={() => page.setMessageChannel('whatsapp')}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                  page.messageChannel === 'whatsapp' ? 'bg-white text-primary shadow-sm' : 'text-gray-600 hover:text-dark-text'
-                }`}
-              >
-                WhatsApp
-              </button>
+              <HoverTooltip show={showWhatsappChannelTooltip} content={whatsappChannelTooltip} align="end">
+                <button
+                  type="button"
+                  onClick={() => page.setMessageChannel('whatsapp')}
+                  disabled={whatsappChannelDisabled}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-45 disabled:cursor-not-allowed ${
+                    page.messageChannel === 'whatsapp' ? 'bg-white text-primary shadow-sm' : 'text-gray-600 hover:text-dark-text'
+                  } ${whatsappChannelDisabled ? 'pointer-events-none' : ''}`}
+                >
+                  WhatsApp
+                </button>
+              </HoverTooltip>
             </div>
           </div>
         </div>

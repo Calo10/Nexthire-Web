@@ -56,10 +56,20 @@ interface Props {
   onClose: () => void;
   jobs: Job[];
   jobsLoading?: boolean;
+  metaAdsReady?: boolean;
+  onGoToSources?: () => void;
   onSuccess: () => void;
 }
 
-export default function MetaCampaignBuilderModal({ isOpen, onClose, jobs, jobsLoading = false, onSuccess }: Props) {
+export default function MetaCampaignBuilderModal({
+  isOpen,
+  onClose,
+  jobs,
+  jobsLoading = false,
+  metaAdsReady = true,
+  onGoToSources,
+  onSuccess,
+}: Props) {
   const { t } = useTranslation();
   const { org } = useAuth();
   const tenantId = useMemo(() => resolveTenantId(org), [org]);
@@ -470,20 +480,36 @@ export default function MetaCampaignBuilderModal({ isOpen, onClose, jobs, jobsLo
       width="xl"
     >
       <div className="flex flex-wrap gap-2 mb-4">
-        {Array.from({ length: STEPS }, (_, i) => i + 1).map((n) => (
-          <div
-            key={n}
-            className={`px-3 py-1 rounded-full text-sm font-medium ${
-              n === step ? 'bg-primary text-white' : n < step ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-200 text-gray-600'
-            }`}
-          >
-            {t('metaCampaign.stepLabel', { current: n, total: STEPS })} — {t(`metaCampaign.steps.s${n}`)}
-          </div>
-        ))}
+        {metaAdsReady
+          ? Array.from({ length: STEPS }, (_, i) => i + 1).map((n) => (
+              <div
+                key={n}
+                className={`px-3 py-1 rounded-full text-sm font-medium ${
+                  n === step ? 'bg-primary text-white' : n < step ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-200 text-gray-600'
+                }`}
+              >
+                {t('metaCampaign.stepLabel', { current: n, total: STEPS })} — {t(`metaCampaign.steps.s${n}`)}
+              </div>
+            ))
+          : null}
       </div>
 
       <Card className="p-4 md:p-6 border-0 shadow-none">
-        {createResult ? (
+        {!metaAdsReady ? (
+          <div className="space-y-4">
+            <ErrorMessage message={t('sourcing.metaAds.configureRequired')} />
+            <div className="flex flex-wrap justify-end gap-2">
+              {onGoToSources ? (
+                <Button type="button" variant="primary" onClick={onGoToSources}>
+                  {t('sourcing.metaAds.goToSources')}
+                </Button>
+              ) : null}
+              <Button type="button" variant="outline" onClick={onClose}>
+                {t('common.actions.close')}
+              </Button>
+            </div>
+          </div>
+        ) : createResult ? (
           <div className="space-y-4">
             <CampaignCreationResult result={createResult} />
             {sourcingSyncError ? <ErrorMessage message={sourcingSyncError} /> : null}

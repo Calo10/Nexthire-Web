@@ -37,6 +37,9 @@ export default function PipelineDesktopView({
   openSendMessageFor,
   pipelineTenantId,
   handleUnauthorized,
+  twilioReady,
+  twilioLoading,
+  goToSourcingSources,
   inspectorLoading,
   setIsInspectorCollapsed,
   historyRefreshKey,
@@ -177,6 +180,9 @@ export default function PipelineDesktopView({
                 collapsed={layoutCollapsed}
                 application={selectedCard}
                 tenantId={pipelineTenantId}
+                twilioReady={twilioReady}
+                twilioLoading={twilioLoading}
+                onGoToSources={goToSourcingSources}
                 stages={data?.stages || []}
                 locale={locale}
                 historyRefreshKey={historyRefreshKey}
