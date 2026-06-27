@@ -11,8 +11,16 @@
   },
   "header": {
     "newLead": "Nuevo Lead",
-    "createCampaign": "Crear Campaña",
+    "createCampaign": "Crear campaña Meta",
     "createWhatsAppCampaign": "Campaña WhatsApp"
+  },
+  "metaAds": {
+    "configureRequired": "Conecta y activa Meta Ads en Fuentes antes de crear una campaña.",
+    "goToSources": "Ir a Fuentes"
+  },
+  "twilio": {
+    "configureRequired": "Conecta y activa Twilio en Fuentes antes de crear una campaña de WhatsApp.",
+    "goToSources": "Ir a Fuentes"
   },
   "dashboard": {
     "candidatesCaptured": "Candidatos capturados hoy",
@@ -52,39 +60,20 @@
   },
   "leadForm": {
     "title": "Nuevo Lead",
-    "subtitle": "Añade un lead manualmente.",
+    "subtitle": "Selecciona una vacante y completa los mismos campos que el apply público.",
+    "subtitleForJob": "Añadiendo un lead para {{title}}.",
     "submit": "Crear Lead",
+    "job": "Vacante",
+    "selectJob": "Selecciona una vacante…",
+    "jobRequired": "Selecciona una vacante antes de crear el lead.",
+    "loadingQuestions": "Cargando preguntas de aplicación…",
+    "questionsLoadFailed": "No se pudieron cargar las preguntas de la vacante.",
     "firstName": "Nombre",
     "lastName": "Apellido",
-    "fullName": "Nombre completo",
-    "phone": "Teléfono",
     "email": "Email",
-    "desiredRole": "Rol deseado",
-    "currentRole": "Rol actual",
-    "sourceType": "Tipo de fuente",
-    "sourceManual": "Entrada manual",
-    "city": "Ciudad",
-    "state": "Estado/Provincia",
-    "zip": "Código postal",
-    "availability": "Disponibilidad",
-    "availAny": "Cualquiera",
-    "experienceYears": "Experiencia (años)",
-    "englishLevel": "Nivel de inglés",
-    "spanishLevel": "Nivel de español",
-    "levelNone": "Seleccionar…",
-    "levelValueNone": "Ninguno",
-    "levelBasic": "Básico",
-    "levelIntermediate": "Intermedio",
-    "levelFluent": "Fluido",
-    "levelNative": "Nativo",
-    "hasTransportation": "Tiene transporte",
+    "phone": "Teléfono",
     "fitScore": "Puntaje de ajuste",
-    "notes": "Notas de calificación",
-    "sourceMetaAds": "Meta Ads",
-    "sourceWhatsApp": "WhatsApp",
-    "sourceLandingPage": "Landing page",
-    "sourceQrCode": "Código QR",
-    "sourceReferral": "Referido"
+    "notes": "Notas de calificación"
   },
   "table": {
     "name": "Nombre",
@@ -189,6 +178,7 @@
       "meta_ads": "Meta Ads",
       "tiktok_ads": "TikTok Ads",
       "linkedin_ads": "LinkedIn Ads",
+      "twilio": "Twilio",
       "whatsapp": "WhatsApp"
     },
     "dailyBudget": "Presupuesto diario",
@@ -264,6 +254,14 @@
       "clientSecret": "Client secret de LinkedIn",
       "adAccountId": "ID de cuenta de anuncios LinkedIn",
       "adAccountPlaceholder": "urn:li:sponsoredAccount:XXXX"
+    },
+    "twilio": {
+      "sectionTitle": "Configuración Twilio",
+      "accountSid": "Account Sid",
+      "accountSidPlaceholder": "ACXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+      "authToken": "Auth Token",
+      "defaultFromWhatsAppNumber": "WhatsApp Number",
+      "defaultFromWhatsAppNumberPlaceholder": "+14155238886"
     }
   },
   "analytics": {

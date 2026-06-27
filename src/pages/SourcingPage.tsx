@@ -1,5 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import TopBar from '../components/TopBar';
 import Button from '../components/Button';
@@ -14,6 +15,8 @@ import LeadModal from '../components/sourcing/LeadModal';
 import LeadDetailDrawer from '../components/sourcing/LeadDetailDrawer';
 import CampaignModal from '../components/sourcing/CampaignModal';
 import { getSourcingCampaigns, getSourcingDashboard } from '../api/sourcingApi';
+import { useMetaAdsSourceConnection } from '../hooks/sourcing/useMetaAdsSourceConnection';
+import { useTwilioSourceConnection } from '../hooks/sourcing/useTwilioSourceConnection';
 import type { SourcingDashboard } from '../types/sourcing';
 import { useJobs } from '../hooks/useJobs';
 
@@ -22,6 +25,7 @@ const MetaCampaignBuilderModal = lazy(() => import('../components/sourcing/MetaC
 
 export default function SourcingPage() {
   const { t } = useTranslation();
+  const [searchParams] = useSearchParams();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const shouldFetch = isAuthenticated && !authLoading;
 
@@ -42,6 +46,29 @@ export default function SourcingPage() {
   const [campaignCreateMode, setCampaignCreateMode] = useState<'full' | 'whatsapp-apply'>('full');
   const [drawerLeadId, setDrawerLeadId] = useState<string | number | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const { isReady: metaAdsReady, isLoading: metaAdsLoading, refresh: refreshMetaAdsConnection } = useMetaAdsSourceConnection(
+    shouldFetch,
+    refreshKey
+  );
+  const { isReady: twilioReady, isLoading: twilioLoading, refresh: refreshTwilioConnection } = useTwilioSourceConnection(
+    shouldFetch,
+    refreshKey
+  );
+
+  const refreshSourceConnections = useCallback(() => {
+    void refreshMetaAdsConnection();
+    void refreshTwilioConnection();
+  }, [refreshMetaAdsConnection, refreshTwilioConnection]);
+
+  const goToSourcesTab = useCallback(() => setTab('sources'), []);
+
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam === 'inbox' || tabParam === 'campaigns' || tabParam === 'sources' || tabParam === 'analytics') {
+      setTab(tabParam);
+    }
+  }, [searchParams]);
 
   const [toastSuccess, setToastSuccess] = useState<string | null>(null);
   const [toastError, setToastError] = useState<string | null>(null);
@@ -177,20 +204,37 @@ export default function SourcingPage() {
               shouldFetch={shouldFetch}
               refreshKey={refreshKey}
               jobs={jobsLoading ? [] : jobs}
+              metaAdsReady={metaAdsReady}
+              metaAdsLoading={metaAdsLoading}
+              twilioReady={twilioReady}
+              twilioLoading={twilioLoading}
+              onGoToSources={goToSourcesTab}
               onToastSuccess={(msg) => setToastSuccess(msg)}
               onToastError={(msg) => setToastError(msg)}
               onOpenCreateCampaign={(mode) => {
                 if (mode === 'whatsapp-apply') {
-                  setCampaignCreateMode('whatsapp-apply');
-                  setCampaignModalOpen(true);
-                } else {
+                  if (twilioReady) {
+                    setCampaignCreateMode('whatsapp-apply');
+                    setCampaignModalOpen(true);
+                  } else {
+                    setToastError(t('sourcing.twilio.configureRequired'));
+                  }
+                } else if (metaAdsReady) {
                   setMetaCampaignModalOpen(true);
+                } else {
+                  setToastError(t('sourcing.metaAds.configureRequired'));
                 }
               }}
             />
           ) : null}
 
-          {tab === 'sources' ? <SourcesTab shouldFetch={shouldFetch} refreshKey={refreshKey} /> : null}
+          {tab === 'sources' ? (
+            <SourcesTab
+              shouldFetch={shouldFetch}
+              refreshKey={refreshKey}
+              onConnectionSaved={refreshSourceConnections}
+            />
+          ) : null}
 
           {tab === 'analytics' ? (
             <AnalyticsTab
@@ -207,6 +251,8 @@ export default function SourcingPage() {
       <LeadModal
         isOpen={leadModalOpen}
         onClose={() => setLeadModalOpen(false)}
+        jobs={jobsLoading ? [] : jobs}
+        jobsLoading={jobsLoading}
         onSuccess={() => {
           bumpRefresh();
           loadDashboard();
@@ -222,6 +268,12 @@ export default function SourcingPage() {
         }}
         createMode={campaignCreateMode}
         jobs={jobsLoading ? [] : jobs}
+        twilioReady={twilioReady}
+        onGoToSources={() => {
+          setCampaignModalOpen(false);
+          setCampaignCreateMode('full');
+          goToSourcesTab();
+        }}
         onSuccess={() => {
           bumpRefresh();
           loadDashboard();
@@ -236,6 +288,11 @@ export default function SourcingPage() {
             onClose={() => setMetaCampaignModalOpen(false)}
             jobs={jobsLoading ? [] : jobs}
             jobsLoading={jobsLoading}
+            metaAdsReady={metaAdsReady}
+            onGoToSources={() => {
+              setMetaCampaignModalOpen(false);
+              goToSourcesTab();
+            }}
             onSuccess={() => {
               bumpRefresh();
               loadDashboard();

@@ -840,7 +840,8 @@
         "missingTenant": "No se pudo obtener la organización. Vuelve a iniciar sesión o recarga la página.",
         "loadError": "No se pudieron cargar los mensajes de WhatsApp.",
         "noMessages": "Aún no hay mensajes en esta conversación.",
-        "composePlaceholder": "Escribe un mensaje…"
+        "composePlaceholder": "Escribe un mensaje…",
+        "configureRequired": "Conecta y activa Twilio en Fuentes para ver las conversaciones de WhatsApp."
       },
       "resume": {
         "tab": "Resume",
@@ -907,6 +908,7 @@
       "emailSent": "Correo enviado correctamente",
       "whatsappSent": "Mensaje de WhatsApp enviado",
       "whatsappSendFailed": "No se pudo enviar el mensaje de WhatsApp",
+      "whatsappConfigureRequired": "Conecta y activa Twilio en Fuentes para enviar mensajes de WhatsApp.",
       "comingSoon": "Esta funcionalidad estará disponible pronto."
     },
     "modal": {

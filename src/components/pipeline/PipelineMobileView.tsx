@@ -52,6 +52,9 @@ export default function PipelineMobileView({
   openSendMessageFor,
   pipelineTenantId,
   handleUnauthorized,
+  twilioReady,
+  twilioLoading,
+  goToSourcingSources,
   inspectorLoading,
   historyRefreshKey,
 }: PipelinePageState) {
@@ -151,6 +154,9 @@ export default function PipelineMobileView({
           collapsed={false}
           application={selectedCard}
           tenantId={pipelineTenantId}
+          twilioReady={twilioReady}
+          twilioLoading={twilioLoading}
+          onGoToSources={goToSourcingSources}
           stages={data?.stages || []}
           locale={locale}
           historyRefreshKey={historyRefreshKey}
