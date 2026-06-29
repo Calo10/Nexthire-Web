@@ -19,10 +19,10 @@ export function whatsappHref(phone: string | null | undefined): string | null {
 
 export function fitScoreTone(score: number | null | undefined): string {
   if (score == null || Number.isNaN(score)) return 'bg-gray-50 text-gray-600 border border-gray-100';
-  if (score >= 85) return 'bg-green-50 text-green-600 border border-green-100';
-  if (score >= 70) return 'bg-emerald-50 text-emerald-700 border border-emerald-100';
-  if (score >= 60) return 'bg-yellow-50 text-yellow-600 border border-yellow-100';
-  return 'bg-orange-50 text-orange-700 border border-orange-100';
+  const n = Math.round(Number(score));
+  if (n >= 71) return 'bg-green-50 text-green-600 border border-green-100';
+  if (n >= 51) return 'bg-yellow-50 text-yellow-600 border border-yellow-100';
+  return 'bg-red-50 text-red-600 border border-red-100';
 }
 
 export function formatMoney(n: number | null | undefined, currency = 'USD'): string {

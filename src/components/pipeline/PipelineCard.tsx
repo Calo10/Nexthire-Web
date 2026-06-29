@@ -4,6 +4,7 @@ import { CSS } from '@dnd-kit/utilities';
 import type { KanbanApplicationCard } from '../../types/applications';
 import userPlaceholder from '../../assets/user_placeholder.svg';
 import { useTranslation } from 'react-i18next';
+import { fitScoreTone } from '../sourcing/sourcingUtils';
 
 function titleCase(raw: string): string {
   const s = String(raw || '').trim();
@@ -126,7 +127,16 @@ export function PipelineCardView({
           </div>
         </div>
 
-        {onAddNote || onSendMessage ? (
+        <div className="flex items-center gap-1 flex-shrink-0">
+          {card.fitScore != null ? (
+            <span
+              className={`inline-flex min-w-[2.5rem] justify-center rounded-lg px-2 py-1 text-sm font-semibold ${fitScoreTone(card.fitScore)}`}
+            >
+              {Math.round(card.fitScore)}
+            </span>
+          ) : null}
+
+          {onAddNote || onSendMessage ? (
           <div
             className="relative"
             data-pipeline-card-menu="true"
@@ -202,7 +212,8 @@ export function PipelineCardView({
               </div>
             ) : null}
           </div>
-        ) : null}
+          ) : null}
+        </div>
       </div>
 
       <div className="mt-3 flex items-center flex-wrap gap-2">

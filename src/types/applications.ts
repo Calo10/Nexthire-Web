@@ -43,6 +43,7 @@ export interface KanbanApplicationCard {
   stageId: string;
   status?: string | null;
   createdAt?: string | null;
+  fitScore?: number | null;
 }
 
 export interface KanbanColumn {
