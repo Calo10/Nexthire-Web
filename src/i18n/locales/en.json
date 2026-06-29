@@ -1631,6 +1631,23 @@
         "save": "Failed to save organization branding."
       }
     },
+    "orgSettings": {
+      "title": "Organization settings",
+      "description": "Configure organization-wide sourcing and automation options.",
+      "forbidden": "Only organization owners and admins can manage organization settings.",
+      "fitScoringHint": "When enabled, new sourcing leads with a job receive a fit score and qualification notes automatically in the background.",
+      "fields": {
+        "fitScoringEnabled": "Automatic fit scoring"
+      },
+      "save": "Save settings",
+      "toast": {
+        "saved": "Organization settings saved"
+      },
+      "errors": {
+        "load": "Failed to load organization settings.",
+        "save": "Failed to save organization settings."
+      }
+    },
     "security": {
       "title": "Set Password",
       "description": "Set a password to secure your account",

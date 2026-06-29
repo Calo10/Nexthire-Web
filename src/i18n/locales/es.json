@@ -1631,6 +1631,23 @@
         "save": "No se pudo guardar el branding de la organización."
       }
     },
+    "orgSettings": {
+      "title": "Configuración de organización",
+      "description": "Opciones de sourcing y automatización para toda la organización.",
+      "forbidden": "Solo owners y admins de la organización pueden administrar esta configuración.",
+      "fitScoringHint": "Al activarlo, cada nuevo lead de sourcing con vacante recibe fit score y notas de calificación automáticamente en segundo plano.",
+      "fields": {
+        "fitScoringEnabled": "Fit scoring automático"
+      },
+      "save": "Guardar configuración",
+      "toast": {
+        "saved": "Configuración de organización guardada"
+      },
+      "errors": {
+        "load": "No se pudo cargar la configuración de la organización.",
+        "save": "No se pudo guardar la configuración de la organización."
+      }
+    },
     "security": {
       "title": "Establecer Contraseña",
       "description": "Establece una contraseña para asegurar tu cuenta",

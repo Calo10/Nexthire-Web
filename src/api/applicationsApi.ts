@@ -34,6 +34,32 @@ function pickCandidatePhone(a: Record<string, any> | null | undefined): string |
   return s || null;
 }
 
+function pickFitScore(a: Record<string, unknown> | null | undefined): number | null {
+  if (!a || typeof a !== 'object') return null;
+  const raw = a.fitScore ?? a.fit_score ?? null;
+  if (raw == null || raw === '') return null;
+  const n = Number(raw);
+  return Number.isFinite(n) ? n : null;
+}
+
+function mapKanbanApplicationCard(a: Record<string, unknown>, stageId: string): KanbanApplicationCard {
+  const candidate = a.candidate && typeof a.candidate === 'object' ? (a.candidate as Record<string, unknown>) : null;
+  const job = a.job && typeof a.job === 'object' ? (a.job as Record<string, unknown>) : null;
+  return {
+    id: String(a.id ?? a.applicationId ?? ''),
+    candidateId: String(a.candidateId ?? ''),
+    candidateName: String(a.candidateName ?? candidate?.name ?? candidate?.fullName ?? ''),
+    candidateEmail: (a.candidateEmail ?? candidate?.email ?? null) as string | null,
+    candidatePhone: pickCandidatePhone(a as Record<string, any>),
+    jobId: (a.jobId ?? job?.id ?? '') as string | number,
+    jobTitle: (a.jobTitle ?? job?.title ?? null) as string | null,
+    stageId: String(a.currentStageId ?? a.stageId ?? stageId),
+    status: (a.status ?? null) as string | null,
+    createdAt: (a.createdAt ?? a.appliedAt ?? a.created_at ?? null) as string | null,
+    fitScore: pickFitScore(a),
+  };
+}
+
 function normalizeListResponse(result: unknown): ApplicationListItem[] {
   const rawItems: any[] = Array.isArray(result)
     ? (result as any[])
@@ -90,18 +116,7 @@ function normalizeKanbanResponse(result: unknown): ApplicationsKanbanResponse {
           const itemsRaw: any[] = Array.isArray(c.items) ? c.items : Array.isArray(c.cards) ? c.cards : [];
           const items: KanbanApplicationCard[] = itemsRaw
             .filter(Boolean)
-            .map((a: any) => ({
-              id: String(a.id ?? a.applicationId ?? ''),
-              candidateId: String(a.candidateId ?? ''),
-              candidateName: String(a.candidateName ?? a.candidate?.name ?? a.candidate?.fullName ?? ''),
-              candidateEmail: a.candidateEmail ?? a.candidate?.email ?? null,
-              candidatePhone: pickCandidatePhone(a),
-              jobId: a.jobId ?? a.job?.id ?? '',
-              jobTitle: a.jobTitle ?? a.job?.title ?? null,
-              stageId: String(a.currentStageId ?? a.stageId ?? stageId),
-              status: a.status ?? null,
-              createdAt: a.createdAt ?? a.appliedAt ?? a.created_at ?? null,
-            }))
+            .map((a: any) => mapKanbanApplicationCard(a, stageId))
             .filter((x: KanbanApplicationCard) => !!x.id && !!x.stageId);
           return { stageId, stageName, items };
         })
@@ -115,18 +130,7 @@ function normalizeKanbanResponse(result: unknown): ApplicationsKanbanResponse {
           const stageName = stageMap.get(stageId) || '';
           const items: KanbanApplicationCard[] = itemsRaw
             .filter(Boolean)
-            .map((a: any) => ({
-              id: String(a.id ?? a.applicationId ?? ''),
-              candidateId: String(a.candidateId ?? ''),
-              candidateName: String(a.candidateName ?? a.candidate?.name ?? a.candidate?.fullName ?? ''),
-              candidateEmail: a.candidateEmail ?? a.candidate?.email ?? null,
-              candidatePhone: pickCandidatePhone(a),
-              jobId: a.jobId ?? a.job?.id ?? '',
-              jobTitle: a.jobTitle ?? a.job?.title ?? null,
-              stageId: String(a.currentStageId ?? a.stageId ?? stageId),
-              status: a.status ?? null,
-              createdAt: a.createdAt ?? a.appliedAt ?? a.created_at ?? null,
-            }))
+            .map((a: any) => mapKanbanApplicationCard(a, stageId))
             .filter((x: KanbanApplicationCard) => !!x.id && !!x.stageId);
           return { stageId: String(stageId), stageName, items };
         })
@@ -142,18 +146,7 @@ function normalizeKanbanResponse(result: unknown): ApplicationsKanbanResponse {
         const itemsRaw: any[] = Array.isArray(c.items) ? c.items : Array.isArray(c.cards) ? c.cards : [];
         const items: KanbanApplicationCard[] = itemsRaw
           .filter(Boolean)
-          .map((a: any) => ({
-            id: String(a.id ?? a.applicationId ?? ''),
-            candidateId: String(a.candidateId ?? ''),
-            candidateName: String(a.candidateName ?? a.candidate?.name ?? a.candidate?.fullName ?? ''),
-            candidateEmail: a.candidateEmail ?? a.candidate?.email ?? null,
-            candidatePhone: pickCandidatePhone(a),
-            jobId: a.jobId ?? a.job?.id ?? '',
-            jobTitle: a.jobTitle ?? a.job?.title ?? null,
-            stageId: String(a.currentStageId ?? a.stageId ?? stageId),
-            status: a.status ?? null,
-            createdAt: a.createdAt ?? a.appliedAt ?? a.created_at ?? null,
-          }))
+          .map((a: any) => mapKanbanApplicationCard(a, stageId))
           .filter((x: KanbanApplicationCard) => !!x.id && !!x.stageId);
         return { stageId, stageName, items };
       })
@@ -337,6 +330,7 @@ export const applicationsApi = {
       stageId: String(result?.stageId ?? ''),
       status: result?.status ?? null,
       createdAt: result?.createdAt ?? null,
+      fitScore: pickFitScore(result),
     };
   },
 
