@@ -12,6 +12,7 @@ import Modal from '../Modal';
 import { candidatesApi } from '../../api/candidatesApi';
 import { whatsappApi, type WhatsappConversationDto, type WhatsappMessageDto } from '../../api/whatsappApi';
 import { useBackdropDismiss } from '../../hooks/useBackdropDismiss';
+import HoverTooltip from '../HoverTooltip';
 
 type TabKey = 'history' | 'notes' | 'tasks';
 type PanelTabKey = 'activity' | 'whatsapp';
@@ -105,6 +106,9 @@ export interface ApplicationInspectorPanelProps {
   application: KanbanApplicationCard | null;
   /** Tenant id for WhatsApp APIs (resolved in Pipeline from org / storage / JWT). */
   tenantId?: string;
+  twilioReady?: boolean;
+  twilioLoading?: boolean;
+  onGoToSources?: () => void;
   stages: KanbanStage[];
   locale: string;
   historyRefreshKey?: number;
@@ -122,6 +126,9 @@ export default function ApplicationInspectorPanel(props: ApplicationInspectorPan
     isOpen,
     application,
     tenantId = '',
+    twilioReady = true,
+    twilioLoading = false,
+    onGoToSources,
     stages,
     locale,
     historyRefreshKey = 0,
@@ -161,6 +168,30 @@ export default function ApplicationInspectorPanel(props: ApplicationInspectorPan
     const h = window.setTimeout(() => setToastSuccess(null), 2400);
     return () => window.clearTimeout(h);
   }, [toastSuccess]);
+
+  const whatsappTabDisabled = twilioLoading || !twilioReady;
+  const showWhatsappTabTooltip = !twilioReady && !twilioLoading;
+
+  const whatsappTabTooltip = (
+    <>
+      {t('pipeline.inspector.whatsapp.configureRequired')}{' '}
+      {onGoToSources ? (
+        <button
+          type="button"
+          className="font-medium text-violet-300 underline hover:text-white"
+          onClick={onGoToSources}
+        >
+          {t('sourcing.twilio.goToSources')}
+        </button>
+      ) : null}
+    </>
+  );
+
+  useEffect(() => {
+    if (!twilioReady && panelTab === 'whatsapp') {
+      setPanelTab('activity');
+    }
+  }, [twilioReady, panelTab]);
 
   const [isLoadingResume, setIsLoadingResume] = useState(false);
   const [isAnalyzingAI, setIsAnalyzingAI] = useState(false);
@@ -533,6 +564,16 @@ export default function ApplicationInspectorPanel(props: ApplicationInspectorPan
       const candidateId = String(application?.candidateId || '').trim();
       const tid = String(tenantId || '').trim();
 
+      if (!twilioReady) {
+        if (!silent) {
+          setWaConversation(null);
+          setWaMessages([]);
+          setWaLoading(false);
+          setWaError(null);
+        }
+        return;
+      }
+
       if (!candidateId) {
         if (!silent) {
           setWaConversation(null);
@@ -585,7 +626,7 @@ export default function ApplicationInspectorPanel(props: ApplicationInspectorPan
         if (!silent) setWaLoading(false);
       }
     },
-    [application?.candidateId, onUnauthorized, t, tenantId]
+    [application?.candidateId, onUnauthorized, t, tenantId, twilioReady]
   );
 
   useEffect(() => {
@@ -645,7 +686,7 @@ export default function ApplicationInspectorPanel(props: ApplicationInspectorPan
   }, [panelTab, waLoading, waMessages]);
 
   const handleWhatsappPanelSend = async () => {
-    if (!application?.candidateId || waSending) return;
+    if (!application?.candidateId || waSending || !twilioReady) return;
     const tid = String(tenantId || '').trim();
     const cid = String(application.candidateId || '').trim();
     const to = normalizePhoneForWa(waTargetPhoneRaw);
@@ -876,24 +917,32 @@ export default function ApplicationInspectorPanel(props: ApplicationInspectorPan
                 >
                   {t('pipeline.inspector.tabs.activity')}
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setPanelTab('whatsapp')}
-                  className={`flex-1 min-w-0 px-2 py-2 rounded-md text-sm font-medium transition-colors inline-flex items-center justify-center gap-1.5 ${
-                    panelTab === 'whatsapp' ? 'bg-white text-primary shadow-sm' : 'text-gray-600 hover:text-dark-text'
-                  }`}
+                <HoverTooltip
+                  show={showWhatsappTabTooltip}
+                  content={whatsappTabTooltip}
+                  align="center"
+                  className="flex-1 min-w-0"
                 >
-                  <img
-                    src="https://cdn.simpleicons.org/whatsapp"
-                    alt=""
-                    width={16}
-                    height={16}
-                    className="w-4 h-4 shrink-0 object-contain"
-                    loading="lazy"
-                    aria-hidden="true"
-                  />
-                  <span className="truncate">{t('pipeline.inspector.tabs.whatsappConversation')}</span>
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => setPanelTab('whatsapp')}
+                    disabled={whatsappTabDisabled}
+                    className={`w-full flex-1 min-w-0 px-2 py-2 rounded-md text-sm font-medium transition-colors inline-flex items-center justify-center gap-1.5 disabled:opacity-45 disabled:cursor-not-allowed ${
+                      panelTab === 'whatsapp' ? 'bg-white text-primary shadow-sm' : 'text-gray-600 hover:text-dark-text'
+                    } ${whatsappTabDisabled ? 'pointer-events-none' : ''}`}
+                  >
+                    <img
+                      src="https://cdn.simpleicons.org/whatsapp"
+                      alt=""
+                      width={16}
+                      height={16}
+                      className="w-4 h-4 shrink-0 object-contain"
+                      loading="lazy"
+                      aria-hidden="true"
+                    />
+                    <span className="truncate">{t('pipeline.inspector.tabs.whatsappConversation')}</span>
+                  </button>
+                </HoverTooltip>
               </div>
             </div>
 
@@ -1087,6 +1136,15 @@ export default function ApplicationInspectorPanel(props: ApplicationInspectorPan
                   )}
                 </div>
               </>
+            ) : !twilioReady ? (
+              <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 text-center">
+                <ErrorMessage message={t('pipeline.inspector.whatsapp.configureRequired')} />
+                {onGoToSources ? (
+                  <Button type="button" variant="primary" size="sm" className="mt-4" onClick={onGoToSources}>
+                    {t('sourcing.twilio.goToSources')}
+                  </Button>
+                ) : null}
+              </div>
             ) : (
               <div className="flex-1 flex flex-col min-h-0 overflow-hidden bg-white">
                 <div ref={waScrollRef} className="flex-1 overflow-y-auto px-3 py-4 space-y-2 min-h-0 bg-white">

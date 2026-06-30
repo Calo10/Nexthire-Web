@@ -37,6 +37,9 @@ export default function PipelineDesktopView({
   openSendMessageFor,
   pipelineTenantId,
   handleUnauthorized,
+  twilioReady,
+  twilioLoading,
+  goToSourcingSources,
   inspectorLoading,
   setIsInspectorCollapsed,
   historyRefreshKey,
@@ -130,7 +133,7 @@ export default function PipelineDesktopView({
             inspectorOpen ? (layoutCollapsed ? 'lg:grid-cols-[1fr_96px]' : 'lg:grid-cols-[1fr_420px]') : 'lg:grid-cols-1'
           }`}
         >
-          <Card className="p-0 overflow-hidden lg:h-[calc(100vh-140px)]">
+          <Card className="flex min-h-0 flex-col overflow-hidden p-0 lg:h-[calc(100vh-140px)]">
             {!selectedJobId ? (
               <div className="p-10 text-center text-sm text-gray-600">{t('pipeline.selectJob')}</div>
             ) : isLoading ? (
@@ -177,6 +180,9 @@ export default function PipelineDesktopView({
                 collapsed={layoutCollapsed}
                 application={selectedCard}
                 tenantId={pipelineTenantId}
+                twilioReady={twilioReady}
+                twilioLoading={twilioLoading}
+                onGoToSources={goToSourcingSources}
                 stages={data?.stages || []}
                 locale={locale}
                 historyRefreshKey={historyRefreshKey}

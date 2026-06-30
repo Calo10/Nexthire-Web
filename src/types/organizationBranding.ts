@@ -37,6 +37,7 @@ export interface OrganizationSettings {
   logoBase64: string | null;
   logoContentType: string | null;
   colorPalette: ColorPaletteId;
+  fitScoringEnabled?: boolean;
   palette: ColorPaletteTokens;
   createdAt: string;
   updatedAt: string;
@@ -62,6 +63,7 @@ export interface SaveOrganizationSettingsRequest {
   logoBase64?: string;
   logoContentType?: string;
   colorPalette: ColorPaletteId;
+  fitScoringEnabled?: boolean | null;
   removeLogo?: boolean;
 }
 

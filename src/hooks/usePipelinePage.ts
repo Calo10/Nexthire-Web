@@ -12,6 +12,7 @@ import { candidatesApi } from '../api/candidatesApi';
 import type { KanbanApplicationCard } from '../types/applications';
 import type { TemplateChannel } from '../types/templates';
 import { useTemplate, useTemplatesList } from '../hooks/useTemplatesApi';
+import { useTwilioSourceConnection } from '../hooks/sourcing/useTwilioSourceConnection';
 import { resolveTenantId } from '../lib/resolveTenantId';
 
 function injectTemplateVariables(
@@ -58,6 +59,11 @@ export function usePipelinePage() {
   const { isAuthenticated, isLoading: authLoading, logout, user, org } = useAuth();
   const pipelineTenantId = useMemo(() => resolveTenantId(org), [org]);
   const shouldFetch = isAuthenticated && !authLoading;
+  const { isReady: twilioReady, isLoading: twilioLoading } = useTwilioSourceConnection(shouldFetch);
+
+  const goToSourcingSources = useCallback(() => {
+    navigate('/app/sourcing?tab=sources');
+  }, [navigate]);
   const handleUnauthorized = useCallback(() => {
     logout();
     navigate('/login', { replace: true });
@@ -282,6 +288,10 @@ export function usePipelinePage() {
   const handleSendMessage = async () => {
     setMessageError(null);
     if (messageChannel === 'whatsapp') {
+      if (!twilioReady) {
+        setMessageError(t('pipeline.message.whatsappConfigureRequired'));
+        return;
+      }
       const candidateId = String(sendMessageCard?.candidateId || '').trim();
       const tenantId = pipelineTenantId.trim();
       const toPhone = normalizePhoneForSend(String(recipientPhone || sendMessageCard?.candidatePhone || ''));
@@ -372,6 +382,12 @@ export function usePipelinePage() {
     setMessageSubjectTouched(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messageChannel, isSendMessageOpen]);
+
+  useEffect(() => {
+    if (!twilioReady && messageChannel === 'whatsapp') {
+      setMessageChannel('email');
+    }
+  }, [twilioReady, messageChannel]);
 
   useEffect(() => {
     if (!isSendMessageOpen) return;
@@ -476,7 +492,12 @@ export function usePipelinePage() {
     [recipientPhone, sendMessageCard?.candidatePhone]
   );
   const canSendEmail = messageChannel === 'email' && !messageSubmitting;
-  const canSendWhatsApp = messageChannel === 'whatsapp' && !messageSubmitting && !!whatsappPhoneForSend && !!String(messageBody || '').trim();
+  const canSendWhatsApp =
+    twilioReady &&
+    messageChannel === 'whatsapp' &&
+    !messageSubmitting &&
+    !!whatsappPhoneForSend &&
+    !!String(messageBody || '').trim();
   const canSendMessage = canSendEmail || canSendWhatsApp;
 
   const isEmpty = !isLoading && selectedJobId && columns.every((c) => c.items.length === 0);
@@ -588,6 +609,9 @@ export function usePipelinePage() {
     openSendMessageFor,
     pipelineTenantId,
     handleUnauthorized,
+    twilioReady,
+    twilioLoading,
+    goToSourcingSources,
   };
 }
 

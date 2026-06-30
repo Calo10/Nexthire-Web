@@ -3,6 +3,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type { KanbanApplicationCard } from '../../types/applications';
 import userPlaceholder from '../../assets/user_placeholder.svg';
+import { fitScoreTone } from '../sourcing/sourcingUtils';
 
 function formatDate(dateString: string | null | undefined, locale: string) {
   if (!dateString) return '';
@@ -66,7 +67,16 @@ export default function ApplicationCard({ card, locale }: { card: KanbanApplicat
           ) : null}
           {card.createdAt ? <p className="mt-2 text-xs text-gray-500">{formatDate(card.createdAt, locale)}</p> : null}
         </div>
-        <img src={userPlaceholder} alt="" className="w-9 h-9 rounded-full border border-gray-200 object-cover flex-shrink-0" />
+        <div className="flex flex-col items-end gap-2 flex-shrink-0">
+          {card.fitScore != null ? (
+            <span
+              className={`inline-flex min-w-[2.5rem] justify-center rounded-lg px-2 py-1 text-sm font-semibold ${fitScoreTone(card.fitScore)}`}
+            >
+              {Math.round(card.fitScore)}
+            </span>
+          ) : null}
+          <img src={userPlaceholder} alt="" className="w-9 h-9 rounded-full border border-gray-200 object-cover flex-shrink-0" />
+        </div>
       </div>
     </div>
   );

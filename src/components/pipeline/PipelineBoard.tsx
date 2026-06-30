@@ -30,18 +30,20 @@ function ColumnShell({
     <div
       ref={setNodeRef}
       id={stageId}
-      className={`w-[320px] shrink-0 bg-white/70 backdrop-blur-md rounded-2xl shadow-sm border border-gray-200 p-4 h-full flex flex-col transition-colors ${
+      className={`w-[320px] shrink-0 bg-white/70 backdrop-blur-md rounded-2xl shadow-sm border border-gray-200 p-4 h-full min-h-0 flex flex-col transition-colors ${
         isOver ? 'ring-2 ring-primary/40 bg-primary/5' : ''
       }`}
     >
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-4 shrink-0">
         <div className="flex items-center gap-2">
           <span className="w-2.5 h-2.5 rounded-full bg-primary/60" />
           <h3 className="text-sm font-semibold text-gray-800">{title}</h3>
         </div>
         <span className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-full">{count}</span>
       </div>
-      <div className="flex-1 overflow-y-auto scrollbar-hide pr-1">{children}</div>
+      <div className="pipeline-column-scroll flex-1 min-h-0 overflow-y-auto overflow-x-hidden scrollbar-hide pr-1">
+        {children}
+      </div>
     </div>
   );
 }
@@ -86,6 +88,21 @@ export default function PipelineBoard({
     const onWheel = (e: WheelEvent) => {
       if (el.scrollWidth <= el.clientWidth + 1) return;
       if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+
+      let node = e.target as HTMLElement | null;
+      while (node && node !== el) {
+        if (node.classList.contains('pipeline-column-scroll')) {
+          const { scrollTop, scrollHeight, clientHeight } = node;
+          const canScrollDown = scrollTop + clientHeight < scrollHeight - 1;
+          const canScrollUp = scrollTop > 0;
+          if ((e.deltaY > 0 && canScrollDown) || (e.deltaY < 0 && canScrollUp)) {
+            return;
+          }
+          break;
+        }
+        node = node.parentElement;
+      }
+
       e.preventDefault();
       el.scrollLeft += e.deltaY;
     };
@@ -137,7 +154,7 @@ export default function PipelineBoard({
   }, [openMenuId]);
 
   return (
-    <div className="relative h-full">
+    <div className="relative flex h-full min-h-0 flex-col">
       <DndContext
         sensors={sensors}
         collisionDetection={closestCorners}
@@ -147,7 +164,7 @@ export default function PipelineBoard({
       >
         <div
           ref={containerRef}
-          className="flex gap-6 overflow-x-auto overflow-y-hidden px-6 pb-4 mt-[25px] h-full min-h-0 scrollbar-subtle scrollbar-subtle-x"
+          className="flex h-full min-h-0 gap-6 overflow-x-auto overflow-y-hidden px-6 pb-4 mt-[25px] scrollbar-hide"
         >
           {columns.map((col) => (
             <ColumnShell key={col.stageId} stageId={col.stageId} title={col.stageName} count={col.items.length}>

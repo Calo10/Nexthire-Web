@@ -192,6 +192,81 @@ function buildLinkedinConfigJson(fields: LinkedinConfigState, previousJson: stri
   return JSON.stringify(merged);
 }
 
+const TWILIO_CONFIG_KEYS = ['Twilio:AccountSid', 'Twilio:AuthToken', 'Twilio:DefaultFromWhatsAppNumber'] as const;
+
+type TwilioConfigField = 'AccountSid' | 'AuthToken' | 'DefaultFromWhatsAppNumber';
+
+type TwilioConfigState = Record<TwilioConfigField, string>;
+
+const TWILIO_FIELD_TO_JSON_KEY: Record<TwilioConfigField, (typeof TWILIO_CONFIG_KEYS)[number]> = {
+  AccountSid: 'Twilio:AccountSid',
+  AuthToken: 'Twilio:AuthToken',
+  DefaultFromWhatsAppNumber: 'Twilio:DefaultFromWhatsAppNumber',
+};
+
+function emptyTwilioConfig(): TwilioConfigState {
+  return {
+    AccountSid: '',
+    AuthToken: '',
+    DefaultFromWhatsAppNumber: '',
+  };
+}
+
+const LEGACY_TWILIO_KEY_MAP: Record<TwilioConfigField, string[]> = {
+  AccountSid: ['Twilio:AccountSid', 'twilio_account_sid', 'account_sid'],
+  AuthToken: ['Twilio:AuthToken', 'twilio_auth_token', 'auth_token'],
+  DefaultFromWhatsAppNumber: [
+    'Twilio:DefaultFromWhatsAppNumber',
+    'twilio_default_from_whatsapp_number',
+    'default_from_whatsapp_number',
+  ],
+};
+
+function parseTwilioConfig(json: string): TwilioConfigState {
+  const out = emptyTwilioConfig();
+  try {
+    const raw = json.trim() ? JSON.parse(json) : {};
+    if (!raw || typeof raw !== 'object') return out;
+    const rec = raw as Record<string, unknown>;
+    for (const field of Object.keys(TWILIO_FIELD_TO_JSON_KEY) as TwilioConfigField[]) {
+      const legacyKeys = LEGACY_TWILIO_KEY_MAP[field];
+      const match = legacyKeys.map((k) => rec[k]).find((v) => v != null && String(v).trim());
+      out[field] = match == null ? '' : String(match);
+    }
+  } catch {
+    return out;
+  }
+  return out;
+}
+
+function isTwilioSourceCode(code: string) {
+  const c = code.toLowerCase();
+  return c === 'twilio' || c === 'whatsapp';
+}
+
+function buildTwilioConfigJson(fields: TwilioConfigState, previousJson: string): string {
+  let extra: Record<string, unknown> = {};
+  const knownKeys = new Set([
+    ...TWILIO_CONFIG_KEYS,
+    ...Object.values(LEGACY_TWILIO_KEY_MAP).flat(),
+  ]);
+  try {
+    const prev = previousJson.trim() ? JSON.parse(previousJson) : {};
+    if (prev && typeof prev === 'object') {
+      for (const [k, v] of Object.entries(prev as Record<string, unknown>)) {
+        if (!knownKeys.has(k)) extra[k] = v;
+      }
+    }
+  } catch {
+    extra = {};
+  }
+  const merged: Record<string, unknown> = { ...extra };
+  for (const field of Object.keys(TWILIO_FIELD_TO_JSON_KEY) as TwilioConfigField[]) {
+    merged[TWILIO_FIELD_TO_JSON_KEY[field]] = fields[field].trim();
+  }
+  return JSON.stringify(merged);
+}
+
 export default function SourceConnectionModal({
   isOpen,
   onClose,
@@ -209,12 +284,14 @@ export default function SourceConnectionModal({
   const [metaAdsConfig, setMetaAdsConfig] = useState<MetaAdsConfigState>(() => parseMetaAdsConfig(initialConfig));
   const [tiktokConfig, setTiktokConfig] = useState<TiktokConfigState>(() => parseTiktokConfig(initialConfig));
   const [linkedinConfig, setLinkedinConfig] = useState<LinkedinConfigState>(() => parseLinkedinConfig(initialConfig));
+  const [twilioConfig, setTwilioConfig] = useState<TwilioConfigState>(() => parseTwilioConfig(initialConfig));
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   const isMetaAds = useMemo(() => isMetaAdsSourceCode(sourceTypeCode), [sourceTypeCode]);
   const isTikTok = useMemo(() => isTikTokSourceCode(sourceTypeCode), [sourceTypeCode]);
   const isLinkedIn = useMemo(() => isLinkedInSourceCode(sourceTypeCode), [sourceTypeCode]);
+  const isTwilio = useMemo(() => isTwilioSourceCode(sourceTypeCode), [sourceTypeCode]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -225,6 +302,7 @@ export default function SourceConnectionModal({
     setMetaAdsConfig(parseMetaAdsConfig(next));
     setTiktokConfig(parseTiktokConfig(next));
     setLinkedinConfig(parseLinkedinConfig(next));
+    setTwilioConfig(parseTwilioConfig(next));
     setError(null);
   }, [isOpen, initialConnected, initialActive, initialConfig]);
 
@@ -240,6 +318,10 @@ export default function SourceConnectionModal({
     setLinkedinConfig((prev) => ({ ...prev, [key]: value }));
   };
 
+  const setTwilioField = (key: TwilioConfigField, value: string) => {
+    setTwilioConfig((prev) => ({ ...prev, [key]: value }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -252,6 +334,8 @@ export default function SourceConnectionModal({
         outJson = buildTiktokConfigJson(tiktokConfig, configJson);
       } else if (isLinkedIn) {
         outJson = buildLinkedinConfigJson(linkedinConfig, configJson);
+      } else if (isTwilio) {
+        outJson = buildTwilioConfigJson(twilioConfig, configJson);
       } else {
         let parsed: unknown = {};
         try {
@@ -390,6 +474,31 @@ export default function SourceConnectionModal({
               value={linkedinConfig.linkedin_ad_account_id}
               onChange={(e) => setLinkedinField('linkedin_ad_account_id', e.target.value)}
               placeholder={t('sourcing.sources.linkedin.adAccountPlaceholder')}
+              autoComplete="off"
+            />
+          </div>
+        ) : isTwilio ? (
+          <div className="space-y-4 pt-1">
+            <p className="text-sm font-medium text-gray-800">{t('sourcing.sources.twilio.sectionTitle')}</p>
+            <TextField
+              label={t('sourcing.sources.twilio.accountSid')}
+              value={twilioConfig.AccountSid}
+              onChange={(e) => setTwilioField('AccountSid', e.target.value)}
+              placeholder={t('sourcing.sources.twilio.accountSidPlaceholder')}
+              autoComplete="off"
+            />
+            <TextField
+              label={t('sourcing.sources.twilio.authToken')}
+              type="password"
+              value={twilioConfig.AuthToken}
+              onChange={(e) => setTwilioField('AuthToken', e.target.value)}
+              autoComplete="new-password"
+            />
+            <TextField
+              label={t('sourcing.sources.twilio.defaultFromWhatsAppNumber')}
+              value={twilioConfig.DefaultFromWhatsAppNumber}
+              onChange={(e) => setTwilioField('DefaultFromWhatsAppNumber', e.target.value)}
+              placeholder={t('sourcing.sources.twilio.defaultFromWhatsAppNumberPlaceholder')}
               autoComplete="off"
             />
           </div>

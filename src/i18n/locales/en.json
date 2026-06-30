@@ -840,7 +840,8 @@
         "missingTenant": "Could not resolve organization. Sign in again or refresh the page.",
         "loadError": "Could not load WhatsApp messages.",
         "noMessages": "No messages in this conversation yet.",
-        "composePlaceholder": "Write a message…"
+        "composePlaceholder": "Write a message…",
+        "configureRequired": "Connect and activate Twilio in Sources to view WhatsApp conversations."
       },
       "resume": {
         "tab": "Resume",
@@ -907,6 +908,7 @@
       "emailSent": "Email sent successfully",
       "whatsappSent": "WhatsApp message sent",
       "whatsappSendFailed": "Failed to send WhatsApp message",
+      "whatsappConfigureRequired": "Connect and activate Twilio in Sources to send WhatsApp messages.",
       "comingSoon": "This feature is coming soon."
     },
     "modal": {
@@ -1627,6 +1629,23 @@
       "errors": {
         "load": "Failed to load organization branding.",
         "save": "Failed to save organization branding."
+      }
+    },
+    "orgSettings": {
+      "title": "Organization settings",
+      "description": "Configure organization-wide sourcing and automation options.",
+      "forbidden": "Only organization owners and admins can manage organization settings.",
+      "fitScoringHint": "When enabled, new sourcing leads with a job receive a fit score and qualification notes automatically in the background.",
+      "fields": {
+        "fitScoringEnabled": "Automatic fit scoring"
+      },
+      "save": "Save settings",
+      "toast": {
+        "saved": "Organization settings saved"
+      },
+      "errors": {
+        "load": "Failed to load organization settings.",
+        "save": "Failed to save organization settings."
       }
     },
     "security": {

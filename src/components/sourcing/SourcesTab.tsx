@@ -3,19 +3,24 @@ import { useTranslation } from 'react-i18next';
 import Button from '../Button';
 import ErrorMessage from '../ErrorMessage';
 import { getSourcingSourceTypes, getSourcingSourceConnections } from '../../api/sourcingApi';
+import { pickMetaAdsConnection } from '../../lib/sourcingMetaSource';
+import { pickTwilioConnection } from '../../lib/sourcingTwilioSource';
 import type { SourcingSourceType, SourcingSourceConnection } from '../../types/sourcing';
 import SourceConnectionModal from './SourceConnectionModal';
 import SourceTypeBrandLogo from './SourceTypeBrandLogo';
 
 const FALLBACK_SOURCES: { code: string; name: string }[] = [
   { code: 'meta_ads', name: 'Meta Ads' },
-  { code: 'whatsapp', name: 'WhatsApp' },
+  { code: 'twilio', name: 'Twilio' },
   { code: 'tiktok_ads', name: 'TikTok Ads' },
   { code: 'linkedin_ads', name: 'LinkedIn Ads' },
 ];
 
 /** Shown only as unified Meta Ads card; connections may still exist under legacy codes. */
 const LEGACY_META_SOURCE_CODES = new Set(['facebook_ads', 'instagram_ads']);
+
+/** Legacy WhatsApp source — unified under Twilio card. */
+const LEGACY_TWILIO_SOURCE_CODES = new Set(['whatsapp']);
 
 /** Internal / non-integration sources — not shown as configurable connection cards */
 const HIDDEN_SOURCE_CODES = new Set([
@@ -29,16 +34,13 @@ const HIDDEN_SOURCE_CODES = new Set([
 
 const UNDER_CONSTRUCTION_SOURCE_CODES = new Set(['tiktok_ads', 'linkedin_ads']);
 
-function pickMetaAdsConnection(connByCode: Map<string, SourcingSourceConnection>): SourcingSourceConnection | undefined {
-  return connByCode.get('meta_ads') ?? connByCode.get('facebook_ads') ?? connByCode.get('instagram_ads');
-}
-
 interface Props {
   shouldFetch: boolean;
   refreshKey: number;
+  onConnectionSaved?: () => void;
 }
 
-export default function SourcesTab({ shouldFetch, refreshKey }: Props) {
+export default function SourcesTab({ shouldFetch, refreshKey, onConnectionSaved }: Props) {
   const { t } = useTranslation();
   const [types, setTypes] = useState<SourcingSourceType[]>([]);
   const [connections, setConnections] = useState<SourcingSourceConnection[]>([]);
@@ -85,7 +87,8 @@ export default function SourcesTab({ shouldFetch, refreshKey }: Props) {
     }
     return Array.from(byCode.values())
       .filter((row) => !HIDDEN_SOURCE_CODES.has(row.code.toLowerCase()))
-      .filter((row) => !LEGACY_META_SOURCE_CODES.has(row.code.toLowerCase()));
+      .filter((row) => !LEGACY_META_SOURCE_CODES.has(row.code.toLowerCase()))
+      .filter((row) => !LEGACY_TWILIO_SOURCE_CODES.has(row.code.toLowerCase()));
   }, [types]);
 
   const connByCode = useMemo(() => {
@@ -106,9 +109,11 @@ export default function SourcesTab({ shouldFetch, refreshKey }: Props) {
   const modalConn =
     modalCode && modalCode.toLowerCase() === 'meta_ads'
       ? pickMetaAdsConnection(connByCode)
-      : modalCode
-        ? connByCode.get(modalCode.toLowerCase())
-        : undefined;
+      : modalCode && modalCode.toLowerCase() === 'twilio'
+        ? pickTwilioConnection(connByCode)
+        : modalCode
+          ? connByCode.get(modalCode.toLowerCase())
+          : undefined;
 
   return (
     <div className="space-y-4">
@@ -128,7 +133,11 @@ export default function SourcesTab({ shouldFetch, refreshKey }: Props) {
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {merged.map((row) => {
             const conn =
-              row.code.toLowerCase() === 'meta_ads' ? pickMetaAdsConnection(connByCode) : connByCode.get(row.code.toLowerCase());
+              row.code.toLowerCase() === 'meta_ads'
+                ? pickMetaAdsConnection(connByCode)
+                : row.code.toLowerCase() === 'twilio'
+                  ? pickTwilioConnection(connByCode)
+                  : connByCode.get(row.code.toLowerCase());
             const connected = !!conn?.isConnected;
             const active = conn?.isActive !== false;
             const underConstruction = UNDER_CONSTRUCTION_SOURCE_CODES.has(row.code.toLowerCase());
@@ -197,7 +206,10 @@ export default function SourcesTab({ shouldFetch, refreshKey }: Props) {
         initialConnected={modalConn?.isConnected === true}
         initialActive={modalConn?.isActive !== false}
         initialConfig={typeof modalConn?.configJson === 'string' ? modalConn.configJson : '{}'}
-        onSaved={load}
+        onSaved={() => {
+          void load();
+          onConnectionSaved?.();
+        }}
       />
     </div>
   );
