@@ -70,52 +70,50 @@ export function usePipelinePage() {
   }, [logout, navigate]);
 
   const { data: jobs, isLoading: jobsLoading, error: jobsError } = useJobs(shouldFetch);
-  const [selectedJobId, setSelectedJobId] = useState<string>(() => {
-    return jobIdParam || localStorage.getItem('nhPipelineJobId') || '';
-  });
 
-  // If URL jobId changes (back/forward navigation), sync state.
-  useEffect(() => {
-    if (jobIdParam !== null && jobIdParam !== selectedJobId) {
-      setSelectedJobId(jobIdParam);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [jobIdParam]);
+  // URL is the single source of truth for the selected job (avoids URL↔state ping-pong).
+  const setSelectedJobId = useCallback(
+    (id: string) => {
+      const nextId = String(id || '');
+      setSearchParams(
+        (prev) => {
+          const current = prev.get('jobId') || '';
+          if (current === nextId) return prev;
+          const next = new URLSearchParams(prev);
+          if (nextId) next.set('jobId', nextId);
+          else next.delete('jobId');
+          // Stale inspector for a previous job should not stay open.
+          next.delete('applicationId');
+          return next;
+        },
+        { replace: true }
+      );
+      if (nextId) localStorage.setItem('nhPipelineJobId', nextId);
+    },
+    [setSearchParams]
+  );
 
-  // Persist selection across navigation (e.g., switching sections/tabs).
-  useEffect(() => {
-    if (selectedJobId) localStorage.setItem('nhPipelineJobId', selectedJobId);
-  }, [selectedJobId]);
-
-  // Default to first job when none selected or previous selection is invalid.
+  // Resolve a valid jobId into the URL when missing or invalid.
   useEffect(() => {
     if (jobsLoading || !jobs?.length) return;
 
     const validIds = new Set(jobs.map((j) => String(j.id)));
+    const stored = localStorage.getItem('nhPipelineJobId') || '';
+    const resolved =
+      (jobIdParam && validIds.has(jobIdParam) && jobIdParam) ||
+      (stored && validIds.has(stored) && stored) ||
+      String(jobs[0].id);
 
-    if (jobIdParam && validIds.has(jobIdParam)) {
-      if (selectedJobId !== jobIdParam) setSelectedJobId(jobIdParam);
-      return;
-    }
+    if (jobIdParam === resolved) return;
+    setSelectedJobId(resolved);
+  }, [jobs, jobsLoading, jobIdParam, setSelectedJobId]);
 
-    if (selectedJobId && validIds.has(selectedJobId)) return;
-
-    setSelectedJobId(String(jobs[0].id));
-  }, [jobs, jobsLoading, jobIdParam, selectedJobId]);
+  const selectedJobId = jobIdParam || '';
 
   const selectedJob: Job | null = useMemo(() => {
     if (!selectedJobId) return null;
     return (jobs || []).find((j) => String(j.id) === String(selectedJobId)) || null;
   }, [jobs, selectedJobId]);
-
-  useEffect(() => {
-    // Keep URL in sync
-    const next = new URLSearchParams(searchParams.toString());
-    if (selectedJobId) next.set('jobId', selectedJobId);
-    else next.delete('jobId');
-    setSearchParams(next, { replace: true });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedJobId]);
 
   const { data, columns, isLoading, error: kanbanError, moveOptimistic, updateStatusOptimistic, insertIntoFirstStage, refetch } = useKanban(
     shouldFetch,
