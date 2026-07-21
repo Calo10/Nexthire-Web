@@ -21,6 +21,8 @@ import type { ProvisionTrialRequest, ProvisionTrialResponse } from '../types/onb
 export interface ApiError {
   message: string;
   status?: number;
+  /** Raw API error body (preserves Meta fields like metaErrorUserMsg). */
+  details?: Record<string, unknown>;
 }
 
 // Callback for 401 handling
@@ -260,6 +262,10 @@ class ApiClient {
         throw {
           message: errorMessage,
           status: response.status,
+          details:
+            errorData && typeof errorData === 'object' && !Array.isArray(errorData)
+              ? (errorData as Record<string, unknown>)
+              : undefined,
         } as ApiError;
       }
 
