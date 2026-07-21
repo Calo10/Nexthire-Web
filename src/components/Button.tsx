@@ -13,7 +13,8 @@ export default function Button({
   className = '',
   ...props
 }: ButtonProps) {
-  const baseStyles = 'font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2';
+  const baseStyles =
+    'font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none disabled:hover:opacity-50';
   
   const variants = {
     primary: 'bg-gradient-to-r from-primary to-[var(--color-secondary,#7c3aed)] hover:opacity-90 text-[var(--color-primary-foreground,#ffffff)] focus:ring-primary',

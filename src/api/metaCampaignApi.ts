@@ -153,11 +153,34 @@ function normalizeCreativePreviewResponse(raw: unknown): GenerateMetaCreativePre
   };
 }
 
+function pickMetaErrorFields(source: Record<string, unknown>): {
+  title: string;
+  userMsg: string;
+} {
+  return {
+    title: String(source.metaErrorUserTitle ?? source.meta_error_user_title ?? '').trim(),
+    userMsg: String(source.metaErrorUserMsg ?? source.meta_error_user_msg ?? '').trim(),
+  };
+}
+
+/** Prefer Meta's user-facing title + message over generic "Invalid parameter". */
 export function metaErrorMessageFromUnknown(e: unknown): string | null {
   if (!e || typeof e !== 'object') return null;
   const o = e as Record<string, unknown>;
-  const meta = String(o.metaErrorUserMsg ?? o.meta_error_user_msg ?? '').trim();
-  if (meta) return meta;
-  const msg = String(o.message ?? '').trim();
+  const details =
+    o.details && typeof o.details === 'object' && !Array.isArray(o.details)
+      ? (o.details as Record<string, unknown>)
+      : null;
+
+  const fromDetails = details ? pickMetaErrorFields(details) : { title: '', userMsg: '' };
+  const fromRoot = pickMetaErrorFields(o);
+  const title = fromDetails.title || fromRoot.title;
+  const userMsg = fromDetails.userMsg || fromRoot.userMsg;
+
+  if (title && userMsg) return `${title}: ${userMsg}`;
+  if (userMsg) return userMsg;
+  if (title) return title;
+
+  const msg = String(o.message ?? details?.message ?? details?.error ?? '').trim();
   return msg || null;
 }

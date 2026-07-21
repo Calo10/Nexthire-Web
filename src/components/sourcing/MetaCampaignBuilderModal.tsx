@@ -615,7 +615,7 @@ export default function MetaCampaignBuilderModal({
                 {t('metaCampaign.nav.back')}
               </Button>
               {step < STEPS ? (
-                <Button type="button" variant="primary" onClick={goNext} disabled={!stepValid || submitting}>
+                <Button type="button" variant="primary" onClick={goNext} disabled={submitting}>
                   {t('metaCampaign.nav.next')}
                 </Button>
               ) : (
