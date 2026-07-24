@@ -268,7 +268,10 @@ function ActionsTable({
 }
 
 function sumNum(values: Array<number | null | undefined>): number {
-  return values.reduce((sum, v) => sum + (v != null && Number.isFinite(Number(v)) ? Number(v) : 0), 0);
+  return values.reduce<number>((sum, v) => {
+    const n = v != null ? Number(v) : 0;
+    return sum + (Number.isFinite(n) ? n : 0);
+  }, 0);
 }
 
 function mergeActions(rows: MetaInsightAction[][]): MetaInsightAction[] {
@@ -316,6 +319,8 @@ export function consolidateCampaignInsights(
 
   const dateStarts = active.map((r) => r.dateStart).filter(Boolean) as string[];
   const dateStops = active.map((r) => r.dateStop).filter(Boolean) as string[];
+  const sortedStarts = [...dateStarts].sort();
+  const sortedStops = [...dateStops].sort();
 
   return {
     empty: false,
@@ -333,8 +338,8 @@ export function consolidateCampaignInsights(
     costPerLead,
     actions: mergeActions(active.map((r) => r.actions || [])),
     costPerActionType: mergeActions(active.map((r) => r.costPerActionType || [])),
-    dateStart: dateStarts.length ? dateStarts.sort()[0] : undefined,
-    dateStop: dateStops.length ? dateStops.sort().at(-1) : undefined,
+    dateStart: sortedStarts.length ? sortedStarts[0] : undefined,
+    dateStop: sortedStops.length ? sortedStops[sortedStops.length - 1] : undefined,
     costPerCandidate,
     leadsCount: nexthireLeads,
   };
