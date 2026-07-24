@@ -14,7 +14,9 @@ import AnalyticsTab from '../components/sourcing/AnalyticsTab';
 import LeadModal from '../components/sourcing/LeadModal';
 import LeadDetailDrawer from '../components/sourcing/LeadDetailDrawer';
 import CampaignModal from '../components/sourcing/CampaignModal';
+import { getMetaAdAccountStatus, listMetaCampaignInsights } from '../api/metaCampaignApi';
 import { getSourcingCampaigns, getSourcingDashboard } from '../api/sourcingApi';
+import { computeCostPerCandidate } from '../components/sourcing/sourcingUtils';
 import { useMetaAdsSourceConnection } from '../hooks/sourcing/useMetaAdsSourceConnection';
 import { useTwilioSourceConnection } from '../hooks/sourcing/useTwilioSourceConnection';
 import type { SourcingDashboard } from '../types/sourcing';
@@ -37,6 +39,7 @@ export default function SourcingPage() {
 
   const [dashboard, setDashboard] = useState<SourcingDashboard | null>(null);
   const [campaignCountForCards, setCampaignCountForCards] = useState<number | null>(null);
+  const [costPerCandidateLive, setCostPerCandidateLive] = useState<number | null>(null);
   const [dashLoading, setDashLoading] = useState(true);
   const [dashError, setDashError] = useState<string | null>(null);
 
@@ -93,18 +96,60 @@ export default function SourcingPage() {
     setDashLoading(true);
     setDashError(null);
     try {
-      const [d, c] = await Promise.all([getSourcingDashboard(), getSourcingCampaigns({ page: 1, pageSize: 1 })]);
+      const [d, c] = await Promise.all([
+        getSourcingDashboard(),
+        getSourcingCampaigns({ page: 1, pageSize: 200 }),
+      ]);
       setDashboard(d);
-      setCampaignCountForCards(Number.isFinite(c.total) ? c.total : null);
+      setCampaignCountForCards(Number.isFinite(c.total) ? c.total : c.items.length);
+
+      // Cost per Candidate = Meta amount spent ÷ leads generated
+      let liveCost: number | null = null;
+      if (metaAdsReady) {
+        try {
+          const [account, insights] = await Promise.all([
+            getMetaAdAccountStatus(),
+            listMetaCampaignInsights('maximum'),
+          ]);
+          const spendFromCampaigns = insights.items.reduce(
+            (sum, row) => sum + (row.spend != null && Number.isFinite(Number(row.spend)) ? Number(row.spend) : 0),
+            0
+          );
+          const accountSpend =
+            account.amountSpent != null && Number.isFinite(Number(account.amountSpent))
+              ? Number(account.amountSpent)
+              : null;
+          // Prefer live Meta account spend (Ads Manager "Importe gastado"), else sum of campaign insights.
+          const spend = accountSpend != null && accountSpend > 0 ? accountSpend : spendFromCampaigns > 0 ? spendFromCampaigns : null;
+
+          const leadsFromCampaigns = c.items.reduce((sum, camp) => {
+            const n = Number(camp.leadsCount ?? camp.leads);
+            return sum + (Number.isFinite(n) && n > 0 ? n : 0);
+          }, 0);
+          const totalLeadsRaw = d.totalLeads ?? d.TotalLeads;
+          const totalLeads =
+            totalLeadsRaw != null && Number.isFinite(Number(totalLeadsRaw)) && Number(totalLeadsRaw) > 0
+              ? Number(totalLeadsRaw)
+              : leadsFromCampaigns > 0
+                ? leadsFromCampaigns
+                : null;
+
+          liveCost = computeCostPerCandidate(spend, totalLeads);
+        } catch {
+          liveCost = null;
+        }
+      }
+      setCostPerCandidateLive(liveCost);
     } catch (e: unknown) {
       const msg = e && typeof e === 'object' && 'message' in e ? String((e as { message: string }).message) : t('sourcing.errors.loadDashboard');
       setDashError(msg);
       setDashboard(null);
       setCampaignCountForCards(null);
+      setCostPerCandidateLive(null);
     } finally {
       setDashLoading(false);
     }
-  }, [shouldFetch, t]);
+  }, [shouldFetch, metaAdsReady, t]);
 
   useEffect(() => {
     loadDashboard();
@@ -164,7 +209,12 @@ export default function SourcingPage() {
           </div>
         ) : null}
 
-        <SourcingDashboardCards data={dashboard} isLoading={dashLoading} campaignCountOverride={campaignCountForCards} />
+        <SourcingDashboardCards
+          data={dashboard}
+          isLoading={dashLoading}
+          campaignCountOverride={campaignCountForCards}
+          costPerCandidateOverride={costPerCandidateLive}
+        />
 
         <div className="flex flex-wrap gap-2 border-b border-purple-100/80 pb-1 mb-6">
           {tabs.map((x) => (
@@ -240,9 +290,7 @@ export default function SourcingPage() {
             <AnalyticsTab
               shouldFetch={shouldFetch}
               refreshKey={refreshKey}
-              dashboard={dashboard}
-              dashLoading={dashLoading}
-              dashError={dashError}
+              metaAdsReady={metaAdsReady}
             />
           ) : null}
         </div>

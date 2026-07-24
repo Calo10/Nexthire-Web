@@ -16,7 +16,24 @@
   },
   "metaAds": {
     "configureRequired": "Conecta y activa Meta Ads en Fuentes antes de crear una campaña.",
-    "goToSources": "Ir a Fuentes"
+    "goToSources": "Ir a Fuentes",
+    "accountStatus": {
+      "title": "Cuenta Meta",
+      "paymentIssue": "Problema de pago / facturación",
+      "spent": "Gastado",
+      "balance": "Saldo",
+      "unavailable": "No se pudo cargar el estado de la cuenta",
+      "loadError": "No se pudo cargar el estado de la cuenta de Meta.",
+      "keys": {
+        "active": "Activa",
+        "disabled": "Deshabilitada",
+        "unsettled": "Sin liquidar",
+        "pending": "En revisión",
+        "grace": "Periodo de gracia",
+        "closed": "Cerrada",
+        "unknown": "Desconocido"
+      }
+    }
   },
   "twilio": {
     "configureRequired": "Conecta y activa Twilio en Fuentes antes de crear una campaña de WhatsApp.",
@@ -133,6 +150,7 @@
     "loadCampaign": "No se pudo cargar la campaña.",
     "loadSources": "No se pudieron cargar las fuentes.",
     "loadAnalytics": "No se pudieron cargar los datos.",
+    "loadInsights": "No se pudieron cargar las analíticas de Meta.",
     "saveLead": "No se pudo guardar el lead.",
     "saveCampaign": "No se pudo guardar la campaña.",
     "deleteCampaign": "No se pudo eliminar la campaña.",
@@ -206,9 +224,60 @@
       "job": "Empleo",
       "platform": "Plataforma",
       "dailyBudget": "Presup. diario",
+      "spend": "Gastado",
+      "impressions": "Impresiones",
+      "reach": "Alcance",
+      "linkClicks": "Clics en enlace",
+      "costPerClick": "Costo por clic",
       "leads": "Leads",
+      "leadsHint": "Aplicantes del empleo de esta campaña en NextHire",
       "start": "Inicio",
       "end": "Fin"
+    },
+    "insights": {
+      "details": "Analíticas",
+      "title": "Analíticas de campaña",
+      "untitled": "Campaña",
+      "empty": "Aún no hay insights de Meta para esta campaña. Las métricas aparecen cuando empieza la entrega.",
+      "period": "Periodo",
+      "spend": "Importe gastado",
+      "impressions": "Impresiones",
+      "reach": "Alcance",
+      "linkClicks": "Clics en el enlace",
+      "costPerLinkClick": "Costo por clic en enlace",
+      "ctr": "CTR",
+      "clicks": "Clics",
+      "cpc": "CPC",
+      "cpm": "CPM",
+      "frequency": "Frecuencia",
+      "metaLeads": "Leads Meta",
+      "costPerLead": "Costo por lead",
+      "actions": "Desglose de acciones",
+      "costPerAction": "Costo por acción",
+      "help": {
+        "spend": "Importe total cobrado por Meta por esta campaña en el periodo seleccionado.",
+        "costPerCandidate": "Importe gastado dividido entre los leads generados en NextHire para esta campaña.",
+        "impressions": "Cuántas veces se mostraron los anuncios en pantalla.",
+        "reach": "Cuántas personas únicas vieron los anuncios al menos una vez.",
+        "linkClicks": "Clics en enlaces del anuncio que llevan a tu destino.",
+        "costPerLinkClick": "Importe promedio gastado por cada clic en el enlace.",
+        "ctr": "Tasa de clics: porcentaje de impresiones que generaron un clic.",
+        "clicks": "Todos los clics en los anuncios (incluye clics que no son de enlace).",
+        "cpc": "Costo promedio por clic en todos los clics.",
+        "cpm": "Costo promedio por cada 1,000 impresiones.",
+        "frequency": "Promedio de veces que cada persona vio tus anuncios.",
+        "metaLeads": "Acciones de lead reportadas por Meta (objetivos de formulario).",
+        "costPerLead": "Importe promedio gastado por cada lead de Meta."
+      },
+      "chart": {
+        "volumeTitle": "Resumen de rendimiento",
+        "funnelTitle": "Embudo de entrega",
+        "impressions": "Impr.",
+        "reach": "Alcance",
+        "clicks": "Clics",
+        "linkClicks": "Enlaces",
+        "leads": "Leads"
+      }
     }
   },
   "sources": {
@@ -269,7 +338,9 @@
     "noSourceData": "Sin datos aún.",
     "kpis": "Rendimiento",
     "recentLeads": "Leads recientes",
-    "campaignPerformance": "Rendimiento de campañas"
+    "campaignPerformance": "Rendimiento de campañas",
+    "consolidatedTitle": "Resumen de todas las campañas",
+    "consolidatedSubtitle": "Las mismas métricas que el detalle de campaña, consolidadas de Meta."
   },
   "drawer": {
     "lead": "Lead",

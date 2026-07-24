@@ -34,6 +34,16 @@ export function formatMoney(n: number | null | undefined, currency = 'USD'): str
   }
 }
 
+/** Amount spent ÷ leads generated. Returns null when leads are missing or zero. */
+export function computeCostPerCandidate(
+  spend: number | null | undefined,
+  leads: number | null | undefined
+): number | null {
+  if (spend == null || Number.isNaN(Number(spend))) return null;
+  if (leads == null || Number.isNaN(Number(leads)) || Number(leads) <= 0) return null;
+  return Number(spend) / Number(leads);
+}
+
 export function formatPercent(n: number | null | undefined): string {
   if (n == null || Number.isNaN(n)) return '—';
   const v = n <= 1 && n > 0 ? n * 100 : n;

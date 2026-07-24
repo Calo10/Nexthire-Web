@@ -16,7 +16,24 @@
   },
   "metaAds": {
     "configureRequired": "Connect and activate Meta Ads in Sources before creating a campaign.",
-    "goToSources": "Go to Sources"
+    "goToSources": "Go to Sources",
+    "accountStatus": {
+      "title": "Meta account",
+      "paymentIssue": "Payment / billing issue",
+      "spent": "Spent",
+      "balance": "Balance",
+      "unavailable": "Could not load account status",
+      "loadError": "Could not load Meta ad account status.",
+      "keys": {
+        "active": "Active",
+        "disabled": "Disabled",
+        "unsettled": "Unsettled",
+        "pending": "Pending review",
+        "grace": "Grace period",
+        "closed": "Closed",
+        "unknown": "Unknown"
+      }
+    }
   },
   "twilio": {
     "configureRequired": "Connect and activate Twilio in Sources before creating a WhatsApp campaign.",
@@ -133,6 +150,7 @@
     "loadCampaign": "Could not load campaign.",
     "loadSources": "Could not load sources.",
     "loadAnalytics": "Could not load analytics data.",
+    "loadInsights": "Could not load Meta campaign insights.",
     "saveLead": "Could not save lead.",
     "saveCampaign": "Could not save campaign.",
     "deleteCampaign": "Could not delete campaign.",
@@ -206,9 +224,60 @@
       "job": "Job",
       "platform": "Platform",
       "dailyBudget": "Daily Budget",
+      "spend": "Amount Spent",
+      "impressions": "Impressions",
+      "reach": "Reach",
+      "linkClicks": "Link Clicks",
+      "costPerClick": "Cost per Click",
       "leads": "Leads",
+      "leadsHint": "Applicants for this campaign’s job in NextHire",
       "start": "Start",
       "end": "End"
+    },
+    "insights": {
+      "details": "Analytics",
+      "title": "Campaign analytics",
+      "untitled": "Campaign",
+      "empty": "No Meta insights yet for this campaign. Metrics appear after delivery starts.",
+      "period": "Period",
+      "spend": "Amount spent",
+      "impressions": "Impressions",
+      "reach": "Reach",
+      "linkClicks": "Link clicks",
+      "costPerLinkClick": "Cost per link click",
+      "ctr": "CTR",
+      "clicks": "Clicks",
+      "cpc": "CPC",
+      "cpm": "CPM",
+      "frequency": "Frequency",
+      "metaLeads": "Meta leads",
+      "costPerLead": "Cost per lead",
+      "actions": "Actions breakdown",
+      "costPerAction": "Cost per action",
+      "help": {
+        "spend": "Total amount charged by Meta for this campaign in the selected period.",
+        "costPerCandidate": "Amount spent divided by leads generated in NextHire for this campaign.",
+        "impressions": "How many times the ads were on screen.",
+        "reach": "How many unique people saw the ads at least once.",
+        "linkClicks": "Clicks on links in the ads that take people to your destination.",
+        "costPerLinkClick": "Average amount spent for each link click.",
+        "ctr": "Click-through rate: percentage of impressions that resulted in a click.",
+        "clicks": "All clicks on the ads (including non-link clicks).",
+        "cpc": "Average cost per click across all clicks.",
+        "cpm": "Average cost per 1,000 impressions.",
+        "frequency": "Average number of times each person saw your ads.",
+        "metaLeads": "Lead actions reported by Meta (for lead-form objectives).",
+        "costPerLead": "Average amount spent per Meta lead action."
+      },
+      "chart": {
+        "volumeTitle": "Performance overview",
+        "funnelTitle": "Delivery funnel",
+        "impressions": "Impr.",
+        "reach": "Reach",
+        "clicks": "Clicks",
+        "linkClicks": "Links",
+        "leads": "Leads"
+      }
     }
   },
   "sources": {
@@ -269,7 +338,9 @@
     "noSourceData": "No breakdown available yet.",
     "kpis": "Performance",
     "recentLeads": "Recent Leads",
-    "campaignPerformance": "Campaign Performance"
+    "campaignPerformance": "Campaign Performance",
+    "consolidatedTitle": "All campaigns overview",
+    "consolidatedSubtitle": "Same metrics as campaign analytics, summed across Meta campaigns."
   },
   "drawer": {
     "lead": "Lead",
