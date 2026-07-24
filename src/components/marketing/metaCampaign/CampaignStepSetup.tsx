@@ -11,7 +11,6 @@ import {
   META_CAMPAIGN_OBJECTIVES,
   META_OPTIMIZATION_GOALS,
   formatDailyBudgetUsd,
-  isPublicHttpsUrl,
   type MetaDestinationType,
   type MetaGeoSelection,
 } from '../../../types/metaCampaign';
@@ -311,12 +310,7 @@ export default function CampaignStepSetup({
               value={jobPostUrlOverride}
               onChange={(e) => onJobPostUrlOverride(e.target.value)}
               placeholder={t('metaCampaign.destination.urlOverridePlaceholder')}
-              error={
-                fieldErrors.url ||
-                (destinationUrlPreview && !isPublicHttpsUrl(destinationUrlPreview)
-                  ? t('metaCampaign.validation.publicUrl')
-                  : undefined)
-              }
+              error={fieldErrors.url}
             />
             <p className="text-xs text-gray-500">{t('metaCampaign.destination.defaultUrlHint')}</p>
             {destinationUrlPreview ? <GeneratedUrlPreview url={destinationUrlPreview} /> : null}

@@ -384,7 +384,7 @@ export default function Landing() {
         />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
           {pricingPlanKeys.map((planKey) => {
-            const isPopular = planKey === 'growth';
+            const isPopular = planKey === 'professional';
             const price = pricingPlanPrices[planKey];
 
             return (
@@ -404,7 +404,7 @@ export default function Landing() {
                   {t(`pricing.${planKey}Description`)}
                 </p>
                 <div className="mb-5">
-                  <span className="text-3xl font-bold text-dark-text">${price}</span>
+                  <span className="text-3xl font-bold text-dark-text">${price.toLocaleString('en-US')}</span>
                   <span className="text-gray-600">{t('pricing.perMonth')}</span>
                 </div>
                 <Link to="/pricing">

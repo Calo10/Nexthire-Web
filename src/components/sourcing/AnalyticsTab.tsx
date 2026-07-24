@@ -1,55 +1,55 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import ErrorMessage from '../ErrorMessage';
-import { getSourcingLeads, getSourcingCampaigns } from '../../api/sourcingApi';
-import type { SourcingDashboard, SourcingCampaign, SourcingLead } from '../../types/sourcing';
-import { formatMoney, formatPercent } from './sourcingUtils';
-import { asRecord } from '../../lib/normalizeApiResponse';
+import Button from '../Button';
+import { getSourcingCampaigns } from '../../api/sourcingApi';
+import { listMetaCampaignInsights, metaCampaignInsightsRef } from '../../api/metaCampaignApi';
+import type { SourcingCampaign } from '../../types/sourcing';
+import type { MetaCampaignInsights } from '../../types/metaCampaign';
+import { formatMoney, computeCostPerCandidate } from './sourcingUtils';
+import CampaignInsightsModal from './CampaignInsightsModal';
+import CampaignInsightsMetricsView, {
+  consolidateCampaignInsights,
+} from './CampaignInsightsMetricsView';
 
 interface Props {
   shouldFetch: boolean;
   refreshKey: number;
-  dashboard: SourcingDashboard | null;
-  dashLoading: boolean;
-  dashError: string | null;
+  metaAdsReady?: boolean;
 }
 
-function extractLeadsBySource(d: SourcingDashboard | null): { label: string; count: number }[] {
-  if (!d?.leadsBySource) return [];
-  const v = d.leadsBySource;
-  if (typeof v === 'string') {
-    try {
-      const p = JSON.parse(v) as unknown;
-      const r = asRecord(p);
-      if (r) return Object.entries(r).map(([k, c]) => ({ label: k, count: Number(c) || 0 }));
-    } catch {
-      return [];
-    }
-  }
-  if (v && typeof v === 'object' && !Array.isArray(v)) {
-    return Object.entries(v as Record<string, unknown>).map(([k, c]) => ({ label: k, count: Number(c) || 0 }));
-  }
-  return [];
+function formatCount(n: number | null | undefined): string {
+  if (n == null || Number.isNaN(n)) return '—';
+  return new Intl.NumberFormat(undefined).format(n);
 }
 
-function pickNum(d: SourcingDashboard | null, keys: string[]): number | null {
-  if (!d) return null;
-  for (const k of keys) {
-    const v = d[k];
-    if (v != null && typeof v !== 'object') {
-      const n = Number(v);
-      if (Number.isFinite(n)) return n;
-    }
+function isMetaAdsCampaign(c: SourcingCampaign): boolean {
+  const platform = (c.platform || '').toLowerCase();
+  return platform === 'meta_ads' || platform === 'meta' || Boolean(c.externalCampaignId);
+}
+
+function campaignLeads(c: SourcingCampaign, metrics: MetaCampaignInsights | null): number | null {
+  if (c.leadsCount != null || c.leads != null) {
+    const n = Number(c.leadsCount ?? c.leads);
+    return Number.isFinite(n) ? n : null;
+  }
+  if (metrics?.metaLeads != null && Number.isFinite(Number(metrics.metaLeads))) {
+    return Number(metrics.metaLeads);
   }
   return null;
 }
 
-export default function AnalyticsTab({ shouldFetch, refreshKey, dashboard, dashLoading, dashError }: Props) {
-  const { t, i18n } = useTranslation();
-  const [recent, setRecent] = useState<SourcingLead[]>([]);
+export default function AnalyticsTab({ shouldFetch, refreshKey, metaAdsReady = false }: Props) {
+  const { t } = useTranslation();
   const [campaigns, setCampaigns] = useState<SourcingCampaign[]>([]);
+  const [insightsByKey, setInsightsByKey] = useState<Record<string, MetaCampaignInsights>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [insightsTarget, setInsightsTarget] = useState<{
+    ref: string | number;
+    name?: string | null;
+    leadsCount?: number | null;
+  } | null>(null);
 
   const load = useCallback(async () => {
     if (!shouldFetch) {
@@ -59,100 +59,101 @@ export default function AnalyticsTab({ shouldFetch, refreshKey, dashboard, dashL
     setLoading(true);
     setError(null);
     try {
-      const [leadsRes, campRes] = await Promise.all([getSourcingLeads({ page: 1, pageSize: 8 }), getSourcingCampaigns()]);
-      setRecent(leadsRes.items);
+      const campRes = await getSourcingCampaigns({ page: 1, pageSize: 200 });
       setCampaigns(campRes.items);
+
+      if (metaAdsReady) {
+        try {
+          const insights = await listMetaCampaignInsights('maximum');
+          const map: Record<string, MetaCampaignInsights> = {};
+          for (const row of insights.items) {
+            if (row.localRecordId) map[row.localRecordId] = row;
+            if (row.metaCampaignId) map[row.metaCampaignId] = row;
+          }
+          setInsightsByKey(map);
+        } catch {
+          setInsightsByKey({});
+        }
+      } else {
+        setInsightsByKey({});
+      }
     } catch (e: unknown) {
-      const msg = e && typeof e === 'object' && 'message' in e ? String((e as { message: string }).message) : t('sourcing.errors.loadAnalytics');
+      const msg =
+        e && typeof e === 'object' && 'message' in e
+          ? String((e as { message: string }).message)
+          : t('sourcing.errors.loadAnalytics');
       setError(msg);
     } finally {
       setLoading(false);
     }
-  }, [shouldFetch, t]);
+  }, [shouldFetch, metaAdsReady, t]);
 
   useEffect(() => {
     load();
   }, [load, refreshKey]);
 
-  const bySource = useMemo(() => extractLeadsBySource(dashboard), [dashboard]);
-  const maxSource = useMemo(() => Math.max(1, ...bySource.map((x) => x.count)), [bySource]);
-
-  const cost = pickNum(dashboard, ['costPerCandidate', 'avgCostPerCandidate']);
-  const conv = pickNum(dashboard, ['conversionRate', 'conversionRatePercent']);
-
-  const formatDt = (iso: string | null | undefined) => {
-    if (!iso) return '—';
-    try {
-      return new Date(iso).toLocaleString(i18n.language, { dateStyle: 'short', timeStyle: 'short' });
-    } catch {
-      return iso;
+  const insightFor = (c: SourcingCampaign) => {
+    const id = c.id != null ? String(c.id) : '';
+    if (id && insightsByKey[id]) return insightsByKey[id];
+    if (c.externalCampaignId && insightsByKey[String(c.externalCampaignId)]) {
+      return insightsByKey[String(c.externalCampaignId)];
     }
+    return null;
   };
+
+  const consolidated = useMemo(() => {
+    const seen = new Set<string>();
+    const rows: MetaCampaignInsights[] = [];
+    let leadsTotal = 0;
+    let hasLeads = false;
+
+    for (const c of campaigns) {
+      const metrics = insightFor(c);
+      if (metrics) {
+        const key = metrics.metaCampaignId || metrics.localRecordId || String(c.id);
+        if (key && !seen.has(key)) {
+          seen.add(key);
+          rows.push(metrics);
+        }
+      }
+      const leads = campaignLeads(c, metrics);
+      if (leads != null && leads > 0) {
+        leadsTotal += leads;
+        hasLeads = true;
+      }
+    }
+
+    return consolidateCampaignInsights(rows, hasLeads ? leadsTotal : null);
+  }, [campaigns, insightsByKey]);
 
   return (
     <div className="space-y-6">
-      {dashError ? <ErrorMessage message={dashError} /> : null}
       {error ? <ErrorMessage message={error} /> : null}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="rounded-2xl border border-purple-100 bg-white p-6 shadow-sm">
-          <h3 className="text-lg font-semibold text-dark-text mb-4">{t('sourcing.analytics.leadsBySource')}</h3>
-          {dashLoading ? (
-            <div className="h-32 animate-pulse bg-purple-50 rounded-xl" />
-          ) : bySource.length === 0 ? (
-            <p className="text-sm text-gray-500">{t('sourcing.analytics.noSourceData')}</p>
-          ) : (
-            <ul className="space-y-3">
-              {bySource.map((row) => (
-                <li key={row.label}>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="text-gray-700">{row.label}</span>
-                    <span className="font-semibold tabular-nums">{row.count}</span>
-                  </div>
-                  <div className="h-2 rounded-full bg-purple-100 overflow-hidden">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-primary to-purple-600 transition-all"
-                      style={{ width: `${Math.round((row.count / maxSource) * 100)}%` }}
-                    />
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
+      <div className="rounded-2xl border border-purple-100 bg-white p-6 shadow-sm">
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold text-dark-text">{t('sourcing.analytics.consolidatedTitle')}</h3>
+          <p className="text-sm text-gray-600 mt-1">{t('sourcing.analytics.consolidatedSubtitle')}</p>
         </div>
 
-        <div className="rounded-2xl border border-purple-100 bg-white p-6 shadow-sm">
-          <h3 className="text-lg font-semibold text-dark-text mb-4">{t('sourcing.analytics.kpis')}</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="rounded-xl bg-purple-50/80 border border-purple-100 p-4">
-              <p className="text-xs text-gray-600 uppercase tracking-wide">{t('sourcing.dashboard.costPerCandidate')}</p>
-              <p className="text-2xl font-bold text-dark-text mt-1">{cost != null ? formatMoney(cost) : '—'}</p>
-            </div>
-            <div className="rounded-xl bg-purple-50/80 border border-purple-100 p-4">
-              <p className="text-xs text-gray-600 uppercase tracking-wide">{t('sourcing.dashboard.conversionRate')}</p>
-              <p className="text-2xl font-bold text-dark-text mt-1">{conv != null ? formatPercent(conv) : '—'}</p>
+        {loading ? (
+          <div className="space-y-3">
+            <div className="h-52 rounded-2xl bg-purple-50 animate-pulse" />
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="h-20 rounded-xl bg-purple-50 animate-pulse" />
+              ))}
             </div>
           </div>
-        </div>
-      </div>
-
-      <div className="rounded-2xl border border-purple-100 bg-white p-6 shadow-sm">
-        <h3 className="text-lg font-semibold text-dark-text mb-4">{t('sourcing.analytics.recentLeads')}</h3>
-        {loading ? (
-          <div className="h-24 animate-pulse bg-gray-100 rounded-xl" />
-        ) : recent.length === 0 ? (
-          <p className="text-sm text-gray-500">{t('sourcing.empty.noLeadsTitle')}</p>
+        ) : !metaAdsReady ? (
+          <p className="text-sm text-gray-600">{t('sourcing.metaAds.configureRequired')}</p>
         ) : (
-          <ul className="divide-y divide-gray-100">
-            {recent.map((l) => (
-              <li key={String(l.id)} className="py-3 flex justify-between gap-4 text-sm">
-                <span className="font-medium text-dark-text truncate">
-                  {l.fullName || [l.firstName, l.lastName].filter(Boolean).join(' ') || '—'}
-                </span>
-                <span className="text-gray-500 whitespace-nowrap">{formatDt(l.createdAt)}</span>
-              </li>
-            ))}
-          </ul>
+          <CampaignInsightsMetricsView
+            insights={consolidated}
+            costPerCandidate={consolidated.costPerCandidate}
+            leadsCount={consolidated.leadsCount}
+            gradientIdPrefix="analytics"
+          />
         )}
       </div>
 
@@ -166,37 +167,87 @@ export default function AnalyticsTab({ shouldFetch, refreshKey, dashboard, dashL
               <tr className="bg-purple-50/80 text-left text-gray-600">
                 <th className="px-4 py-3 font-semibold">{t('sourcing.campaign.table.name')}</th>
                 <th className="px-4 py-3 font-semibold">{t('sourcing.table.status')}</th>
+                <th className="px-4 py-3 font-semibold">{t('sourcing.campaign.table.spend')}</th>
+                <th className="px-4 py-3 font-semibold">{t('sourcing.campaign.table.impressions')}</th>
+                <th className="px-4 py-3 font-semibold">{t('sourcing.campaign.table.reach')}</th>
+                <th className="px-4 py-3 font-semibold">{t('sourcing.campaign.table.linkClicks')}</th>
+                <th className="px-4 py-3 font-semibold">{t('sourcing.campaign.table.costPerClick')}</th>
                 <th className="px-4 py-3 font-semibold">{t('sourcing.campaign.table.leads')}</th>
+                <th className="px-4 py-3 font-semibold">{t('sourcing.dashboard.costPerCandidate')}</th>
                 <th className="px-4 py-3 font-semibold">{t('sourcing.campaign.table.dailyBudget')}</th>
+                <th className="px-4 py-3 font-semibold text-right">{t('sourcing.table.actions')}</th>
               </tr>
             </thead>
             <tbody>
               {loading && campaigns.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-4 py-8 text-center text-gray-500">
+                  <td colSpan={11} className="px-4 py-8 text-center text-gray-500">
                     {t('common.loading')}
                   </td>
                 </tr>
               ) : campaigns.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-4 py-8 text-center text-gray-500">
+                  <td colSpan={11} className="px-4 py-8 text-center text-gray-500">
                     {t('sourcing.empty.noCampaignsTitle')}
                   </td>
                 </tr>
               ) : (
-                campaigns.map((c) => (
-                  <tr key={String(c.id)} className="border-t border-gray-100">
-                    <td className="px-4 py-3 font-medium">{c.name || '—'}</td>
-                    <td className="px-4 py-3">{c.status || '—'}</td>
-                    <td className="px-4 py-3">{c.leadsCount ?? c.leads ?? '—'}</td>
-                    <td className="px-4 py-3 tabular-nums">{c.dailyBudget != null ? formatMoney(Number(c.dailyBudget)) : '—'}</td>
-                  </tr>
-                ))
+                campaigns.map((c) => {
+                  const metrics = insightFor(c);
+                  const ref = metaCampaignInsightsRef(c);
+                  const isMeta = isMetaAdsCampaign(c);
+                  const leadsNum = campaignLeads(c, metrics);
+                  const costPerCandidate = computeCostPerCandidate(metrics?.spend, leadsNum);
+                  return (
+                    <tr key={String(c.id)} className="border-t border-gray-100">
+                      <td className="px-4 py-3 font-medium">{c.name || '—'}</td>
+                      <td className="px-4 py-3">{c.status || '—'}</td>
+                      <td className="px-4 py-3 tabular-nums">{formatMoney(metrics?.spend)}</td>
+                      <td className="px-4 py-3 tabular-nums">{formatCount(metrics?.impressions)}</td>
+                      <td className="px-4 py-3 tabular-nums">{formatCount(metrics?.reach)}</td>
+                      <td className="px-4 py-3 tabular-nums">{formatCount(metrics?.inlineLinkClicks)}</td>
+                      <td className="px-4 py-3 tabular-nums">
+                        {formatMoney(metrics?.costPerInlineLinkClick ?? metrics?.cpc)}
+                      </td>
+                      <td className="px-4 py-3">
+                        {leadsNum != null ? formatCount(leadsNum) : '—'}
+                      </td>
+                      <td className="px-4 py-3 tabular-nums">{formatMoney(costPerCandidate)}</td>
+                      <td className="px-4 py-3 tabular-nums">
+                        {c.dailyBudget != null ? formatMoney(Number(c.dailyBudget)) : '—'}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        {isMeta && ref ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="!py-1 !px-2"
+                            onClick={() =>
+                              setInsightsTarget({ ref, name: c.name, leadsCount: leadsNum })
+                            }
+                          >
+                            {t('sourcing.campaign.insights.details')}
+                          </Button>
+                        ) : (
+                          '—'
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
         </div>
       </div>
+
+      <CampaignInsightsModal
+        isOpen={insightsTarget != null}
+        onClose={() => setInsightsTarget(null)}
+        campaignRef={insightsTarget?.ref ?? null}
+        campaignName={insightsTarget?.name}
+        leadsCount={insightsTarget?.leadsCount}
+      />
     </div>
   );
 }

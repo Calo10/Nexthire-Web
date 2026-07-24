@@ -174,6 +174,10 @@ export interface MetaCampaignPauseResult {
 
 export interface GenerateMetaCreativePreviewRequest {
   jobId: string;
+  /** Ad primary text — included in the AI image prompt when present. */
+  creativeMessage?: string;
+  /** Optional free-form instructions that steer AI image generation. */
+  aiInstructions?: string;
 }
 
 export interface GenerateMetaCreativePreviewResponse {
@@ -268,6 +272,16 @@ export function isValidWhatsappMeUrl(url: string): boolean {
   }
 }
 
+/** Any absolute http(s) URL — allows localhost for local Generated URL defaults. */
+export function isAbsoluteHttpUrl(url: string): boolean {
+  try {
+    const u = new URL(url.trim());
+    return u.protocol === 'http:' || u.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
 /** Public https job URL — rejects localhost and private networks. */
 export function isPublicHttpsUrl(url: string): boolean {
   try {
@@ -340,7 +354,8 @@ export function buildMetaCampaignPayload(input: MetaCampaignBuildInput): MetaCam
 
   if (isWeb) {
     const jobUrl = (jobPostLink ?? '').trim();
-    if (!jobUrl || !isPublicHttpsUrl(jobUrl)) return null;
+    // Accept Generated URL (incl. local http) or a custom public https override.
+    if (!jobUrl || !isAbsoluteHttpUrl(jobUrl)) return null;
   }
   let creativeLink = '';
   if (isWeb) {
@@ -470,4 +485,68 @@ export function metaCallToActionForDestination(): MetaLinkDataCallToAction {
 /** @deprecated Use metaCallToActionForDestination */
 export function ctaForDestination(_destinationType: MetaDestinationType): MetaCtaType {
   return 'LEARN_MORE';
+}
+
+export interface MetaInsightAction {
+  actionType: string;
+  value: number;
+}
+
+/** Live Meta Ads Insights for one campaign. */
+export interface MetaCampaignInsights {
+  localRecordId?: string;
+  metaCampaignId?: string;
+  campaignName?: string;
+  datePreset: string;
+  dateStart?: string;
+  dateStop?: string;
+  impressions?: number | null;
+  reach?: number | null;
+  clicks?: number | null;
+  uniqueClicks?: number | null;
+  inlineLinkClicks?: number | null;
+  outboundClicks?: number | null;
+  spend?: number | null;
+  cpc?: number | null;
+  cpm?: number | null;
+  cpp?: number | null;
+  ctr?: number | null;
+  frequency?: number | null;
+  costPerInlineLinkClick?: number | null;
+  metaLeads?: number | null;
+  costPerLead?: number | null;
+  actions: MetaInsightAction[];
+  costPerActionType: MetaInsightAction[];
+  empty?: boolean;
+}
+
+export interface MetaCampaignInsightsList {
+  datePreset: string;
+  items: MetaCampaignInsights[];
+}
+
+export type MetaAdAccountStatusKey =
+  | 'active'
+  | 'disabled'
+  | 'unsettled'
+  | 'pending'
+  | 'grace'
+  | 'closed'
+  | 'unknown';
+
+export interface MetaAdAccountStatus {
+  adAccountId: string;
+  name?: string;
+  currency: string;
+  accountStatus: number;
+  statusKey: MetaAdAccountStatusKey | string;
+  statusLabel: string;
+  isHealthy: boolean;
+  isPaymentIssue: boolean;
+  disableReason?: number | null;
+  disableReasonLabel?: string | null;
+  amountSpent?: number | null;
+  balance?: number | null;
+  spendCap?: number | null;
+  fundingSourceDisplay?: string | null;
 }

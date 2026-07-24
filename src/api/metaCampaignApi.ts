@@ -5,9 +5,13 @@ import type {
   GenerateMetaCreativePreviewResponse,
   MetaCampaignCreatePayload,
   MetaCampaignCreateResult,
+  MetaCampaignInsights,
+  MetaCampaignInsightsList,
   MetaCampaignPauseResult,
+  MetaAdAccountStatus,
   MetaGeoResolveCandidate,
   MetaGeoResolveResponse,
+  MetaInsightAction,
 } from '../types/metaCampaign';
 
 export async function createMetaCampaign(payload: MetaCampaignCreatePayload): Promise<MetaCampaignCreateResult> {
@@ -27,6 +31,13 @@ export function metaCampaignRef(c: SourcingCampaign): string | number | null {
   return null;
 }
 
+/** Prefer Meta campaign id when present so insights hit Graph by Meta id. */
+export function metaCampaignInsightsRef(c: SourcingCampaign): string | number | null {
+  const metaId = c.externalCampaignId;
+  if (metaId != null && String(metaId).trim()) return String(metaId).trim();
+  return metaCampaignRef(c);
+}
+
 /** Pause campaign in Meta and update local sourcing record (backend handles both). */
 export async function pauseMetaCampaign(campaignRef: string | number): Promise<MetaCampaignPauseResult> {
   const raw = await apiClient.post<unknown>(
@@ -40,6 +51,32 @@ export async function pauseMetaCampaign(campaignRef: string | number): Promise<M
 /** Delete campaign in Meta and remove local sourcing record. */
 export async function deleteMetaCampaign(campaignRef: string | number): Promise<void> {
   await apiClient.delete(`/marketing/meta/campaigns/${encodeCampaignRef(campaignRef)}`, true);
+}
+
+/** Live Meta Insights for one campaign (local GUID or Meta campaign id). */
+export async function getMetaCampaignInsights(
+  campaignRef: string | number,
+  datePreset = 'maximum'
+): Promise<MetaCampaignInsights> {
+  const q = datePreset ? `?datePreset=${encodeURIComponent(datePreset)}` : '';
+  const raw = await apiClient.get<unknown>(
+    `/marketing/meta/campaigns/${encodeCampaignRef(campaignRef)}/insights${q}`,
+    true
+  );
+  return normalizeInsights(raw);
+}
+
+/** Live Meta Insights for all org Meta campaigns (table summary). */
+export async function listMetaCampaignInsights(datePreset = 'maximum'): Promise<MetaCampaignInsightsList> {
+  const q = datePreset ? `?datePreset=${encodeURIComponent(datePreset)}` : '';
+  const raw = await apiClient.get<unknown>(`/marketing/meta/insights${q}`, true);
+  return normalizeInsightsList(raw);
+}
+
+/** Live Meta Ad Account status (payment / disable / active). */
+export async function getMetaAdAccountStatus(): Promise<MetaAdAccountStatus> {
+  const raw = await apiClient.get<unknown>('/marketing/meta/ad-account/status', true);
+  return normalizeAdAccountStatus(raw);
 }
 
 export async function resolveMetaGeo(payload: {
@@ -107,6 +144,99 @@ function normalizePauseResponse(raw: unknown): MetaCampaignPauseResult {
     metaCampaignId: pick('meta_campaign_id', 'metaCampaignId'),
     metaAdSetId: pick('meta_ad_set_id', 'metaAdSetId'),
     metaAdId: pick('meta_ad_id', 'metaAdId'),
+  };
+}
+
+function asNum(v: unknown): number | null {
+  if (v == null || v === '') return null;
+  const n = typeof v === 'number' ? v : Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
+function normalizeInsightActions(raw: unknown): MetaInsightAction[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((item) => {
+      if (!item || typeof item !== 'object') return null;
+      const o = item as Record<string, unknown>;
+      const actionType = String(o.actionType ?? o.action_type ?? '').trim();
+      const value = asNum(o.value);
+      if (!actionType || value == null) return null;
+      return { actionType, value };
+    })
+    .filter((x): x is MetaInsightAction => x != null);
+}
+
+function normalizeInsights(raw: unknown): MetaCampaignInsights {
+  const o = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {};
+  const pickStr = (...keys: string[]) => {
+    for (const k of keys) {
+      const v = o[k];
+      if (v != null && String(v).trim()) return String(v).trim();
+    }
+    return undefined;
+  };
+  return {
+    localRecordId: pickStr('localRecordId', 'local_record_id'),
+    metaCampaignId: pickStr('metaCampaignId', 'meta_campaign_id'),
+    campaignName: pickStr('campaignName', 'campaign_name'),
+    datePreset: pickStr('datePreset', 'date_preset') || 'maximum',
+    dateStart: pickStr('dateStart', 'date_start'),
+    dateStop: pickStr('dateStop', 'date_stop'),
+    impressions: asNum(o.impressions),
+    reach: asNum(o.reach),
+    clicks: asNum(o.clicks),
+    uniqueClicks: asNum(o.uniqueClicks ?? o.unique_clicks),
+    inlineLinkClicks: asNum(o.inlineLinkClicks ?? o.inline_link_clicks),
+    outboundClicks: asNum(o.outboundClicks ?? o.outbound_clicks),
+    spend: asNum(o.spend),
+    cpc: asNum(o.cpc),
+    cpm: asNum(o.cpm),
+    cpp: asNum(o.cpp),
+    ctr: asNum(o.ctr),
+    frequency: asNum(o.frequency),
+    costPerInlineLinkClick: asNum(o.costPerInlineLinkClick ?? o.cost_per_inline_link_click),
+    metaLeads: asNum(o.metaLeads ?? o.meta_leads),
+    costPerLead: asNum(o.costPerLead ?? o.cost_per_lead),
+    actions: normalizeInsightActions(o.actions),
+    costPerActionType: normalizeInsightActions(o.costPerActionType ?? o.cost_per_action_type),
+    empty: Boolean(o.empty),
+  };
+}
+
+function normalizeInsightsList(raw: unknown): MetaCampaignInsightsList {
+  const o = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {};
+  const list = Array.isArray(o.items) ? o.items : Array.isArray(raw) ? raw : [];
+  return {
+    datePreset: String(o.datePreset ?? o.date_preset ?? 'maximum').trim() || 'maximum',
+    items: list.map(normalizeInsights),
+  };
+}
+
+function normalizeAdAccountStatus(raw: unknown): MetaAdAccountStatus {
+  const o = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {};
+  const pickStr = (...keys: string[]) => {
+    for (const k of keys) {
+      const v = o[k];
+      if (v != null && String(v).trim()) return String(v).trim();
+    }
+    return undefined;
+  };
+  return {
+    adAccountId: pickStr('adAccountId', 'ad_account_id') || '',
+    name: pickStr('name'),
+    currency: pickStr('currency') || 'USD',
+    accountStatus: asNum(o.accountStatus ?? o.account_status) ?? 0,
+    statusKey: pickStr('statusKey', 'status_key') || 'unknown',
+    statusLabel: pickStr('statusLabel', 'status_label') || 'Unknown',
+    isHealthy: Boolean(o.isHealthy ?? o.is_healthy),
+    isPaymentIssue: Boolean(o.isPaymentIssue ?? o.is_payment_issue),
+    disableReason: asNum(o.disableReason ?? o.disable_reason),
+    disableReasonLabel: pickStr('disableReasonLabel', 'disable_reason_label') || null,
+    amountSpent: asNum(o.amountSpent ?? o.amount_spent),
+    balance: asNum(o.balance),
+    spendCap: asNum(o.spendCap ?? o.spend_cap),
+    fundingSourceDisplay: pickStr('fundingSourceDisplay', 'funding_source_display') || null,
   };
 }
 

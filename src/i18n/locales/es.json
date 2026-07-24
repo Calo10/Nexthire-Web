@@ -240,7 +240,7 @@
       "3": "Plantillas y flujos que todo el equipo puede usar"
     },
     "pricingTitle": "Precios simples y transparentes",
-    "pricingDescription": "Elige el plan que se ajuste a tu equipo. Comienza gratis y actualiza a medida que creces.",
+    "pricingDescription": "Elige el plan que se ajuste a tu equipo. Actualiza a medida que creces.",
     "learnMore": "Saber más",
     "viewAllPricing": "Ver todos los detalles de precios",
     "ctaTitle": "¿Listo para contratar de forma más inteligente?",
@@ -249,44 +249,46 @@
   },
   "pricing": {
     "title": "Precios simples y transparentes",
-    "description": "Elige el plan que se ajuste a tu equipo. Comienza gratis y actualiza a medida que creces.",
-    "free": "Gratis",
+    "description": "Elige el plan que se ajuste a tu equipo. Actualiza a medida que creces.",
     "starter": "Starter",
-    "growth": "Growth",
-    "pro": "Pro",
+    "professional": "Professional",
+    "business": "Business",
+    "enterprise": "Enterprise",
     "perMonth": "/mes",
-    "freeDescription": "Perfecto para probar NextHire",
     "starterDescription": "Para equipos pequeños que están comenzando",
-    "growthDescription": "Para equipos en crecimiento",
-    "proDescription": "Para grandes organizaciones",
+    "professionalDescription": "Para equipos de reclutamiento en crecimiento",
+    "businessDescription": "Para organizaciones en expansión",
+    "enterpriseDescription": "Para grandes empresas con necesidades personalizadas",
     "mostPopular": "Más Popular",
     "trial": "Todos los planes incluyen una prueba gratuita de 14 días. No se requiere tarjeta de crédito.",
     "startTrial": "Comienza tu prueba gratuita",
     "features": {
-      "free": {
-        "0": "Hasta 3 publicaciones de trabajo",
-        "1": "Seguimiento básico de candidatos",
-        "2": "Soporte por correo electrónico"
-      },
       "starter": {
         "0": "Hasta 10 publicaciones de trabajo",
         "1": "Pipeline avanzado de candidatos",
         "2": "Plantillas de correo electrónico",
         "3": "Soporte prioritario por correo"
       },
-      "growth": {
+      "professional": {
         "0": "Publicaciones de trabajo ilimitadas",
         "1": "Analíticas avanzadas",
         "2": "Colaboración en equipo",
         "3": "Flujos de trabajo personalizados",
         "4": "Soporte prioritario"
       },
-      "pro": {
-        "0": "Todo lo de Growth",
+      "business": {
+        "0": "Todo lo de Professional",
         "1": "Integraciones avanzadas",
         "2": "Gerente de cuenta dedicado",
         "3": "Reportes personalizados",
         "4": "Soporte telefónico 24/7"
+      },
+      "enterprise": {
+        "0": "Todo lo de Business",
+        "1": "SLA y seguridad personalizados",
+        "2": "Onboarding y capacitación",
+        "3": "Equipo de éxito dedicado",
+        "4": "Contratos y precios a medida"
       }
     }
   },
@@ -585,6 +587,9 @@
     "creative": {
       "intro": "Escribe el texto del anuncio y sube una imagen. Meta exige imagen para guardar la campaña.",
       "message": "Texto del anuncio",
+      "aiInstructions": "Indicaciones para la imagen AI (opcional)",
+      "aiInstructionsPlaceholder": "Ej. Oficina moderna, tonos azules, equipo diverso, sin rostros en primer plano…",
+      "aiInstructionsHint": "Opcional. Solo se usa al generar la imagen con AI, junto con el título, la descripción del empleo y el texto del anuncio.",
       "headline": "Título (link name)",
       "description": "Descripción",
       "cta": "Llamada a la acción",
@@ -593,6 +598,7 @@
       "generateAi": "Generar con AI",
       "regenerate": "Regenerar",
       "useThisImage": "Usar esta imagen",
+      "download": "Descargar",
       "uploadManualInstead": "Subir manualmente en su lugar",
       "upload": "Subir imagen",
       "working": "Procesando…",

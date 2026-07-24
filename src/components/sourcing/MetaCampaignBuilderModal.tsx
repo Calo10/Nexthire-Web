@@ -24,6 +24,7 @@ import type {
 import {
   buildMetaCampaignPayload,
   derivedCampaignChildNames,
+  isAbsoluteHttpUrl,
   isPublicHttpsUrl,
   isValidWhatsappMeUrl,
   jobCodeFromJob,
@@ -101,6 +102,7 @@ export default function MetaCampaignBuilderModal({
 
   const [creativeName, setCreativeName] = useState('');
   const [creativeMessage, setCreativeMessage] = useState('Estamos contratando. Aplica hoy.');
+  const [aiInstructions, setAiInstructions] = useState('');
   const [adName, setAdName] = useState('');
   const [imageHash, setImageHash] = useState('');
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
@@ -144,6 +146,7 @@ export default function MetaCampaignBuilderModal({
     setJobPostUrlOverride('');
     setCreativeName('');
     setCreativeMessage('Estamos contratando. Aplica hoy.');
+    setAiInstructions('');
     setAdName('');
     setImageHash('');
     setImagePreviewUrl((prev) => {
@@ -265,11 +268,11 @@ export default function MetaCampaignBuilderModal({
           }
         } else {
           const override = jobPostUrlOverride.trim();
-          if (!override && (!tenantId || !resolveSiteOrigin())) {
+          if (override) {
+            // Only validate when the user provides a custom URL.
+            if (!isPublicHttpsUrl(override)) next.url = t('metaCampaign.validation.publicUrl');
+          } else if (!tenantId || !selectedJobId || !resolveSiteOrigin()) {
             next.url = t('metaCampaign.validation.orgMissing');
-          } else {
-            const url = override || buildPublicJobPostUrl(resolveSiteOrigin(), tenantId, selectedJobId);
-            if (!isPublicHttpsUrl(url)) next.url = t('metaCampaign.validation.publicUrl');
           }
         }
       }
@@ -372,10 +375,16 @@ export default function MetaCampaignBuilderModal({
     if (!payload) {
       if (
         destinationType === 'job_post_url' &&
-        destinationUrlForPayload.trim() &&
-        !isPublicHttpsUrl(destinationUrlForPayload)
+        jobPostUrlOverride.trim() &&
+        !isPublicHttpsUrl(jobPostUrlOverride.trim())
       ) {
         setSubmitError(t('metaCampaign.validation.publicUrl'));
+      } else if (
+        destinationType === 'job_post_url' &&
+        destinationUrlForPayload.trim() &&
+        !isAbsoluteHttpUrl(destinationUrlForPayload)
+      ) {
+        setSubmitError(t('metaCampaign.validation.destination'));
       } else {
         setSubmitError(t('metaCampaign.errors.missingTenant'));
       }
@@ -439,10 +448,10 @@ export default function MetaCampaignBuilderModal({
         }
       } else {
         const override = jobPostUrlOverride.trim();
-        if (!override && (!tenantId || !resolveSiteOrigin())) next._ = 'x';
-        else {
-          const url = override || buildPublicJobPostUrl(resolveSiteOrigin(), tenantId, selectedJobId);
-          if (!isPublicHttpsUrl(url)) next._ = 'x';
+        if (override) {
+          if (!isPublicHttpsUrl(override)) next._ = 'x';
+        } else if (!tenantId || !selectedJobId || !resolveSiteOrigin()) {
+          next._ = 'x';
         }
       }
     } else if (step === 3) {
@@ -577,6 +586,8 @@ export default function MetaCampaignBuilderModal({
                 selectedJobId={selectedJobId}
                 creativeMessage={creativeMessage}
                 onCreativeMessage={setCreativeMessage}
+                aiInstructions={aiInstructions}
+                onAiInstructions={setAiInstructions}
                 imageHash={imageHash}
                 imagePreviewUrl={imagePreviewUrl}
                 generatedPreview={generatedPreview}
