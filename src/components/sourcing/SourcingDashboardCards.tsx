@@ -17,9 +17,16 @@ interface Props {
   data: SourcingDashboard | null;
   isLoading: boolean;
   campaignCountOverride?: number | null;
+  /** Prefer live Meta spend ÷ leads when provided. */
+  costPerCandidateOverride?: number | null;
 }
 
-export default function SourcingDashboardCards({ data, isLoading, campaignCountOverride = null }: Props) {
+export default function SourcingDashboardCards({
+  data,
+  isLoading,
+  campaignCountOverride = null,
+  costPerCandidateOverride = null,
+}: Props) {
   const { t } = useTranslation();
 
   const captured = pickNum(data, ['candidatesCapturedToday', 'candidatesCaptured', 'totalCandidatesToday']);
@@ -28,7 +35,10 @@ export default function SourcingDashboardCards({ data, isLoading, campaignCountO
     campaignCountOverride != null && Number.isFinite(campaignCountOverride) && campaignCountOverride >= 0
       ? campaignCountOverride
       : campaigns;
-  const cost = pickNum(data, ['costPerCandidate', 'avgCostPerCandidate']);
+  const cost =
+    costPerCandidateOverride != null && Number.isFinite(costPerCandidateOverride)
+      ? costPerCandidateOverride
+      : pickNum(data, ['costPerCandidate', 'avgCostPerCandidate']);
   const conversion = pickNum(data, ['conversionRate', 'conversionRatePercent']);
 
   const cards = [

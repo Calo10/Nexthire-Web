@@ -4,30 +4,34 @@ import Button from '../components/Button';
 import Card from '../components/Card';
 
 interface Plan {
-  key: 'free' | 'starter' | 'growth' | 'pro';
+  key: 'starter' | 'professional' | 'business' | 'enterprise';
   price: number;
   popular?: boolean;
 }
 
 const plans: Plan[] = [
   {
-    key: 'free',
-    price: 0,
-  },
-  {
     key: 'starter',
-    price: 12,
+    price: 399,
   },
   {
-    key: 'growth',
-    price: 29,
+    key: 'professional',
+    price: 799,
     popular: true,
   },
   {
-    key: 'pro',
-    price: 79,
+    key: 'business',
+    price: 1499,
+  },
+  {
+    key: 'enterprise',
+    price: 2500,
   },
 ];
+
+function formatPrice(price: number) {
+  return price.toLocaleString('en-US');
+}
 
 export default function Pricing() {
   const { t } = useTranslation();
@@ -68,10 +72,8 @@ export default function Pricing() {
                   {t(`pricing.${plan.key}Description`)}
                 </p>
                 <div className="mb-4">
-                  <span className="text-4xl font-bold text-dark-text">${plan.price}</span>
-                  {plan.price > 0 && (
-                    <span className="text-gray-600">{t('pricing.perMonth')}</span>
-                  )}
+                  <span className="text-4xl font-bold text-dark-text">${formatPrice(plan.price)}</span>
+                  <span className="text-gray-600">{t('pricing.perMonth')}</span>
                 </div>
               </div>
               <ul className="space-y-3 mb-8">
@@ -120,4 +122,3 @@ export default function Pricing() {
     </div>
   );
 }
-

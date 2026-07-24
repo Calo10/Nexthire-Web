@@ -120,11 +120,11 @@ export const landingCampaignBulletKeys = ['0', '1', '2', '3'] as const;
 
 export const landingWhatsappBulletKeys = ['0', '1', '2', '3'] as const;
 
-export const pricingPlanKeys = ['free', 'starter', 'growth', 'pro'] as const;
+export const pricingPlanKeys = ['starter', 'professional', 'business', 'enterprise'] as const;
 
 export const pricingPlanPrices: Record<(typeof pricingPlanKeys)[number], number> = {
-  free: 0,
-  starter: 12,
-  growth: 29,
-  pro: 79,
+  starter: 399,
+  professional: 799,
+  business: 1499,
+  enterprise: 2500,
 };

@@ -8,6 +8,8 @@ import type { GeneratedMetaCreativePreview } from '../../../types/metaCampaign';
 
 interface Props {
   jobId: string;
+  creativeMessage?: string;
+  aiInstructions?: string;
   imageHash: string;
   imagePreviewUrl: string | null;
   generatedPreview: GeneratedMetaCreativePreview | null;
@@ -38,6 +40,8 @@ function dataUrlToFile(dataUrl: string, contentType: string): File {
 
 export default function ImageUploadPreview({
   jobId,
+  creativeMessage,
+  aiInstructions,
   imageHash,
   imagePreviewUrl,
   generatedPreview,
@@ -93,7 +97,11 @@ export default function ImageUploadPreview({
     setGenerating(true);
     setError(null);
     try {
-      const res = await generateMetaCreativePreview({ jobId: jobId.trim() });
+      const res = await generateMetaCreativePreview({
+        jobId: jobId.trim(),
+        creativeMessage: creativeMessage?.trim() || undefined,
+        aiInstructions: aiInstructions?.trim() || undefined,
+      });
       if (res.imageUrl) {
         if (res.imageHash) {
           // Some backends return an already-uploaded image + hash from this endpoint.
@@ -154,6 +162,19 @@ export default function ImageUploadPreview({
     }
   };
 
+  const handleDownloadGenerated = () => {
+    const src = generatedPreview?.dataUrl ?? previewUrl;
+    if (!src) return;
+    const ext = extensionFromContentType(generatedPreview?.contentType || 'image/png');
+    const a = document.createElement('a');
+    a.href = src;
+    a.download = `nexthire-meta-ai-${Date.now()}.${ext}`;
+    a.rel = 'noopener';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  };
+
   return (
     <div className="space-y-4">
       {error ? <ErrorMessage message={error} /> : null}
@@ -174,6 +195,16 @@ export default function ImageUploadPreview({
         {generatedPreview ? (
           <Button type="button" variant="primary" size="sm" disabled={busy} onClick={() => void handleUseGenerated()}>
             {uploadingGenerated ? t('metaCampaign.creative.working') : t('metaCampaign.creative.useThisImage')}
+          </Button>
+        ) : null}
+        {generatedPreview?.dataUrl ? (
+          <Button type="button" variant="outline" size="sm" disabled={busy} onClick={handleDownloadGenerated}>
+            <span className="inline-flex items-center gap-1.5">
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
+              </svg>
+              {t('metaCampaign.creative.download')}
+            </span>
           </Button>
         ) : null}
         <Button type="button" variant="outline" size="sm" disabled={busy} onClick={() => inputRef.current?.click()}>

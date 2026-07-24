@@ -13,7 +13,7 @@ export default function Login() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { loginWithMagicLink, loginWithPassword, isAuthenticated, isLoading: authLoading } = useAuth();
-  const [loginMethod, setLoginMethod] = useState<LoginMethod>('magic-link');
+  const [loginMethod, setLoginMethod] = useState<LoginMethod>('password');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -120,21 +120,6 @@ export default function Login() {
               <button
                 type="button"
                 onClick={() => {
-                  setLoginMethod('magic-link');
-                  setError(null);
-                  setIsSubmitted(false);
-                }}
-                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                  loginMethod === 'magic-link'
-                    ? 'bg-white text-primary shadow-sm'
-                    : 'text-gray-600 hover:text-dark-text'
-                }`}
-              >
-                Magic Link
-              </button>
-              <button
-                type="button"
-                onClick={() => {
                   setLoginMethod('password');
                   setError(null);
                   setIsSubmitted(false);
@@ -146,6 +131,21 @@ export default function Login() {
                 }`}
               >
                 Password
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setLoginMethod('magic-link');
+                  setError(null);
+                  setIsSubmitted(false);
+                }}
+                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                  loginMethod === 'magic-link'
+                    ? 'bg-white text-primary shadow-sm'
+                    : 'text-gray-600 hover:text-dark-text'
+                }`}
+              >
+                Magic Link
               </button>
             </div>
           </div>
