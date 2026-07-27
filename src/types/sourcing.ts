@@ -61,6 +61,9 @@ export type SourcingCampaign = {
   trackingCode?: string | null;
   externalCampaignId?: string | null;
   externalAdAccountId?: string | null;
+  /** Creative image from marketing_meta_campaigns (detail only). */
+  imageBase64?: string | null;
+  imageContentType?: string | null;
   createdAt?: string | null;
   updatedAt?: string | null;
   [key: string]: unknown;

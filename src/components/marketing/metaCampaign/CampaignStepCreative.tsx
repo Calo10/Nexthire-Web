@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import TextField from '../../TextField';
 import TextareaField from '../../TextareaField';
-import ImageUploadPreview from './ImageUploadPreview';
+import ImageUploadPreview, { type MetaCreativeImageReady } from './ImageUploadPreview';
 import type { GeneratedMetaCreativePreview } from '../../../types/metaCampaign';
 
 interface Props {
@@ -14,7 +14,7 @@ interface Props {
   imagePreviewUrl: string | null;
   generatedPreview: GeneratedMetaCreativePreview | null;
   onGeneratedPreviewChange: (preview: GeneratedMetaCreativePreview | null) => void;
-  onImageReady: (imageHash: string, previewUrl: string | null) => void;
+  onImageReady: (image: MetaCreativeImageReady) => void;
   fieldErrors: Record<string, string>;
 }
 

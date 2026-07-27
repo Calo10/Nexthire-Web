@@ -6,6 +6,13 @@ import { generateMetaCreativePreview, uploadMetaCreativeImage } from '../../../a
 import type { ApiError } from '../../../lib/api';
 import type { GeneratedMetaCreativePreview } from '../../../types/metaCampaign';
 
+export interface MetaCreativeImageReady {
+  imageHash: string;
+  previewUrl: string | null;
+  imageBase64: string;
+  imageContentType: string;
+}
+
 interface Props {
   jobId: string;
   creativeMessage?: string;
@@ -14,7 +21,7 @@ interface Props {
   imagePreviewUrl: string | null;
   generatedPreview: GeneratedMetaCreativePreview | null;
   onGeneratedPreviewChange: (preview: GeneratedMetaCreativePreview | null) => void;
-  onImageReady: (imageHash: string, previewObjectUrl: string | null) => void;
+  onImageReady: (image: MetaCreativeImageReady) => void;
 }
 
 function extensionFromContentType(contentType: string): string {
@@ -23,6 +30,12 @@ function extensionFromContentType(contentType: string): string {
   if (t.includes('webp')) return 'webp';
   if (t.includes('gif')) return 'gif';
   return 'png';
+}
+
+function parseDataUrl(dataUrl: string): { base64: string; contentType: string } | null {
+  const match = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
+  if (!match) return null;
+  return { contentType: match[1], base64: match[2] };
 }
 
 function dataUrlToFile(dataUrl: string, contentType: string): File {
@@ -36,6 +49,26 @@ function dataUrlToFile(dataUrl: string, contentType: string): File {
   }
   const ext = extensionFromContentType(contentType);
   return new File([bytes], `meta-ai-preview.${ext}`, { type: contentType || 'image/png' });
+}
+
+function fileToBase64(file: File): Promise<{ base64: string; contentType: string }> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = String(reader.result || '');
+      const parsed = parseDataUrl(dataUrl);
+      if (!parsed) {
+        reject(new Error('Invalid image data'));
+        return;
+      }
+      resolve({
+        base64: parsed.base64,
+        contentType: parsed.contentType || file.type || 'image/png',
+      });
+    };
+    reader.onerror = () => reject(new Error('READ_FAILED'));
+    reader.readAsDataURL(file);
+  });
 }
 
 export default function ImageUploadPreview({
@@ -66,11 +99,19 @@ export default function ImageUploadPreview({
     setUploadingManual(true);
     setError(null);
     try {
-      const { imageHash: hash } = await uploadMetaCreativeImage(file);
+      const [{ imageHash: hash }, encoded] = await Promise.all([
+        uploadMetaCreativeImage(file),
+        fileToBase64(file),
+      ]);
       if (!hash) throw new Error(t('metaCampaign.creative.noHash'));
       const preview = URL.createObjectURL(file);
       onGeneratedPreviewChange(null);
-      onImageReady(hash, preview);
+      onImageReady({
+        imageHash: hash,
+        previewUrl: preview,
+        imageBase64: encoded.base64,
+        imageContentType: encoded.contentType,
+      });
     } catch (e: unknown) {
       const msg = e && typeof e === 'object' && 'message' in e ? String((e as { message: string }).message) : t('metaCampaign.creative.uploadFailed');
       setError(msg);
@@ -106,7 +147,12 @@ export default function ImageUploadPreview({
         if (res.imageHash) {
           // Some backends return an already-uploaded image + hash from this endpoint.
           onGeneratedPreviewChange(null);
-          onImageReady(res.imageHash, res.imageUrl);
+          onImageReady({
+            imageHash: res.imageHash,
+            previewUrl: res.imageUrl,
+            imageBase64: res.imageBase64 || '',
+            imageContentType: res.contentType || 'image/png',
+          });
           return;
         }
         onGeneratedPreviewChange({
@@ -152,8 +198,14 @@ export default function ImageUploadPreview({
       const file = dataUrlToFile(generatedPreview.dataUrl, generatedPreview.contentType);
       const { imageHash: hash } = await uploadMetaCreativeImage(file);
       if (!hash) throw new Error(t('metaCampaign.creative.noHash'));
+      const parsed = parseDataUrl(generatedPreview.dataUrl);
       const preview = URL.createObjectURL(file);
-      onImageReady(hash, preview);
+      onImageReady({
+        imageHash: hash,
+        previewUrl: preview,
+        imageBase64: parsed?.base64 || '',
+        imageContentType: parsed?.contentType || generatedPreview.contentType || 'image/png',
+      });
     } catch (e: unknown) {
       const msg = e && typeof e === 'object' && 'message' in e ? String((e as { message: string }).message) : t('metaCampaign.creative.uploadFailed');
       setError(msg);
