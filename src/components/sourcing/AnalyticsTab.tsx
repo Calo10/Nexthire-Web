@@ -8,9 +8,12 @@ import type { SourcingCampaign } from '../../types/sourcing';
 import type { MetaCampaignInsights } from '../../types/metaCampaign';
 import { formatMoney, computeCostPerCandidate } from './sourcingUtils';
 import CampaignInsightsModal from './CampaignInsightsModal';
+import AnalyticsHistoryModal from './AnalyticsHistoryModal';
 import CampaignInsightsMetricsView, {
   consolidateCampaignInsights,
 } from './CampaignInsightsMetricsView';
+import SourceTypeBrandLogo from './SourceTypeBrandLogo';
+import { normalizeSourcingPlatformCode } from '../../lib/sourcingPlatformCodes';
 
 interface Props {
   shouldFetch: boolean;
@@ -50,6 +53,7 @@ export default function AnalyticsTab({ shouldFetch, refreshKey, metaAdsReady = f
     name?: string | null;
     leadsCount?: number | null;
   } | null>(null);
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   const load = useCallback(async () => {
     if (!shouldFetch) {
@@ -131,9 +135,16 @@ export default function AnalyticsTab({ shouldFetch, refreshKey, metaAdsReady = f
       {error ? <ErrorMessage message={error} /> : null}
 
       <div className="rounded-2xl border border-purple-100 bg-white p-6 shadow-sm">
-        <div className="mb-4">
-          <h3 className="text-lg font-semibold text-dark-text">{t('sourcing.analytics.consolidatedTitle')}</h3>
-          <p className="text-sm text-gray-600 mt-1">{t('sourcing.analytics.consolidatedSubtitle')}</p>
+        <div className="mb-4 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+          <div>
+            <h3 className="text-lg font-semibold text-dark-text">{t('sourcing.analytics.consolidatedTitle')}</h3>
+            <p className="text-sm text-gray-600 mt-1">{t('sourcing.analytics.consolidatedSubtitle')}</p>
+          </div>
+          {metaAdsReady ? (
+            <Button type="button" variant="outline" size="sm" className="shrink-0" onClick={() => setHistoryOpen(true)}>
+              {t('sourcing.analytics.history')}
+            </Button>
+          ) : null}
         </div>
 
         {loading ? (
@@ -198,9 +209,21 @@ export default function AnalyticsTab({ shouldFetch, refreshKey, metaAdsReady = f
                   const isMeta = isMetaAdsCampaign(c);
                   const leadsNum = campaignLeads(c, metrics);
                   const costPerCandidate = computeCostPerCandidate(metrics?.spend, leadsNum);
+                  const platformCode = normalizeSourcingPlatformCode(String(c.platform || '')) || (isMeta ? 'meta_ads' : '');
                   return (
                     <tr key={String(c.id)} className="border-t border-gray-100">
-                      <td className="px-4 py-3 font-medium">{c.name || '—'}</td>
+                      <td className="px-4 py-3 font-medium">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          {platformCode ? (
+                            <SourceTypeBrandLogo
+                              sourceTypeCode={platformCode}
+                              displayName={String(c.platform || platformCode)}
+                              size="xs"
+                            />
+                          ) : null}
+                          <span className="truncate">{c.name || '—'}</span>
+                        </div>
+                      </td>
                       <td className="px-4 py-3">{c.status || '—'}</td>
                       <td className="px-4 py-3 tabular-nums">{formatMoney(metrics?.spend)}</td>
                       <td className="px-4 py-3 tabular-nums">{formatCount(metrics?.impressions)}</td>
@@ -248,6 +271,7 @@ export default function AnalyticsTab({ shouldFetch, refreshKey, metaAdsReady = f
         campaignName={insightsTarget?.name}
         leadsCount={insightsTarget?.leadsCount}
       />
+      <AnalyticsHistoryModal isOpen={historyOpen} onClose={() => setHistoryOpen(false)} />
     </div>
   );
 }
