@@ -43,6 +43,7 @@ import CampaignStepSetup from '../marketing/metaCampaign/CampaignStepSetup';
 import CampaignStepCreative from '../marketing/metaCampaign/CampaignStepCreative';
 import CampaignStepReview from '../marketing/metaCampaign/CampaignStepReview';
 import CampaignCreationResult from '../marketing/metaCampaign/CampaignCreationResult';
+import type { MetaCreativeImageReady } from '../marketing/metaCampaign/ImageUploadPreview';
 
 const STEPS = 4;
 
@@ -105,6 +106,8 @@ export default function MetaCampaignBuilderModal({
   const [aiInstructions, setAiInstructions] = useState('');
   const [adName, setAdName] = useState('');
   const [imageHash, setImageHash] = useState('');
+  const [imageBase64, setImageBase64] = useState('');
+  const [imageContentType, setImageContentType] = useState('');
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [generatedPreview, setGeneratedPreview] = useState<GeneratedMetaCreativePreview | null>(null);
 
@@ -149,6 +152,8 @@ export default function MetaCampaignBuilderModal({
     setAiInstructions('');
     setAdName('');
     setImageHash('');
+    setImageBase64('');
+    setImageContentType('');
     setImagePreviewUrl((prev) => {
       if (prev?.startsWith('blob:')) URL.revokeObjectURL(prev);
       return null;
@@ -320,11 +325,13 @@ export default function MetaCampaignBuilderModal({
     setStep((x) => Math.max(1, x - 1));
   };
 
-  const handleImageReady = (hash: string, preview: string | null) => {
-    setImageHash(hash);
+  const handleImageReady = (image: MetaCreativeImageReady) => {
+    setImageHash(image.imageHash);
+    setImageBase64(image.imageBase64);
+    setImageContentType(image.imageContentType);
     setImagePreviewUrl((prev) => {
       if (prev?.startsWith('blob:')) URL.revokeObjectURL(prev);
-      return preview;
+      return image.previewUrl;
     });
     setFieldErrors((fe) => {
       const { imageHash: _, ...rest } = fe;
@@ -334,7 +341,11 @@ export default function MetaCampaignBuilderModal({
 
   const handleGeneratedPreviewChange = (preview: GeneratedMetaCreativePreview | null) => {
     setGeneratedPreview(preview);
-    if (preview) setImageHash('');
+    if (preview) {
+      setImageHash('');
+      setImageBase64('');
+      setImageContentType('');
+    }
     setFieldErrors((fe) => {
       const { imageHash: _, ...rest } = fe;
       return rest;
@@ -343,6 +354,17 @@ export default function MetaCampaignBuilderModal({
 
   const buildPayload = (): MetaCampaignCreatePayload | null => {
     if (!tenantId || !selectedJobId || !geoSelection) return null;
+
+    let resolvedBase64 = imageBase64.trim();
+    let resolvedContentType = imageContentType.trim();
+    if (!resolvedBase64 && generatedPreview?.dataUrl) {
+      const match = generatedPreview.dataUrl.match(/^data:([^;]+);base64,(.+)$/);
+      if (match) {
+        resolvedContentType = match[1] || generatedPreview.contentType || 'image/png';
+        resolvedBase64 = match[2];
+      }
+    }
+
     return buildMetaCampaignPayload({
       tenantId,
       jobId: selectedJobId,
@@ -361,6 +383,8 @@ export default function MetaCampaignBuilderModal({
       whatsappMessage,
       creativeMessage,
       imageHash,
+      imageBase64: resolvedBase64,
+      imageContentType: resolvedContentType || undefined,
       adSetName,
       creativeName,
       adName,

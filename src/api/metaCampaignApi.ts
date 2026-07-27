@@ -7,6 +7,8 @@ import type {
   MetaCampaignCreateResult,
   MetaCampaignInsights,
   MetaCampaignInsightsList,
+  MetaInsightsHistory,
+  MetaInsightsSnapshotMetrics,
   MetaCampaignPauseResult,
   MetaAdAccountStatus,
   MetaGeoResolveCandidate,
@@ -17,6 +19,62 @@ import type {
 export async function createMetaCampaign(payload: MetaCampaignCreatePayload): Promise<MetaCampaignCreateResult> {
   const raw = await apiClient.post<unknown>('/marketing/meta/campaigns', payload, true);
   return normalizeCreateResponse(raw);
+}
+
+/** One row from marketing_meta_campaigns (includes creative imageBase64 when stored). */
+export async function getMetaMarketingCampaign(localRecordId: string | number): Promise<{
+  id: string;
+  imageBase64?: string;
+  imageContentType?: string;
+  imageHash?: string;
+  adText?: string;
+  destinationUrl?: string;
+  campaignName?: string;
+} | null> {
+  try {
+    const raw = await apiClient.get<unknown>(
+      `/marketing/meta/campaigns/${encodeCampaignRef(localRecordId)}`,
+      true
+    );
+    const o = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {};
+    const id = String(o.id ?? o.Id ?? '').trim();
+    if (!id) return null;
+    return {
+      id,
+      imageBase64: String(o.imageBase64 ?? o.ImageBase64 ?? o.image_base64 ?? '').trim() || undefined,
+      imageContentType:
+        String(o.imageContentType ?? o.ImageContentType ?? o.image_content_type ?? '').trim() || undefined,
+      imageHash: String(o.imageHash ?? o.ImageHash ?? o.image_hash ?? '').trim() || undefined,
+      adText: String(o.adText ?? o.AdText ?? o.ad_text ?? '').trim() || undefined,
+      destinationUrl:
+        String(o.destinationUrl ?? o.DestinationUrl ?? o.destination_url ?? '').trim() || undefined,
+      campaignName: String(o.campaignName ?? o.CampaignName ?? o.campaign_name ?? '').trim() || undefined,
+    };
+  } catch {
+    return null;
+  }
+}
+
+export async function publishMetaCampaignPagePost(
+  campaignRef: string | number,
+  payload: {
+    message: string;
+    link: string;
+    imageBase64?: string;
+    imageContentType?: string;
+  }
+): Promise<{ postId: string; pageId: string; permalinkUrl?: string }> {
+  const raw = await apiClient.post<unknown>(
+    `/marketing/meta/campaigns/${encodeCampaignRef(campaignRef)}/page-post`,
+    payload,
+    true
+  );
+  const o = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {};
+  return {
+    postId: String(o.postId ?? o.PostId ?? o.post_id ?? '').trim(),
+    pageId: String(o.pageId ?? o.PageId ?? o.page_id ?? '').trim(),
+    permalinkUrl: String(o.permalinkUrl ?? o.PermalinkUrl ?? o.permalink_url ?? '').trim() || undefined,
+  };
 }
 
 function encodeCampaignRef(campaignRef: string | number): string {
@@ -71,6 +129,19 @@ export async function listMetaCampaignInsights(datePreset = 'maximum'): Promise<
   const q = datePreset ? `?datePreset=${encodeURIComponent(datePreset)}` : '';
   const raw = await apiClient.get<unknown>(`/marketing/meta/insights${q}`, true);
   return normalizeInsightsList(raw);
+}
+
+/** Week-over-week historical snapshots (captured on insights fetch + delete). */
+export async function getMetaInsightsHistory(params?: {
+  weekA?: string;
+  weekB?: string;
+}): Promise<MetaInsightsHistory> {
+  const q = new URLSearchParams();
+  if (params?.weekA) q.set('weekA', params.weekA);
+  if (params?.weekB) q.set('weekB', params.weekB);
+  const qs = q.toString();
+  const raw = await apiClient.get<unknown>(`/marketing/meta/insights/history${qs ? `?${qs}` : ''}`, true);
+  return normalizeInsightsHistory(raw);
 }
 
 /** Live Meta Ad Account status (payment / disable / active). */
@@ -213,6 +284,61 @@ function normalizeInsightsList(raw: unknown): MetaCampaignInsightsList {
   };
 }
 
+function normalizeSnapshotMetrics(raw: unknown): MetaInsightsSnapshotMetrics | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const o = raw as Record<string, unknown>;
+  return {
+    spend: asNum(o.spend),
+    impressions: asNum(o.impressions),
+    reach: asNum(o.reach),
+    clicks: asNum(o.clicks),
+    inlineLinkClicks: asNum(o.inlineLinkClicks ?? o.inline_link_clicks),
+    cpc: asNum(o.cpc),
+    cpm: asNum(o.cpm),
+    ctr: asNum(o.ctr),
+    metaLeads: asNum(o.metaLeads ?? o.meta_leads),
+    costPerLead: asNum(o.costPerLead ?? o.cost_per_lead),
+    nexthireLeadsCount: asNum(o.nexthireLeadsCount ?? o.nexthire_leads_count) ?? 0,
+    costPerCandidate: asNum(o.costPerCandidate ?? o.cost_per_candidate),
+    datePreset:
+      o.datePreset != null || o.date_preset != null ? String(o.datePreset ?? o.date_preset) : undefined,
+    capturedAtUtc:
+      o.capturedAtUtc != null || o.captured_at_utc != null
+        ? String(o.capturedAtUtc ?? o.captured_at_utc)
+        : undefined,
+    source: o.source != null ? String(o.source) : undefined,
+  };
+}
+
+function normalizeInsightsHistory(raw: unknown): MetaInsightsHistory {
+  const o = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {};
+  const weeksRaw = Array.isArray(o.weeks) ? o.weeks : [];
+  const campaignsRaw = Array.isArray(o.campaigns) ? o.campaigns : [];
+  return {
+    weeks: weeksRaw.map((w) => String(w).trim()).filter(Boolean),
+    weekA: o.weekA != null || o.week_a != null ? String(o.weekA ?? o.week_a) : null,
+    weekB: o.weekB != null || o.week_b != null ? String(o.weekB ?? o.week_b) : null,
+    campaigns: campaignsRaw.map((item) => {
+      const c = item && typeof item === 'object' ? (item as Record<string, unknown>) : {};
+      return {
+        metaCampaignId: String(c.metaCampaignId ?? c.meta_campaign_id ?? '').trim(),
+        campaignName: String(c.campaignName ?? c.campaign_name ?? '').trim(),
+        platform: String(c.platform ?? 'meta_ads').trim() || 'meta_ads',
+        localCampaignId:
+          c.localCampaignId != null || c.local_campaign_id != null
+            ? String(c.localCampaignId ?? c.local_campaign_id)
+            : undefined,
+        weekA: normalizeSnapshotMetrics(c.weekA ?? c.week_a),
+        weekB: normalizeSnapshotMetrics(c.weekB ?? c.week_b),
+        delta: normalizeSnapshotMetrics(c.delta),
+      };
+    }),
+    totalsWeekA: normalizeSnapshotMetrics(o.totalsWeekA ?? o.totals_week_a),
+    totalsWeekB: normalizeSnapshotMetrics(o.totalsWeekB ?? o.totals_week_b),
+    totalsDelta: normalizeSnapshotMetrics(o.totalsDelta ?? o.totals_delta),
+  };
+}
+
 function normalizeAdAccountStatus(raw: unknown): MetaAdAccountStatus {
   const o = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {};
   const pickStr = (...keys: string[]) => {
@@ -311,6 +437,13 @@ export function metaErrorMessageFromUnknown(e: unknown): string | null {
   if (userMsg) return userMsg;
   if (title) return title;
 
-  const msg = String(o.message ?? details?.message ?? details?.error ?? '').trim();
+  const permissionError =
+    Boolean(details?.permissionError) || Boolean(o.permissionError) || o.status === 403;
+  if (permissionError) {
+    const permMsg = String(details?.error ?? o.error ?? o.message ?? '').trim();
+    if (permMsg) return permMsg;
+  }
+
+  const msg = String(o.message ?? details?.message ?? details?.error ?? o.error ?? '').trim();
   return msg || null;
 }

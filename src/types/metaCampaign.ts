@@ -117,6 +117,9 @@ export interface MetaCampaignCreatePayload {
   jobId: string;
   destinationType: MetaDestinationType;
   whatsappMessage?: string | null;
+  /** Creative image as raw base64 — stored locally with campaign metadata (not sent to Meta Graph). */
+  imageBase64?: string | null;
+  imageContentType?: string | null;
   persistLocalRecord: boolean;
   campaign: {
     name: string;
@@ -320,6 +323,9 @@ export interface MetaCampaignBuildInput {
   whatsappMessage?: string;
   creativeMessage: string;
   imageHash: string;
+  /** Raw base64 (no data-URL prefix) archived with the local marketing row. */
+  imageBase64?: string;
+  imageContentType?: string;
   adSetName?: string;
   creativeName?: string;
   adName?: string;
@@ -342,6 +348,8 @@ export function buildMetaCampaignPayload(input: MetaCampaignBuildInput): MetaCam
     whatsappMessage,
     creativeMessage,
     imageHash,
+    imageBase64,
+    imageContentType,
     adSetName,
     creativeName,
     adName,
@@ -387,6 +395,8 @@ export function buildMetaCampaignPayload(input: MetaCampaignBuildInput): MetaCam
     jobId,
     destinationType,
     whatsappMessage: destinationType === 'whatsapp' ? whatsappMessage?.trim() || null : null,
+    imageBase64: imageBase64?.trim() || null,
+    imageContentType: imageContentType?.trim() || null,
     persistLocalRecord: true,
     campaign: {
       name,
@@ -523,6 +533,45 @@ export interface MetaCampaignInsights {
 export interface MetaCampaignInsightsList {
   datePreset: string;
   items: MetaCampaignInsights[];
+}
+
+/** Weekly snapshot metrics for historical compare. */
+export interface MetaInsightsSnapshotMetrics {
+  spend?: number | null;
+  impressions?: number | null;
+  reach?: number | null;
+  clicks?: number | null;
+  inlineLinkClicks?: number | null;
+  cpc?: number | null;
+  cpm?: number | null;
+  ctr?: number | null;
+  metaLeads?: number | null;
+  costPerLead?: number | null;
+  nexthireLeadsCount?: number;
+  costPerCandidate?: number | null;
+  datePreset?: string;
+  capturedAtUtc?: string;
+  source?: string;
+}
+
+export interface MetaInsightsHistoryCampaignCompare {
+  metaCampaignId: string;
+  campaignName: string;
+  platform?: string;
+  localCampaignId?: string;
+  weekA?: MetaInsightsSnapshotMetrics | null;
+  weekB?: MetaInsightsSnapshotMetrics | null;
+  delta?: MetaInsightsSnapshotMetrics | null;
+}
+
+export interface MetaInsightsHistory {
+  weeks: string[];
+  weekA?: string | null;
+  weekB?: string | null;
+  campaigns: MetaInsightsHistoryCampaignCompare[];
+  totalsWeekA?: MetaInsightsSnapshotMetrics | null;
+  totalsWeekB?: MetaInsightsSnapshotMetrics | null;
+  totalsDelta?: MetaInsightsSnapshotMetrics | null;
 }
 
 export type MetaAdAccountStatusKey =

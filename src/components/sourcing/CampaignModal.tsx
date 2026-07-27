@@ -7,11 +7,13 @@ import TextField from '../TextField';
 import SelectField from '../SelectField';
 import ErrorMessage from '../ErrorMessage';
 import { createSourcingCampaign, getSourcingCampaign } from '../../api/sourcingApi';
+import { getMetaMarketingCampaign } from '../../api/metaCampaignApi';
 import type { Job } from '../../types/dashboard';
 import type { SourcingCampaign } from '../../types/sourcing';
 import { SOURCING_PLATFORM_CODES, sourcingPlatformSelectLabels } from '../../lib/sourcingPlatformCodes';
 import LeadStatusPill from './LeadStatusPill';
 import SourceTypeBrandLogo from './SourceTypeBrandLogo';
+import FacebookPagePostPreviewModal from './FacebookPagePostPreviewModal';
 import {
   buildWhatsappMeUrl,
   jobPostRef,
@@ -84,6 +86,49 @@ function formatCampaignDateTime(iso: string | null | undefined, locale: string):
   }
 }
 
+function creativeImageSrc(base64: string | null | undefined, contentType: string | null | undefined): string | null {
+  const raw = String(base64 || '')
+    .replace(/^data:[^;]+;base64,/, '')
+    .trim();
+  if (!raw) return null;
+  const mime = String(contentType || 'image/png').trim() || 'image/png';
+  return `data:${mime};base64,${raw}`;
+}
+
+function extensionFromContentType(contentType: string): string {
+  const t = contentType.toLowerCase();
+  if (t.includes('jpeg') || t.includes('jpg')) return 'jpg';
+  if (t.includes('webp')) return 'webp';
+  if (t.includes('gif')) return 'gif';
+  return 'png';
+}
+
+function downloadCreativeImage(base64: string, contentType: string, fileBaseName: string) {
+  const src = creativeImageSrc(base64, contentType);
+  if (!src) return;
+  const ext = extensionFromContentType(contentType || 'image/png');
+  const safeName = (fileBaseName.trim() || 'meta-creative').replace(/[^\w.-]+/g, '-').slice(0, 80);
+  const a = document.createElement('a');
+  a.href = src;
+  a.download = `${safeName}.${ext}`;
+  a.rel = 'noopener';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+function pickImageBase64(c: SourcingCampaign | null): string {
+  if (!c) return '';
+  const r = c as Record<string, unknown>;
+  return String(r.imageBase64 ?? r.ImageBase64 ?? r.image_base64 ?? '').trim();
+}
+
+function pickImageContentType(c: SourcingCampaign | null): string {
+  if (!c) return 'image/png';
+  const r = c as Record<string, unknown>;
+  return String(r.imageContentType ?? r.ImageContentType ?? r.image_content_type ?? 'image/png').trim() || 'image/png';
+}
+
 interface Props {
   isOpen: boolean;
   onClose: () => void;
@@ -95,6 +140,9 @@ interface Props {
   onGoToSources?: () => void;
   onSuccess: () => void;
 }
+
+/** Hidden until Meta Page token / PageId grant flow is verified end-to-end. */
+const ENABLE_FACEBOOK_PAGE_POST = false;
 
 export default function CampaignModal({
   isOpen,
@@ -116,6 +164,9 @@ export default function CampaignModal({
   /** Title returned with campaign detail when the job is not in `jobs[]`. */
   const [viewJobTitle, setViewJobTitle] = useState<string | null>(null);
   const [loadedCampaign, setLoadedCampaign] = useState<SourcingCampaign | null>(null);
+  const [adText, setAdText] = useState('');
+  const [pagePostPreviewOpen, setPagePostPreviewOpen] = useState(false);
+  const [pagePostHint, setPagePostHint] = useState<string | null>(null);
 
   const [form, setForm] = useState({
     jobId: '',
@@ -135,6 +186,9 @@ export default function CampaignModal({
     setSubmitError(null);
     setLoadError(null);
     setLinkCopied(false);
+    setPagePostPreviewOpen(false);
+    setPagePostHint(null);
+    setAdText('');
     if (!campaignId) {
       setViewJobTitle(null);
       setLoadedCampaign(null);
@@ -158,6 +212,25 @@ export default function CampaignModal({
       try {
         const c = await getSourcingCampaign(campaignId);
         if (cancelled || !c) return;
+
+        const platform = String(c.platform || '').toLowerCase();
+        const isMeta =
+          platform === 'meta' || platform === 'meta_ads' || Boolean(c.externalCampaignId);
+        if (isMeta) {
+          const marketing = await getMetaMarketingCampaign(c.id ?? campaignId);
+          if (marketing?.imageBase64 && !pickImageBase64(c)) {
+            c.imageBase64 = marketing.imageBase64;
+            c.imageContentType = marketing.imageContentType || 'image/jpeg';
+          }
+          if (marketing?.adText) {
+            setAdText(marketing.adText);
+          }
+          if (marketing?.destinationUrl && !String(c.landingPageUrl || '').trim()) {
+            c.landingPageUrl = marketing.destinationUrl;
+          }
+        }
+
+        if (cancelled) return;
         setLoadedCampaign(c);
         const landing = String(c.landingPageUrl || '').trim();
         const campaignName = String(c.name || '');
@@ -251,6 +324,34 @@ export default function CampaignModal({
   const platformCode = (form.platform || loadedCampaign?.platform || '').trim();
   const platformLabel = platformCode ? campaignPlatformLabel(platformCode, t) : '';
   const empty = t('sourcing.campaign.emptyValue');
+  const creativeBase64 = pickImageBase64(loadedCampaign);
+  const creativeContentType = pickImageContentType(loadedCampaign);
+  const creativeSrc = useMemo(
+    () => creativeImageSrc(creativeBase64, creativeContentType),
+    [creativeBase64, creativeContentType]
+  );
+  const hasMetaIds = Boolean(loadedCampaign?.externalCampaignId || loadedCampaign?.externalAdAccountId);
+  const isMetaPlatform =
+    platformCode.toLowerCase() === 'meta' ||
+    platformCode.toLowerCase() === 'meta_ads' ||
+    Boolean(loadedCampaign?.externalCampaignId);
+  const canPostToFacebookPage =
+    readOnly &&
+    isMetaPlatform &&
+    Boolean(creativeBase64) &&
+    Boolean(readOnlyLandingUrl) &&
+    !showWhatsappDestination;
+  const pagePostDefaultMessage =
+    adText.trim() || form.name.trim() || resolvedJobLabel || '';
+
+  const openPagePostPreview = () => {
+    if (!canPostToFacebookPage) {
+      setPagePostHint(t('sourcing.campaign.pagePost.needImageAndLink'));
+      return;
+    }
+    setPagePostHint(null);
+    setPagePostPreviewOpen(true);
+  };
 
   const copyLink = async (url: string) => {
     if (!url) return;
@@ -354,6 +455,7 @@ export default function CampaignModal({
         : t('sourcing.campaign.subtitle');
 
   return (
+    <>
     <Modal
       isOpen={isOpen}
       onClose={onClose}
@@ -364,10 +466,21 @@ export default function CampaignModal({
       width="lg"
       footer={
         whatsappOnlyCreate && !twilioReady ? null : (
-          <div className="flex justify-end gap-3">
+          <div className="flex flex-wrap justify-end gap-3">
             <Button variant="outline" type="button" onClick={onClose}>
               {t('common.actions.close')}
             </Button>
+            {ENABLE_FACEBOOK_PAGE_POST && readOnly && isMetaPlatform ? (
+              <Button
+                variant="primary"
+                type="button"
+                disabled={!canPostToFacebookPage || loading}
+                title={!canPostToFacebookPage ? t('sourcing.campaign.pagePost.needImageAndLink') : undefined}
+                onClick={openPagePostPreview}
+              >
+                {t('sourcing.campaign.postToFacebookPage')}
+              </Button>
+            ) : null}
             {!readOnly ? (
               <Button variant="primary" type="submit" form="campaign-form" disabled={saving}>
                 {saving ? t('common.actions.creating') : t('sourcing.campaign.submit')}
@@ -379,6 +492,7 @@ export default function CampaignModal({
     >
       {loadError ? <ErrorMessage message={loadError} /> : null}
       {submitError ? <ErrorMessage message={submitError} /> : null}
+      {pagePostHint ? <ErrorMessage message={pagePostHint} /> : null}
       {whatsappOnlyCreate && !twilioReady ? (
         <div className="space-y-4">
           <ErrorMessage message={t('sourcing.twilio.configureRequired')} />
@@ -488,27 +602,87 @@ export default function CampaignModal({
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     {t('sourcing.campaign.destinationLink')}
                   </label>
-                  <input
-                    readOnly
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-50 font-mono text-xs text-gray-800 break-all"
-                    value={readOnlyLandingUrl}
-                  />
+                  <div className="relative">
+                    <input
+                      readOnly
+                      className="w-full pl-4 pr-12 py-2.5 border border-gray-300 rounded-lg bg-gray-50 font-mono text-xs text-gray-800 break-all"
+                      value={readOnlyLandingUrl}
+                    />
+                    <button
+                      type="button"
+                      title={linkCopied ? t('sourcing.campaign.whatsappLinkCopied') : t('sourcing.campaign.whatsappCopyLink')}
+                      aria-label={linkCopied ? t('sourcing.campaign.whatsappLinkCopied') : t('sourcing.campaign.whatsappCopyLink')}
+                      className="absolute right-1.5 top-1/2 -translate-y-1/2 inline-flex h-8 w-8 items-center justify-center rounded-md text-gray-500 hover:bg-gray-200/80 hover:text-gray-800 transition-colors"
+                      onClick={() => void copyLink(readOnlyLandingUrl)}
+                    >
+                      {linkCopied ? (
+                        <svg viewBox="0 0 24 24" className="h-4 w-4 text-emerald-600" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : (
+                        <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                          <rect x="9" y="9" width="13" height="13" rx="2" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
                 </div>
               ) : null}
 
-              {loadedCampaign?.externalCampaignId || loadedCampaign?.externalAdAccountId ? (
-                <div className="rounded-xl border border-gray-200 bg-gray-50/80 p-4 space-y-3">
-                  <p className="text-sm font-medium text-gray-800">{t('sourcing.campaign.metaIntegration')}</p>
-                  {loadedCampaign.externalCampaignId ? (
-                    <div>
-                      <p className="text-xs text-gray-500 mb-1">{t('sourcing.campaign.externalCampaignId')}</p>
-                      <p className="text-sm font-mono text-gray-800 break-all">{loadedCampaign.externalCampaignId}</p>
+              {creativeSrc || hasMetaIds ? (
+                <div
+                  className={
+                    creativeSrc && hasMetaIds
+                      ? 'grid grid-cols-1 sm:grid-cols-[1fr_minmax(0,11rem)] gap-4 items-stretch'
+                      : undefined
+                  }
+                >
+                  {hasMetaIds ? (
+                    <div className="rounded-xl border border-gray-200 bg-gray-50/80 p-4 space-y-3">
+                      <p className="text-sm font-medium text-gray-800">{t('sourcing.campaign.metaIntegration')}</p>
+                      {loadedCampaign?.externalCampaignId ? (
+                        <div>
+                          <p className="text-xs text-gray-500 mb-1">{t('sourcing.campaign.externalCampaignId')}</p>
+                          <p className="text-sm font-mono text-gray-800 break-all">{loadedCampaign.externalCampaignId}</p>
+                        </div>
+                      ) : null}
+                      {loadedCampaign?.externalAdAccountId ? (
+                        <div>
+                          <p className="text-xs text-gray-500 mb-1">{t('sourcing.campaign.externalAdAccountId')}</p>
+                          <p className="text-sm font-mono text-gray-800 break-all">{loadedCampaign.externalAdAccountId}</p>
+                        </div>
+                      ) : null}
                     </div>
                   ) : null}
-                  {loadedCampaign.externalAdAccountId ? (
-                    <div>
-                      <p className="text-xs text-gray-500 mb-1">{t('sourcing.campaign.externalAdAccountId')}</p>
-                      <p className="text-sm font-mono text-gray-800 break-all">{loadedCampaign.externalAdAccountId}</p>
+                  {creativeSrc ? (
+                    <div className="rounded-xl border border-gray-200 bg-gray-50/80 p-3 flex flex-col gap-3">
+                      <p className="text-sm font-medium text-gray-800">{t('sourcing.campaign.creativeImage')}</p>
+                      <img
+                        src={creativeSrc}
+                        alt=""
+                        className="w-full max-h-48 object-contain rounded-lg border border-gray-100 bg-white"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="w-full"
+                        onClick={() =>
+                          downloadCreativeImage(
+                            creativeBase64,
+                            creativeContentType,
+                            String(loadedCampaign?.name || form.name || 'meta-creative')
+                          )
+                        }
+                      >
+                        <span className="inline-flex items-center justify-center gap-1.5">
+                          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
+                          </svg>
+                          {t('sourcing.campaign.downloadCreative')}
+                        </span>
+                      </Button>
                     </div>
                   ) : null}
                 </div>
@@ -628,5 +802,19 @@ export default function CampaignModal({
         </form>
       )}
     </Modal>
+    {ENABLE_FACEBOOK_PAGE_POST && pagePostPreviewOpen ? (
+      <FacebookPagePostPreviewModal
+        isOpen={pagePostPreviewOpen}
+        onClose={() => setPagePostPreviewOpen(false)}
+        campaignRef={loadedCampaign?.id ?? campaignId ?? null}
+        campaignName={form.name}
+        destinationLink={readOnlyLandingUrl}
+        imageSrc={creativeSrc}
+        imageBase64={creativeBase64.replace(/^data:[^;]+;base64,/, '').trim()}
+        imageContentType={creativeContentType}
+        defaultMessage={pagePostDefaultMessage}
+      />
+    ) : null}
+    </>
   );
 }
