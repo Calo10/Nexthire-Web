@@ -23,6 +23,7 @@ import TemplatesPage from './pages/TemplatesPage';
 import AiAgentsPage from './pages/AiAgentsPage';
 import TeamsPage from './pages/TeamsPage';
 import SourcingPage from './pages/SourcingPage';
+import MeetingsPage from './pages/MeetingsPage';
 import PublicJobsPage from './pages/public/PublicJobsPage';
 import PublicJobDetailsPage from './pages/public/PublicJobDetailsPage';
 import OrganizationSetupPage from './pages/onboarding/OrganizationSetupPage';
@@ -164,6 +165,17 @@ function App() {
               <ProtectedRoute>
                 <DashboardLayout>
                   <SourcingPage />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/app/meetings"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <MeetingsPage />
                 </DashboardLayout>
               </ProtectedRoute>
             }

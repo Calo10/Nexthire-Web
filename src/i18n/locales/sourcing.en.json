@@ -349,6 +349,18 @@
       "authToken": "Auth Token",
       "defaultFromWhatsAppNumber": "WhatsApp Number",
       "defaultFromWhatsAppNumberPlaceholder": "+14155238886"
+    },
+    "calendly": {
+      "sectionTitle": "Calendly connection",
+      "description": "Personal access token from Calendly → Integrations → API & webhooks.",
+      "personalAccessToken": "Personal access token",
+      "tokenHint": "Required. Used to list meetings and book invitees.",
+      "schedulingUrl": "Scheduling URL (optional)",
+      "schedulingUrlPlaceholder": "https://calendly.com/you/30min",
+      "schedulingUrlHint": "If empty, we use the scheduling URL from your Calendly profile.",
+      "webhookSigningKey": "Webhook signing key (optional)",
+      "webhookHint": "Optional for now. Needed later for invitee webhooks.",
+      "validationRequired": "Personal access token is required when connected."
     }
   },
   "analytics": {

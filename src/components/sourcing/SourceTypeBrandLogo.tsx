@@ -2,6 +2,7 @@ const SOURCE_LOGOS: { match: RegExp; src: string; alt: string }[] = [
   { match: /meta_ads|^meta$|facebook_ads|instagram_ads/i, src: 'https://cdn.simpleicons.org/meta', alt: 'Meta' },
   { match: /tiktok|tik_tok|tik-tok/i, src: 'https://cdn.simpleicons.org/tiktok', alt: 'TikTok' },
   { match: /linkedin/i, src: 'https://cdn.simpleicons.org/linkedin', alt: 'LinkedIn' },
+  { match: /calendly/i, src: 'https://cdn.simpleicons.org/calendly', alt: 'Calendly' },
 ];
 
 function TwilioIcon({ className }: { className: string }) {

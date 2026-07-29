@@ -344,7 +344,8 @@
     "templates": "Plantillas",
     "aiAgents": "Agentes AI",
     "team": "Equipos",
-    "settings": "Configuración"
+    "settings": "Configuración",
+    "meetings": "Reuniones"
   },
   "aiAgents": {
     "title": "Agentes AI",
@@ -508,7 +509,13 @@
       "urlOverride": "URL de aplicación personalizada (opcional)",
       "urlOverridePlaceholder": "https://…",
       "defaultUrlHint": "Déjala vacía para usar la URL pública por defecto que aparece abajo.",
-      "noWhatsappEnv": "Configura VITE_SOURCING_WHATSAPP_PHONE (solo dígitos) para enlaces de WhatsApp."
+      "noWhatsappEnv": "Configura VITE_SOURCING_WHATSAPP_PHONE (solo dígitos) para enlaces de WhatsApp.",
+      "calendlyTitle": "Agendar reunión",
+      "calendlyDesc": "Abre tu página de Calendly para que el candidato elija un horario.",
+      "calendlyRequired": "Conecta y activa Calendly en Fuentes antes de usar este destino.",
+      "calendlyGoToSources": "Ir a Fuentes →",
+      "calendlyMissingUrl": "Calendly está conectado pero no hay URL de agenda. Agrégala en Fuentes o en tu perfil de Calendly.",
+      "calendlyUrlHint": "Los anuncios enviarán a esta liga de Calendly."
     },
     "geo": {
       "label": "Ubicación",
@@ -632,7 +639,8 @@
       "creativeMessage": "Texto del anuncio",
       "advancedSummary": "Avanzado (facturación · optimización · puja)",
       "image": "Vista previa",
-      "imageFromMeta": "Imagen subida a Meta."
+      "imageFromMeta": "Imagen subida a Meta.",
+      "calendlyUrl": "URL de Calendly"
     },
     "result": {
       "title": "Campaña creada",
@@ -662,7 +670,9 @@
       "url": "Indica una URL http(s) válida.",
       "publicUrl": "Usa una URL pública https (no localhost ni IP privada). Configura VITE_PUBLIC_APP_URL o pega el enlace de producción del empleo.",
       "orgMissing": "Falta la organización o pega una URL completa del empleo.",
-      "image": "Añade una imagen (demo o subida)."
+      "image": "Añade una imagen (demo o subida).",
+      "calendlyRequired": "Conecta y activa Calendly en Fuentes antes de continuar.",
+      "calendlyUrl": "Calendly necesita una URL pública https. Configúrala en Fuentes o en tu perfil de Calendly."
     },
     "errors": {
       "loadJobs": "No se pudieron cargar los empleos.",
@@ -1702,6 +1712,44 @@
     "errors": {
       "nameLength": "El nombre debe tener entre 2 y 120 caracteres.",
       "createFailed": "No se pudo crear la organización. Intenta de nuevo."
+    }
+  },
+  "meetings": {
+    "title": "Reuniones",
+    "subtitle": "Reservas y disponibilidad de tu cuenta Calendly conectada.",
+    "today": "Hoy",
+    "copyBookingLink": "Copiar liga de agenda",
+    "linkCopied": "Liga copiada",
+    "upcoming": "Próximas",
+    "noUpcoming": "No hay reuniones próximas esta semana.",
+    "busy": "Ocupado",
+    "connectRequired": "Conecta y activa Calendly en Sourcing → Fuentes para ver tu calendario.",
+    "goToSources": "Ir a Fuentes →",
+    "book": {
+      "button": "Agendar reunión",
+      "title": "Agendar reunión",
+      "subtitle": "Elige un tipo de evento y un horario disponible.",
+      "eventType": "Tipo de evento",
+      "pickSlot": "Horarios disponibles (próximos 7 días)",
+      "inviteeName": "Nombre del invitado",
+      "inviteeEmail": "Email del invitado",
+      "submit": "Agendar",
+      "booking": "Agendando…",
+      "loadingTypes": "Cargando tipos de evento…",
+      "loadingSlots": "Cargando horarios…",
+      "noTypes": "No hay tipos de evento activos.",
+      "noSlots": "No hay horarios disponibles en los próximos 7 días.",
+      "paidPlanHint": "Crear invitee (Scheduling API) requiere plan de pago de Calendly.",
+      "success": "Reunión agendada.",
+      "errors": {
+        "loadTypes": "No se pudieron cargar los tipos de evento.",
+        "loadSlots": "No se pudieron cargar los horarios.",
+        "book": "No se pudo agendar la reunión."
+      }
+    },
+    "errors": {
+      "load": "No se pudieron cargar las reuniones.",
+      "copy": "No se pudo copiar la liga."
     }
   }
 }

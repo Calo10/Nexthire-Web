@@ -344,7 +344,8 @@
     "templates": "Templates",
     "aiAgents": "AI Agents",
     "team": "Teams",
-    "settings": "Settings"
+    "settings": "Settings",
+    "meetings": "Meetings"
   },
   "aiAgents": {
     "title": "AI Agents",
@@ -508,7 +509,13 @@
       "urlOverride": "Custom application URL (optional)",
       "urlOverridePlaceholder": "https://…",
       "defaultUrlHint": "Leave empty to use the default public job URL shown below.",
-      "noWhatsappEnv": "Configure VITE_SOURCING_WHATSAPP_PHONE (digits only) to build WhatsApp links."
+      "noWhatsappEnv": "Configure VITE_SOURCING_WHATSAPP_PHONE (digits only) to build WhatsApp links.",
+      "calendlyTitle": "Schedule meeting",
+      "calendlyDesc": "Opens your Calendly booking page so candidates can pick a time.",
+      "calendlyRequired": "Connect and activate Calendly in Sources before using this destination.",
+      "calendlyGoToSources": "Go to Sources →",
+      "calendlyMissingUrl": "Calendly is connected but no scheduling URL was found. Add one in Sources or set it on your Calendly profile.",
+      "calendlyUrlHint": "Ads will send people to this Calendly booking link."
     },
     "geo": {
       "label": "Location",
@@ -632,7 +639,8 @@
       "creativeMessage": "Ad text",
       "advancedSummary": "Advanced (billing · optimization · bid)",
       "image": "Image preview",
-      "imageFromMeta": "Image uploaded to Meta."
+      "imageFromMeta": "Image uploaded to Meta.",
+      "calendlyUrl": "Calendly booking URL"
     },
     "result": {
       "title": "Campaign created",
@@ -662,7 +670,9 @@
       "url": "Enter a valid http(s) URL.",
       "publicUrl": "Use a public https URL (not localhost or a private IP). Set VITE_PUBLIC_APP_URL or paste your production job link.",
       "orgMissing": "Set organization context or paste a full job URL override.",
-      "image": "Add an image (generate demo or upload)."
+      "image": "Add an image (generate demo or upload).",
+      "calendlyRequired": "Connect and activate Calendly in Sources before continuing.",
+      "calendlyUrl": "Calendly must have a public https booking URL. Set it in Sources or on your Calendly profile."
     },
     "errors": {
       "loadJobs": "Could not load jobs.",
@@ -1702,6 +1712,44 @@
     "errors": {
       "nameLength": "Company name must be between 2 and 120 characters.",
       "createFailed": "Could not create your organization. Please try again."
+    }
+  },
+  "meetings": {
+    "title": "Meetings",
+    "subtitle": "Bookings and availability from your connected Calendly account.",
+    "today": "Today",
+    "copyBookingLink": "Copy booking link",
+    "linkCopied": "Link copied",
+    "upcoming": "Upcoming",
+    "noUpcoming": "No upcoming meetings this week.",
+    "busy": "Busy",
+    "connectRequired": "Connect and activate Calendly in Sourcing → Sources to see your calendar.",
+    "goToSources": "Go to Sources →",
+    "book": {
+      "button": "Book meeting",
+      "title": "Book a meeting",
+      "subtitle": "Pick an event type and available slot, then book for the invitee.",
+      "eventType": "Event type",
+      "pickSlot": "Available times (next 7 days)",
+      "inviteeName": "Invitee name",
+      "inviteeEmail": "Invitee email",
+      "submit": "Book meeting",
+      "booking": "Booking…",
+      "loadingTypes": "Loading event types…",
+      "loadingSlots": "Loading available times…",
+      "noTypes": "No active event types found.",
+      "noSlots": "No available slots in the next 7 days.",
+      "paidPlanHint": "Create invitee (Scheduling API) requires a paid Calendly plan.",
+      "success": "Meeting booked successfully.",
+      "errors": {
+        "loadTypes": "Could not load event types.",
+        "loadSlots": "Could not load available times.",
+        "book": "Could not book the meeting."
+      }
+    },
+    "errors": {
+      "load": "Could not load meetings.",
+      "copy": "Could not copy the booking link."
     }
   }
 }
