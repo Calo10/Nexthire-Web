@@ -37,6 +37,7 @@ import {
   specialAdCategoryCountryFromGeo,
 } from '../../types/metaCampaign';
 import { createMetaCampaign, metaErrorMessageFromUnknown } from '../../api/metaCampaignApi';
+import { useCalendlySourceConnection } from '../../hooks/useCalendlySourceConnection';
 import { createSourcingCampaign } from '../../api/sourcingApi';
 import CampaignStepJobSelector from '../marketing/metaCampaign/CampaignStepJobSelector';
 import CampaignStepSetup from '../marketing/metaCampaign/CampaignStepSetup';
@@ -118,6 +119,10 @@ export default function MetaCampaignBuilderModal({
   const [sourcingSyncError, setSourcingSyncError] = useState<string | null>(null);
 
   const whatsappConfigured = Boolean(sourcingWhatsAppPhoneFromEnv());
+  const {
+    isReady: calendlyReady,
+    schedulingUrl: calendlySchedulingUrl,
+  } = useCalendlySourceConnection(isOpen);
 
   const ageRangeLocked = specialAdCategoriesRequireFixedAge(META_EMPLOYMENT_SPECIAL_AD_CATEGORIES);
 
@@ -211,16 +216,19 @@ export default function MetaCampaignBuilderModal({
 
   const destinationUrlForPayload = useMemo(() => {
     if (destinationType === 'whatsapp') return buildWhatsappDestinationUrl(whatsappMessage);
+    if (destinationType === 'calendly') return calendlySchedulingUrl.trim();
     const origin = resolveSiteOrigin();
     const def = buildPublicJobPostUrl(origin, tenantId, selectedJobId);
     return jobPostUrlOverride.trim() || def;
-  }, [destinationType, whatsappMessage, jobPostUrlOverride, tenantId, selectedJobId]);
+  }, [destinationType, whatsappMessage, calendlySchedulingUrl, jobPostUrlOverride, tenantId, selectedJobId]);
 
   const objectiveLabel = t(`metaCampaign.objectives.${objective}.label`, { defaultValue: objective });
   const destinationLabel =
     destinationType === 'whatsapp'
       ? t('metaCampaign.destination.whatsappTitle')
-      : t('metaCampaign.destination.webTitle');
+      : destinationType === 'calendly'
+        ? t('metaCampaign.destination.calendlyTitle')
+        : t('metaCampaign.destination.webTitle');
   const platformsLabel = [
     platformFacebook ? 'Facebook' : null,
     platformInstagram ? 'Instagram' : null,
@@ -271,6 +279,11 @@ export default function MetaCampaignBuilderModal({
               next.destination = t('metaCampaign.validation.destination');
             }
           }
+        } else if (destinationType === 'calendly') {
+          if (!calendlyReady) next.calendly = t('metaCampaign.validation.calendlyRequired');
+          else if (!calendlySchedulingUrl.trim() || !isPublicHttpsUrl(calendlySchedulingUrl.trim())) {
+            next.calendly = t('metaCampaign.validation.calendlyUrl');
+          }
         } else {
           const override = jobPostUrlOverride.trim();
           if (override) {
@@ -305,6 +318,8 @@ export default function MetaCampaignBuilderModal({
       destinationType,
       whatsappConfigured,
       whatsappMessage,
+      calendlyReady,
+      calendlySchedulingUrl,
       jobPostUrlOverride,
       tenantId,
       creativeMessage,
@@ -377,7 +392,9 @@ export default function MetaCampaignBuilderModal({
       ageMax,
       publisherPlatforms,
       jobPostLink:
-        destinationType === 'job_post_url' ? destinationUrlForPayload : undefined,
+        destinationType === 'job_post_url' || destinationType === 'calendly'
+          ? destinationUrlForPayload
+          : undefined,
       whatsappLink:
         destinationType === 'whatsapp' ? destinationUrlForPayload : undefined,
       whatsappMessage,
@@ -470,6 +487,10 @@ export default function MetaCampaignBuilderModal({
         if (!whatsappConfigured || !whatsappMessage.trim() || !waUrl || !isValidWhatsappMeUrl(waUrl)) {
           next._ = 'x';
         }
+      } else if (destinationType === 'calendly') {
+        if (!calendlyReady || !calendlySchedulingUrl.trim() || !isPublicHttpsUrl(calendlySchedulingUrl.trim())) {
+          next._ = 'x';
+        }
       } else {
         const override = jobPostUrlOverride.trim();
         if (override) {
@@ -498,6 +519,8 @@ export default function MetaCampaignBuilderModal({
     destinationType,
     whatsappConfigured,
     whatsappMessage,
+    calendlyReady,
+    calendlySchedulingUrl,
     jobPostUrlOverride,
     tenantId,
     creativeMessage,
@@ -601,6 +624,9 @@ export default function MetaCampaignBuilderModal({
                 onJobPostUrlOverride={setJobPostUrlOverride}
                 destinationUrlPreview={destinationUrlForPayload}
                 whatsappConfigured={whatsappConfigured}
+                calendlyConfigured={calendlyReady}
+                calendlySchedulingUrl={calendlySchedulingUrl}
+                onGoToCalendlySources={onGoToSources}
                 fieldErrors={fieldErrors}
               />
             )}

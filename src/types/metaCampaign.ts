@@ -1,6 +1,6 @@
 import type { Job } from './dashboard';
 
-export type MetaDestinationType = 'whatsapp' | 'job_post_url';
+export type MetaDestinationType = 'whatsapp' | 'job_post_url' | 'calendly';
 
 export type MetaCtaType = 'LEARN_MORE' | 'APPLY_NOW' | 'SIGN_UP';
 
@@ -357,7 +357,7 @@ export function buildMetaCampaignPayload(input: MetaCampaignBuildInput): MetaCam
 
   if (!tenantId || !jobId || !geoSelection || !publisherPlatforms.length) return null;
 
-  const isWeb = destinationType === 'job_post_url';
+  const isWeb = destinationType === 'job_post_url' || destinationType === 'calendly';
   const isWhatsapp = destinationType === 'whatsapp';
 
   if (isWeb) {

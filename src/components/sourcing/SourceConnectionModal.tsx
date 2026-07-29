@@ -6,6 +6,12 @@ import Button from '../Button';
 import TextField from '../TextField';
 import ErrorMessage from '../ErrorMessage';
 import { saveSourcingSourceConnection } from '../../api/sourcingApi';
+import {
+  buildCalendlyConfigJson,
+  parseCalendlyConfig,
+  type CalendlyConfigState,
+} from '../../lib/calendlySourceConfig';
+import { CALENDLY_SOURCE_CODE } from '../../lib/calendlySource';
 
 interface Props {
   isOpen: boolean;
@@ -267,6 +273,10 @@ function buildTwilioConfigJson(fields: TwilioConfigState, previousJson: string):
   return JSON.stringify(merged);
 }
 
+function isCalendlySourceCode(code: string) {
+  return code.toLowerCase() === CALENDLY_SOURCE_CODE;
+}
+
 export default function SourceConnectionModal({
   isOpen,
   onClose,
@@ -285,6 +295,7 @@ export default function SourceConnectionModal({
   const [tiktokConfig, setTiktokConfig] = useState<TiktokConfigState>(() => parseTiktokConfig(initialConfig));
   const [linkedinConfig, setLinkedinConfig] = useState<LinkedinConfigState>(() => parseLinkedinConfig(initialConfig));
   const [twilioConfig, setTwilioConfig] = useState<TwilioConfigState>(() => parseTwilioConfig(initialConfig));
+  const [calendlyConfig, setCalendlyConfig] = useState<CalendlyConfigState>(() => parseCalendlyConfig(initialConfig));
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -292,6 +303,7 @@ export default function SourceConnectionModal({
   const isTikTok = useMemo(() => isTikTokSourceCode(sourceTypeCode), [sourceTypeCode]);
   const isLinkedIn = useMemo(() => isLinkedInSourceCode(sourceTypeCode), [sourceTypeCode]);
   const isTwilio = useMemo(() => isTwilioSourceCode(sourceTypeCode), [sourceTypeCode]);
+  const isCalendly = useMemo(() => isCalendlySourceCode(sourceTypeCode), [sourceTypeCode]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -303,6 +315,7 @@ export default function SourceConnectionModal({
     setTiktokConfig(parseTiktokConfig(next));
     setLinkedinConfig(parseLinkedinConfig(next));
     setTwilioConfig(parseTwilioConfig(next));
+    setCalendlyConfig(parseCalendlyConfig(next));
     setError(null);
   }, [isOpen, initialConnected, initialActive, initialConfig]);
 
@@ -322,6 +335,10 @@ export default function SourceConnectionModal({
     setTwilioConfig((prev) => ({ ...prev, [key]: value }));
   };
 
+  const setCalendlyField = (key: keyof CalendlyConfigState, value: string) => {
+    setCalendlyConfig((prev) => ({ ...prev, [key]: value }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -336,6 +353,13 @@ export default function SourceConnectionModal({
         outJson = buildLinkedinConfigJson(linkedinConfig, configJson);
       } else if (isTwilio) {
         outJson = buildTwilioConfigJson(twilioConfig, configJson);
+      } else if (isCalendly) {
+        if (isConnected && !calendlyConfig.PersonalAccessToken.trim()) {
+          setError(t('sourcing.sources.calendly.validationRequired'));
+          setSaving(false);
+          return;
+        }
+        outJson = buildCalendlyConfigJson(calendlyConfig, configJson);
       } else {
         let parsed: unknown = {};
         try {
@@ -501,6 +525,34 @@ export default function SourceConnectionModal({
               placeholder={t('sourcing.sources.twilio.defaultFromWhatsAppNumberPlaceholder')}
               autoComplete="off"
             />
+          </div>
+        ) : isCalendly ? (
+          <div className="space-y-4 pt-1">
+            <p className="text-sm font-medium text-gray-800">{t('sourcing.sources.calendly.sectionTitle')}</p>
+            <p className="text-xs text-gray-500">{t('sourcing.sources.calendly.description')}</p>
+            <TextField
+              label={t('sourcing.sources.calendly.personalAccessToken')}
+              type="password"
+              value={calendlyConfig.PersonalAccessToken}
+              onChange={(e) => setCalendlyField('PersonalAccessToken', e.target.value)}
+              autoComplete="new-password"
+            />
+            <p className="text-xs text-gray-500 -mt-2">{t('sourcing.sources.calendly.tokenHint')}</p>
+            <TextField
+              label={t('sourcing.sources.calendly.schedulingUrl')}
+              value={calendlyConfig.SchedulingUrl}
+              onChange={(e) => setCalendlyField('SchedulingUrl', e.target.value)}
+              placeholder={t('sourcing.sources.calendly.schedulingUrlPlaceholder')}
+              autoComplete="off"
+            />
+            <p className="text-xs text-gray-500 -mt-2">{t('sourcing.sources.calendly.schedulingUrlHint')}</p>
+            <TextField
+              label={t('sourcing.sources.calendly.webhookSigningKey')}
+              value={calendlyConfig.WebhookSigningKey}
+              onChange={(e) => setCalendlyField('WebhookSigningKey', e.target.value)}
+              autoComplete="off"
+            />
+            <p className="text-xs text-gray-500 -mt-2">{t('sourcing.sources.calendly.webhookHint')}</p>
           </div>
         ) : (
           <div>
