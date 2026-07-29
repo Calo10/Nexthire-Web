@@ -74,30 +74,6 @@ export interface CalendlyCreateInviteeResult {
   status?: string | null;
 }
 
-export interface CalendlyContact {
-  uri: string;
-  name?: string | null;
-  email?: string | null;
-  phone?: string | null;
-  company?: string | null;
-  jobTitle?: string | null;
-  createdAt?: string | null;
-  updatedAt?: string | null;
-}
-
-export interface CalendlyContactsResponse {
-  items: CalendlyContact[];
-  nextPageToken?: string | null;
-}
-
-export interface CalendlySyncContactsResult {
-  fetched: number;
-  created: number;
-  updated: number;
-  skipped: number;
-  contactIds: string[];
-}
-
 function pick(o: Record<string, unknown>, ...keys: string[]): string {
   for (const k of keys) {
     const v = o[k];
@@ -225,45 +201,6 @@ function normalizeInviteeResult(raw: unknown): CalendlyCreateInviteeResult {
     cancelUrl: pick(o, 'cancelUrl', 'CancelUrl') || null,
     rescheduleUrl: pick(o, 'rescheduleUrl', 'RescheduleUrl') || null,
     status: pick(o, 'status', 'Status') || null,
-  };
-}
-
-function normalizeContact(raw: unknown): CalendlyContact | null {
-  const o = asRecord(raw);
-  const uri = pick(o, 'uri', 'Uri');
-  const email = pick(o, 'email', 'Email') || null;
-  const name = pick(o, 'name', 'Name') || null;
-  if (!uri && !email && !name) return null;
-  return {
-    uri: uri || '',
-    name,
-    email,
-    phone: pick(o, 'phone', 'Phone') || null,
-    company: pick(o, 'company', 'Company') || null,
-    jobTitle: pick(o, 'jobTitle', 'JobTitle') || null,
-    createdAt: pick(o, 'createdAt', 'CreatedAt') || null,
-    updatedAt: pick(o, 'updatedAt', 'UpdatedAt') || null,
-  };
-}
-
-function normalizeContactsResponse(raw: unknown): CalendlyContactsResponse {
-  const o = asRecord(raw);
-  const list = Array.isArray(o.items) ? o.items : Array.isArray(o.Items) ? o.Items : [];
-  return {
-    items: list.map(normalizeContact).filter((x): x is CalendlyContact => x !== null),
-    nextPageToken: pick(o, 'nextPageToken', 'NextPageToken') || null,
-  };
-}
-
-function normalizeSyncResult(raw: unknown): CalendlySyncContactsResult {
-  const o = asRecord(raw);
-  const idsRaw = o.contactIds ?? o.ContactIds;
-  return {
-    fetched: pickNum(o, 'fetched', 'Fetched'),
-    created: pickNum(o, 'created', 'Created'),
-    updated: pickNum(o, 'updated', 'Updated'),
-    skipped: pickNum(o, 'skipped', 'Skipped'),
-    contactIds: Array.isArray(idsRaw) ? idsRaw.map(String) : [],
   };
 }
 
