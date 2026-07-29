@@ -49,6 +49,9 @@ interface Props {
   onJobPostUrlOverride: (v: string) => void;
   destinationUrlPreview: string;
   whatsappConfigured: boolean;
+  calendlyConfigured: boolean;
+  calendlySchedulingUrl: string;
+  onGoToCalendlySources?: () => void;
   fieldErrors: Record<string, string>;
 }
 
@@ -123,6 +126,9 @@ export default function CampaignStepSetup({
   onJobPostUrlOverride,
   destinationUrlPreview,
   whatsappConfigured,
+  calendlyConfigured,
+  calendlySchedulingUrl,
+  onGoToCalendlySources,
   fieldErrors,
 }: Props) {
   const { t } = useTranslation();
@@ -170,13 +176,18 @@ export default function CampaignStepSetup({
       title: t('metaCampaign.destination.whatsappTitle'),
       desc: t('metaCampaign.destination.whatsappDesc'),
     },
+    {
+      id: 'calendly',
+      title: t('metaCampaign.destination.calendlyTitle'),
+      desc: t('metaCampaign.destination.calendlyDesc'),
+    },
   ];
 
   return (
     <div className="space-y-8">
       <section className="space-y-3">
         <h3 className="text-sm font-semibold text-gray-900">{t('metaCampaign.destination.section')}</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {destinationCards.map((card) => {
             const selected = destinationType === card.id;
             return (
@@ -290,6 +301,7 @@ export default function CampaignStepSetup({
           </div>
         </div>
 
+        {fieldErrors.calendly ? <p className="text-sm text-red-600">{fieldErrors.calendly}</p> : null}
         {destinationType === 'whatsapp' ? (
           <div className="space-y-3 rounded-xl border border-gray-200 bg-gray-50/80 p-4">
             <TextField
@@ -302,6 +314,28 @@ export default function CampaignStepSetup({
               <p className="text-sm text-amber-700">{t('metaCampaign.destination.noWhatsappEnv')}</p>
             ) : null}
             {destinationUrlPreview ? <GeneratedUrlPreview url={destinationUrlPreview} /> : null}
+          </div>
+        ) : destinationType === 'calendly' ? (
+          <div className="space-y-3 rounded-xl border border-gray-200 bg-gray-50/80 p-4">
+            {!calendlyConfigured ? (
+              <div className="space-y-2">
+                <p className="text-sm text-amber-800">{t('metaCampaign.destination.calendlyRequired')}</p>
+                {onGoToCalendlySources ? (
+                  <button
+                    type="button"
+                    className="text-sm font-medium text-primary hover:underline"
+                    onClick={onGoToCalendlySources}
+                  >
+                    {t('metaCampaign.destination.calendlyGoToSources')}
+                  </button>
+                ) : null}
+              </div>
+            ) : !calendlySchedulingUrl.trim() ? (
+              <p className="text-sm text-amber-800">{t('metaCampaign.destination.calendlyMissingUrl')}</p>
+            ) : (
+              <p className="text-xs text-gray-500">{t('metaCampaign.destination.calendlyUrlHint')}</p>
+            )}
+            {calendlySchedulingUrl.trim() ? <GeneratedUrlPreview url={calendlySchedulingUrl} /> : null}
           </div>
         ) : (
           <div className="space-y-3 rounded-xl border border-gray-200 bg-gray-50/80 p-4">

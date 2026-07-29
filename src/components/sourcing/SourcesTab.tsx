@@ -12,6 +12,7 @@ import SourceTypeBrandLogo from './SourceTypeBrandLogo';
 const FALLBACK_SOURCES: { code: string; name: string }[] = [
   { code: 'meta_ads', name: 'Meta Ads' },
   { code: 'twilio', name: 'Twilio' },
+  { code: 'calendly', name: 'Calendly' },
   { code: 'tiktok_ads', name: 'TikTok Ads' },
   { code: 'linkedin_ads', name: 'LinkedIn Ads' },
 ];
