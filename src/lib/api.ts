@@ -909,5 +909,45 @@ export const jobsApi = {
   deleteJob: async (id: string): Promise<void> => {
     await apiClient.delete(`/jobs/${encodeURIComponent(id)}`, true);
   },
+
+  getJobAdDesign: async (
+    id: string
+  ): Promise<{
+    jobId: string;
+    imageBase64: string;
+    imageContentType: string;
+    adText?: string;
+  } | null> => {
+    try {
+      const raw = await apiClient.get<Record<string, unknown>>(
+        `/jobs/${encodeURIComponent(id)}/ad-design`,
+        true
+      );
+      const imageBase64 = String(raw?.imageBase64 ?? raw?.ImageBase64 ?? '').trim();
+      if (!imageBase64) return null;
+      return {
+        jobId: String(raw?.jobId ?? raw?.JobId ?? id),
+        imageBase64,
+        imageContentType:
+          String(raw?.imageContentType ?? raw?.ImageContentType ?? 'image/png').trim() || 'image/png',
+        adText: String(raw?.adText ?? raw?.AdText ?? '').trim() || undefined,
+      };
+    } catch (e: unknown) {
+      const err = e as ApiError;
+      if (err?.status === 404) return null;
+      throw e;
+    }
+  },
+
+  saveJobAdDesign: async (
+    id: string,
+    payload: { imageBase64: string; imageContentType?: string; adText?: string }
+  ): Promise<void> => {
+    await apiClient.put(`/jobs/${encodeURIComponent(id)}/ad-design`, payload, true);
+  },
+
+  deleteJobAdDesign: async (id: string): Promise<void> => {
+    await apiClient.delete(`/jobs/${encodeURIComponent(id)}/ad-design`, true);
+  },
 };
 
