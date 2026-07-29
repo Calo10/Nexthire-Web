@@ -1001,6 +1001,8 @@
       "details": "Detalles",
       "actions": "Acciones",
       "botQuestions": "Preguntas del bot",
+      "generateAdDesign": "Generar diseño de anuncio",
+      "viewAdDesign": "Ver diseño de anuncio",
       "metadata": "Metadatos",
       "created": "Creado",
       "updatedAt": "Actualizado",
@@ -1010,6 +1012,17 @@
       "errors": {
         "save": "No se pudieron guardar los cambios."
       }
+    },
+    "adDesign": {
+      "generateTitle": "Generar diseño de anuncio",
+      "viewTitle": "Diseño de anuncio",
+      "accept": "Aceptar",
+      "download": "Descargar",
+      "confirmDelete": "¿Eliminar este diseño? Puedes generar uno nuevo después.",
+      "saveFailed": "No se pudo guardar el diseño.",
+      "loadFailed": "No se pudo cargar el diseño.",
+      "deleteFailed": "No se pudo eliminar el diseño.",
+      "notFound": "Este trabajo no tiene un diseño guardado."
     },
     "botQuestions": {
       "title": "Preguntas del bot — {{jobTitle}}",

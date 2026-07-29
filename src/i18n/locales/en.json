@@ -1001,6 +1001,8 @@
       "details": "Details",
       "actions": "Actions",
       "botQuestions": "Bot questions",
+      "generateAdDesign": "Generate Ad Design",
+      "viewAdDesign": "View Ad Design",
       "metadata": "Metadata",
       "created": "Created",
       "updatedAt": "Updated",
@@ -1010,6 +1012,17 @@
       "errors": {
         "save": "Failed to save changes."
       }
+    },
+    "adDesign": {
+      "generateTitle": "Generate Ad Design",
+      "viewTitle": "Ad Design",
+      "accept": "Accept",
+      "download": "Download",
+      "confirmDelete": "Delete this ad design? You can generate a new one later.",
+      "saveFailed": "Could not save the ad design.",
+      "loadFailed": "Could not load the ad design.",
+      "deleteFailed": "Could not delete the ad design.",
+      "notFound": "No ad design saved for this job."
     },
     "botQuestions": {
       "title": "Bot questions — {{jobTitle}}",

@@ -49,6 +49,8 @@ export interface Job {
   language?: JobLanguage | string;
   applicantsCount?: number;
   applicationsCount?: number;
+  /** True when the job has a saved ad design image. */
+  hasAdDesign?: boolean;
   createdAt: string;
   updatedAt?: string;
 }

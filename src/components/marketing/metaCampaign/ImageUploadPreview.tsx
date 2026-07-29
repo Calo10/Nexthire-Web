@@ -22,6 +22,8 @@ interface Props {
   generatedPreview: GeneratedMetaCreativePreview | null;
   onGeneratedPreviewChange: (preview: GeneratedMetaCreativePreview | null) => void;
   onImageReady: (image: MetaCreativeImageReady) => void;
+  /** `meta` uploads to Meta Ads; `local` only keeps base64 for job ad design. */
+  mode?: 'meta' | 'local';
 }
 
 function extensionFromContentType(contentType: string): string {
@@ -80,6 +82,7 @@ export default function ImageUploadPreview({
   generatedPreview,
   onGeneratedPreviewChange,
   onImageReady,
+  mode = 'meta',
 }: Props) {
   const { t } = useTranslation();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -88,6 +91,7 @@ export default function ImageUploadPreview({
   const [uploadingManual, setUploadingManual] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const busy = generating || uploadingGenerated || uploadingManual;
+  const isLocal = mode === 'local';
   const previewUrl = generatedPreview?.dataUrl ?? imagePreviewUrl;
   const dimensions = useMemo(() => {
     if (!generatedPreview) return null;
@@ -99,6 +103,19 @@ export default function ImageUploadPreview({
     setUploadingManual(true);
     setError(null);
     try {
+      if (isLocal) {
+        const encoded = await fileToBase64(file);
+        const preview = URL.createObjectURL(file);
+        onGeneratedPreviewChange(null);
+        onImageReady({
+          imageHash: '',
+          previewUrl: preview,
+          imageBase64: encoded.base64,
+          imageContentType: encoded.contentType,
+        });
+        return;
+      }
+
       const [{ imageHash: hash }, encoded] = await Promise.all([
         uploadMetaCreativeImage(file),
         fileToBase64(file),
@@ -195,10 +212,20 @@ export default function ImageUploadPreview({
     setUploadingGenerated(true);
     setError(null);
     try {
+      const parsed = parseDataUrl(generatedPreview.dataUrl);
+      if (isLocal) {
+        onImageReady({
+          imageHash: '',
+          previewUrl: generatedPreview.dataUrl,
+          imageBase64: parsed?.base64 || '',
+          imageContentType: parsed?.contentType || generatedPreview.contentType || 'image/png',
+        });
+        return;
+      }
+
       const file = dataUrlToFile(generatedPreview.dataUrl, generatedPreview.contentType);
       const { imageHash: hash } = await uploadMetaCreativeImage(file);
       if (!hash) throw new Error(t('metaCampaign.creative.noHash'));
-      const parsed = parseDataUrl(generatedPreview.dataUrl);
       const preview = URL.createObjectURL(file);
       onImageReady({
         imageHash: hash,
@@ -300,9 +327,11 @@ export default function ImageUploadPreview({
                 ) : null}
               </div>
             ) : null}
-            <p className="text-xs font-mono text-center text-gray-500 break-all">
-              {t('metaCampaign.creative.imageHash')}: {imageHash || '—'}
-            </p>
+            {!isLocal ? (
+              <p className="text-xs font-mono text-center text-gray-500 break-all">
+                {t('metaCampaign.creative.imageHash')}: {imageHash || '—'}
+              </p>
+            ) : null}
           </div>
         ) : (
           <p className="text-sm text-gray-500 text-center">{t('metaCampaign.creative.noImageYet')}</p>
