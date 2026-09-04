@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import PhoneDisplay from '../PhoneDisplay';
 import SourcePill from './SourcePill';
 import type { Candidate } from '../../types/candidates';
+import { displayCandidateEmail, isPlaceholderCandidateEmail } from '../../lib/candidateEmail';
 
 interface CandidatesMobileListProps {
   candidates: Candidate[];
@@ -59,8 +60,8 @@ export default function CandidatesMobileList({
               {c.source ? <SourcePill source={c.source} className="shrink-0" /> : null}
             </div>
 
-            {c.email && (
-              <p className="text-sm text-gray-600 truncate mb-1">{c.email}</p>
+            {c.email && !isPlaceholderCandidateEmail(c.email) && (
+              <p className="text-sm text-gray-600 truncate mb-1">{displayCandidateEmail(c.email)}</p>
             )}
 
             <div className="flex items-center justify-between gap-2 text-xs text-gray-500 mt-2">

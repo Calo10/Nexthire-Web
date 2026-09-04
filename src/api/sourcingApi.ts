@@ -112,6 +112,15 @@ export async function deleteSourcingCampaign(id: string | number): Promise<unkno
   return apiClient.delete(`/sourcing/campaigns/${encodeId(id)}`, SKIP_UNAUTHORIZED);
 }
 
+export async function duplicateSourcingCampaign(id: string | number): Promise<SourcingCampaign> {
+  const raw = await apiClient.post<unknown>(
+    `/sourcing/campaigns/${encodeId(id)}/duplicate`,
+    undefined,
+    SKIP_UNAUTHORIZED
+  );
+  return (unwrapPayload(raw) ?? raw) as SourcingCampaign;
+}
+
 export async function postSourcingTrackingEvent(payload: Record<string, unknown>): Promise<unknown> {
   return apiClient.post('/sourcing/tracking-events', payload, SKIP_UNAUTHORIZED);
 }

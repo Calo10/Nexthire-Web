@@ -71,6 +71,8 @@ function answerTypeBadgeClass(type: JobBotAnswerType): string {
       return 'bg-emerald-100 text-emerald-700';
     case 'yes_no':
       return 'bg-amber-100 text-amber-700';
+    case 'date':
+      return 'bg-sky-100 text-sky-700';
     case 'file':
       return 'bg-purple-100 text-purple-700';
     default:
@@ -108,6 +110,7 @@ export default function JobBotQuestionsModal({ isOpen, jobId, jobTitle, onClose 
       { value: 'text', label: t('jobs.botQuestions.answerTypes.text') },
       { value: 'number', label: t('jobs.botQuestions.answerTypes.number') },
       { value: 'yes_no', label: t('jobs.botQuestions.answerTypes.yes_no') },
+      { value: 'date', label: t('jobs.botQuestions.answerTypes.date') },
       { value: 'file', label: t('jobs.botQuestions.answerTypes.file') },
     ],
     [t]

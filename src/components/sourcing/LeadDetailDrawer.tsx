@@ -89,8 +89,8 @@ export default function LeadDetailDrawer({ isOpen, leadId, onClose, onUpdated }:
   };
 
   const dynamicAnswers = useMemo(
-    () => parseDynamicAnswersJson(data?.dynamicAnswersJson),
-    [data?.dynamicAnswersJson]
+    () => parseDynamicAnswersJson(data?.dynamicAnswersJson ?? data?.DynamicAnswersJson),
+    [data]
   );
 
   if (!isOpen) return null;

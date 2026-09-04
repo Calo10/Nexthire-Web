@@ -1079,6 +1079,7 @@
         "text": "Texto libre",
         "number": "Número",
         "yes_no": "Sí / No",
+        "date": "Fecha",
         "file": "Archivo (CV, PDF, etc.)"
       },
       "validation": {
@@ -1522,8 +1523,9 @@
       "saveChanges": "No se pudieron guardar los cambios.",
       "deleteCandidate": "No se pudo eliminar el candidato."
     },
-    "drawer": {
+      "drawer": {
       "details": "Detalles",
+      "applicationAnswers": "Respuestas de aplicación",
       "metadata": "Metadatos",
       "created": "Creado",
       "updatedAt": "Actualizado",

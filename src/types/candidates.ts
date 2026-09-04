@@ -15,6 +15,8 @@ export interface Candidate {
   phone?: string;
   source?: CandidateSource | string;
   resumeUrl?: string;
+  /** Bot / apply answers JSON from linked sourcing lead when converted. */
+  dynamicAnswersJson?: string | null;
   createdAt: string; // ISO
   updatedAt: string; // ISO
 }

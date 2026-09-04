@@ -1,5 +1,11 @@
 // NextHire API Configuration
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+// In Vite dev, default to same-origin so requests go through the /api proxy (avoids CORS).
+const configuredApiBase = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim();
+const API_BASE = configuredApiBase
+  ? configuredApiBase.replace(/\/+$/, '')
+  : import.meta.env.DEV
+    ? ''
+    : 'http://localhost:5000';
 const API_BASE_URL = `${API_BASE}/api`;
 
 // Auth API Routes (centralized - matches NextHire API Swagger)

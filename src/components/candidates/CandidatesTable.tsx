@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import type { Candidate } from '../../types/candidates';
 import SourcePill from './SourcePill';
 import PhoneDisplay from '../PhoneDisplay';
+import { displayCandidateEmail } from '../../lib/candidateEmail';
 
 interface CandidatesTableProps {
   candidates: Candidate[];
@@ -57,7 +58,7 @@ export default function CandidatesTable({ candidates, isLoading = false, onRowCl
                   <span className="text-sm font-medium text-dark-text">{fullName}</span>
                 </td>
                 <td className="py-4 px-6">
-                  <span className="text-sm text-gray-600">{c.email || '-'}</span>
+                  <span className="text-sm text-gray-600">{displayCandidateEmail(c.email)}</span>
                 </td>
                 <td className="py-4 px-6">
                   <PhoneDisplay phone={c.phone} className="text-sm text-gray-600" />

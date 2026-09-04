@@ -10,6 +10,7 @@ import type {
 
 function mapCandidateDto(raw: unknown): Candidate {
   const r = raw as Record<string, unknown>;
+  const dynamicAnswersJsonRaw = r.dynamicAnswersJson ?? r.DynamicAnswersJson;
   return {
     id: String(r.id ?? r.Id ?? ''),
     firstName: String(r.firstName ?? r.FirstName ?? ''),
@@ -21,6 +22,10 @@ function mapCandidateDto(raw: unknown): Candidate {
         : undefined,
     source: (r.source ?? r.Source) != null ? String(r.source ?? r.Source) : undefined,
     resumeUrl: (r.resumeUrl ?? r.ResumeUrl) != null ? String(r.resumeUrl ?? r.ResumeUrl) : undefined,
+    dynamicAnswersJson:
+      dynamicAnswersJsonRaw != null && String(dynamicAnswersJsonRaw).trim()
+        ? String(dynamicAnswersJsonRaw)
+        : null,
     createdAt: String(r.createdAt ?? r.CreatedAt ?? ''),
     updatedAt: String(r.updatedAt ?? r.UpdatedAt ?? ''),
   };
