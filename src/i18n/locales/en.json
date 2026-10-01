@@ -1079,6 +1079,7 @@
         "text": "Free text",
         "number": "Number",
         "yes_no": "Yes / No",
+        "date": "Date",
         "file": "File (CV, PDF, etc.)"
       },
       "validation": {
@@ -1451,7 +1452,7 @@
   "candidates": {
     "title": "Candidates",
     "subtitle": "Search and manage candidates in your pipeline.",
-    "searchPlaceholder": "Search candidates...",
+    "searchPlaceholder": "Search by name, email, or phone",
     "newCandidate": "New Candidate",
     "candidate": "Candidate",
     "unknown": "Unknown",
@@ -1477,6 +1478,11 @@
       "source": "Source",
       "created": "Created"
     },
+    "pagination": {
+      "showing": "Showing {{from}}–{{to}} of {{total}}",
+      "prev": "Previous",
+      "next": "Next"
+    },
     "empty": {
       "title": "No candidates found",
       "subtitle": "Try adjusting your search or add your first candidate.",
@@ -1500,12 +1506,26 @@
       "phoneCountry": "Country code",
       "phoneNumber": "Number",
       "source": "Source",
+      "tags": "Tags",
       "resume": "Resume",
       "resumeUrl": "Resume URL"
     },
     "placeholders": {
       "email": "name@company.com",
-      "phone": "e.g., 8966 7186"
+      "phone": "e.g., 8966 7186",
+      "tag": "e.g. Senior, Referral"
+    },
+    "tags": {
+      "add": "Add",
+      "empty": "No tags yet",
+      "remove": "Remove tag {{name}}"
+    },
+    "notes": {
+      "title": "Notes",
+      "placeholder": "Write a note about this candidate",
+      "add": "Add note",
+      "empty": "No notes yet",
+      "remove": "Delete note"
     },
     "validation": {
       "firstNameRequired": "First name is required",
@@ -1522,8 +1542,9 @@
       "saveChanges": "Failed to save changes.",
       "deleteCandidate": "Failed to delete candidate."
     },
-    "drawer": {
+      "drawer": {
       "details": "Details",
+      "applicationAnswers": "Application answers",
       "metadata": "Metadata",
       "created": "Created",
       "updatedAt": "Updated",

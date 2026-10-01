@@ -19,6 +19,11 @@ export default function CandidatesDesktopView({
   setTo,
   setIsNewModalOpen,
   candidates,
+  page,
+  pageSize,
+  total,
+  totalPages,
+  setPage,
   isLoading,
   error,
   handleRowClick,
@@ -106,7 +111,16 @@ export default function CandidatesDesktopView({
               </Button>
             </div>
           ) : (
-            <CandidatesTable candidates={candidates} isLoading={isLoading} onRowClick={handleRowClick} />
+            <CandidatesTable
+              candidates={candidates}
+              isLoading={isLoading}
+              onRowClick={handleRowClick}
+              page={page}
+              pageSize={pageSize}
+              total={total}
+              totalPages={totalPages}
+              onPageChange={setPage}
+            />
           )}
         </Card>
       </div>

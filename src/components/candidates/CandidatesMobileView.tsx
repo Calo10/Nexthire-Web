@@ -2,6 +2,7 @@ import Button from '../Button';
 import ErrorMessage from '../ErrorMessage';
 import TextField from '../TextField';
 import CandidatesMobileList from './CandidatesMobileList';
+import CandidatesPagination from './CandidatesPagination';
 import type { CandidatesPageState } from '../../hooks/useCandidatesPage';
 
 export default function CandidatesMobileView({
@@ -16,6 +17,11 @@ export default function CandidatesMobileView({
   setTo,
   setIsNewModalOpen,
   candidates,
+  page,
+  pageSize,
+  total,
+  totalPages,
+  setPage,
   isLoading,
   error,
   handleRowClick,
@@ -109,11 +115,25 @@ export default function CandidatesMobileView({
             </Button>
           </div>
         ) : (
-          <CandidatesMobileList
-            candidates={candidates}
-            isLoading={isLoading}
-            onCandidateClick={handleRowClick}
-          />
+          <>
+            <CandidatesMobileList
+              candidates={candidates}
+              isLoading={isLoading}
+              onCandidateClick={handleRowClick}
+            />
+            {total > 0 && (
+              <div className="mt-3 overflow-hidden rounded-xl border border-gray-200">
+                <CandidatesPagination
+                  page={page}
+                  pageSize={pageSize}
+                  total={total}
+                  totalPages={totalPages}
+                  isLoading={isLoading}
+                  onPageChange={setPage}
+                />
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

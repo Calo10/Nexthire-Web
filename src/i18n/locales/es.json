@@ -1079,6 +1079,7 @@
         "text": "Texto libre",
         "number": "Número",
         "yes_no": "Sí / No",
+        "date": "Fecha",
         "file": "Archivo (CV, PDF, etc.)"
       },
       "validation": {
@@ -1451,7 +1452,7 @@
   "candidates": {
     "title": "Candidatos",
     "subtitle": "Busca y gestiona candidatos en tu pipeline.",
-    "searchPlaceholder": "Buscar candidatos...",
+    "searchPlaceholder": "Buscar por nombre, email o teléfono",
     "newCandidate": "Nuevo candidato",
     "candidate": "Candidato",
     "unknown": "Desconocido",
@@ -1477,6 +1478,11 @@
       "source": "Fuente",
       "created": "Creado"
     },
+    "pagination": {
+      "showing": "Mostrando {{from}}–{{to}} de {{total}}",
+      "prev": "Anterior",
+      "next": "Siguiente"
+    },
     "empty": {
       "title": "No se encontraron candidatos",
       "subtitle": "Intenta ajustar tu búsqueda o agrega tu primer candidato.",
@@ -1500,12 +1506,26 @@
       "phoneCountry": "Código país",
       "phoneNumber": "Número",
       "source": "Fuente",
+      "tags": "Etiquetas",
       "resume": "Currículum",
       "resumeUrl": "URL del CV"
     },
     "placeholders": {
       "email": "nombre@empresa.com",
-      "phone": "p.ej., 8966 7186"
+      "phone": "p.ej., 8966 7186",
+      "tag": "Ej. Senior, Referido"
+    },
+    "tags": {
+      "add": "Agregar",
+      "empty": "Sin etiquetas",
+      "remove": "Quitar etiqueta {{name}}"
+    },
+    "notes": {
+      "title": "Notas",
+      "placeholder": "Escribe una nota sobre este candidato",
+      "add": "Agregar nota",
+      "empty": "Sin notas",
+      "remove": "Eliminar nota"
     },
     "validation": {
       "firstNameRequired": "El nombre es requerido",
@@ -1522,8 +1542,9 @@
       "saveChanges": "No se pudieron guardar los cambios.",
       "deleteCandidate": "No se pudo eliminar el candidato."
     },
-    "drawer": {
+      "drawer": {
       "details": "Detalles",
+      "applicationAnswers": "Respuestas de aplicación",
       "metadata": "Metadatos",
       "created": "Creado",
       "updatedAt": "Actualizado",

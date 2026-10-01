@@ -68,16 +68,25 @@ export interface LeadDynamicAnswer {
   answeredAtUtc?: string;
 }
 
-interface LeadDynamicAnswersPayload {
+type LeadDynamicAnswerRow = {
+  questionId?: string;
+  QuestionId?: string;
+  key?: string;
+  Key?: string;
+  label?: string;
+  Label?: string;
+  value?: unknown;
+  Value?: unknown;
+  answeredAtUtc?: string;
+  AnsweredAtUtc?: string;
+};
+
+type LeadDynamicAnswersPayload = {
   version?: number;
-  answers?: Array<{
-    questionId?: string;
-    key?: string;
-    label?: string;
-    value?: unknown;
-    answeredAtUtc?: string;
-  }>;
-}
+  Version?: number;
+  answers?: LeadDynamicAnswerRow[];
+  Answers?: LeadDynamicAnswerRow[];
+};
 
 function normalizeDynamicAnswerValue(value: unknown): string {
   if (value == null) return '';
@@ -85,36 +94,43 @@ function normalizeDynamicAnswerValue(value: unknown): string {
   return String(value).trim();
 }
 
+function unwrapDynamicAnswersJson(raw: unknown): unknown {
+  let current: unknown = raw;
+  // Handle string JSON and accidental double-encoding.
+  for (let i = 0; i < 3; i++) {
+    if (typeof current !== 'string') break;
+    const trimmed = current.trim();
+    if (!trimmed) return null;
+    try {
+      current = JSON.parse(trimmed);
+    } catch {
+      return null;
+    }
+  }
+  return current;
+}
+
 export function parseDynamicAnswersJson(raw: unknown): LeadDynamicAnswer[] {
   if (raw == null) return [];
 
-  let parsed: unknown = raw;
-  if (typeof raw === 'string') {
-    const trimmed = raw.trim();
-    if (!trimmed) return [];
-    try {
-      parsed = JSON.parse(trimmed);
-    } catch {
-      return [];
-    }
-  }
-
+  const parsed = unwrapDynamicAnswersJson(raw);
   if (!parsed || typeof parsed !== 'object') return [];
 
-  const answers = (parsed as LeadDynamicAnswersPayload).answers;
+  const payload = parsed as LeadDynamicAnswersPayload;
+  const answers = payload.answers ?? payload.Answers;
   if (!Array.isArray(answers)) return [];
 
   return answers
     .filter((answer) => answer && typeof answer === 'object')
     .map((answer) => {
-      const label = String(answer.label || answer.key || '').trim();
-      const value = normalizeDynamicAnswerValue(answer.value);
+      const label = String(answer.label ?? answer.Label ?? answer.key ?? answer.Key ?? '').trim();
+      const value = normalizeDynamicAnswerValue(answer.value ?? answer.Value);
       return {
-        questionId: answer.questionId,
-        key: answer.key,
+        questionId: answer.questionId ?? answer.QuestionId,
+        key: answer.key ?? answer.Key,
         label,
         value,
-        answeredAtUtc: answer.answeredAtUtc,
+        answeredAtUtc: answer.answeredAtUtc ?? answer.AnsweredAtUtc,
       };
     })
     .filter((answer) => answer.label);
