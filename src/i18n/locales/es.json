@@ -1452,7 +1452,7 @@
   "candidates": {
     "title": "Candidatos",
     "subtitle": "Busca y gestiona candidatos en tu pipeline.",
-    "searchPlaceholder": "Buscar candidatos...",
+    "searchPlaceholder": "Buscar por nombre, email o teléfono",
     "newCandidate": "Nuevo candidato",
     "candidate": "Candidato",
     "unknown": "Desconocido",
@@ -1506,12 +1506,26 @@
       "phoneCountry": "Código país",
       "phoneNumber": "Número",
       "source": "Fuente",
+      "tags": "Etiquetas",
       "resume": "Currículum",
       "resumeUrl": "URL del CV"
     },
     "placeholders": {
       "email": "nombre@empresa.com",
-      "phone": "p.ej., 8966 7186"
+      "phone": "p.ej., 8966 7186",
+      "tag": "Ej. Senior, Referido"
+    },
+    "tags": {
+      "add": "Agregar",
+      "empty": "Sin etiquetas",
+      "remove": "Quitar etiqueta {{name}}"
+    },
+    "notes": {
+      "title": "Notas",
+      "placeholder": "Escribe una nota sobre este candidato",
+      "add": "Agregar nota",
+      "empty": "Sin notas",
+      "remove": "Eliminar nota"
     },
     "validation": {
       "firstNameRequired": "El nombre es requerido",

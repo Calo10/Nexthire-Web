@@ -69,6 +69,18 @@ export default function CandidatesTable({
                   >
                     <td className="py-4 px-6">
                       <span className="text-sm font-medium text-dark-text">{fullName}</span>
+                      {c.tags && c.tags.length > 0 && (
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          {c.tags.map((tag) => (
+                            <span
+                              key={tag.id}
+                              className="inline-flex rounded-full bg-purple-100 px-2 py-0.5 text-[11px] font-medium text-purple-800"
+                            >
+                              {tag.name}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </td>
                     <td className="py-4 px-6">
                       <span className="text-sm text-gray-600">{displayCandidateEmail(c.email)}</span>

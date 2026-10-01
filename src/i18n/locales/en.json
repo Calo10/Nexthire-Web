@@ -1452,7 +1452,7 @@
   "candidates": {
     "title": "Candidates",
     "subtitle": "Search and manage candidates in your pipeline.",
-    "searchPlaceholder": "Search candidates...",
+    "searchPlaceholder": "Search by name, email, or phone",
     "newCandidate": "New Candidate",
     "candidate": "Candidate",
     "unknown": "Unknown",
@@ -1506,12 +1506,26 @@
       "phoneCountry": "Country code",
       "phoneNumber": "Number",
       "source": "Source",
+      "tags": "Tags",
       "resume": "Resume",
       "resumeUrl": "Resume URL"
     },
     "placeholders": {
       "email": "name@company.com",
-      "phone": "e.g., 8966 7186"
+      "phone": "e.g., 8966 7186",
+      "tag": "e.g. Senior, Referral"
+    },
+    "tags": {
+      "add": "Add",
+      "empty": "No tags yet",
+      "remove": "Remove tag {{name}}"
+    },
+    "notes": {
+      "title": "Notes",
+      "placeholder": "Write a note about this candidate",
+      "add": "Add note",
+      "empty": "No notes yet",
+      "remove": "Delete note"
     },
     "validation": {
       "firstNameRequired": "First name is required",

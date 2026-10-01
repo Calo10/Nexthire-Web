@@ -1,3 +1,16 @@
+export interface CandidateTag {
+  id: string;
+  name: string;
+}
+
+export interface CandidateNote {
+  id: string;
+  body: string;
+  createdByName?: string | null;
+  createdByEmail?: string | null;
+  createdAt: string;
+}
+
 export type CandidateSource =
   | 'Website'
   | 'LinkedIn'
@@ -15,6 +28,7 @@ export interface Candidate {
   phone?: string;
   source?: CandidateSource | string;
   resumeUrl?: string;
+  tags?: CandidateTag[];
   /** Bot / apply answers JSON from linked sourcing lead when converted. */
   dynamicAnswersJson?: string | null;
   createdAt: string; // ISO

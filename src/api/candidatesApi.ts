@@ -1,12 +1,49 @@
 import { apiClient } from '../lib/api';
 import type {
   Candidate,
+  CandidateNote,
+  CandidateTag,
   CandidatesListResponse,
   CreateCandidateFromApplyFormPayload,
   CreateCandidatePayload,
   GetCandidatesParams,
   UpdateCandidatePayload,
 } from '../types/candidates';
+
+function mapNotes(raw: unknown): CandidateNote[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((item) => {
+      const note = item as Record<string, unknown>;
+      return {
+        id: String(note.id ?? note.Id ?? ''),
+        body: String(note.body ?? note.Body ?? '').trim(),
+        createdByName:
+          (note.createdByName ?? note.CreatedByName) != null
+            ? String(note.createdByName ?? note.CreatedByName)
+            : null,
+        createdByEmail:
+          (note.createdByEmail ?? note.CreatedByEmail) != null
+            ? String(note.createdByEmail ?? note.CreatedByEmail)
+            : null,
+        createdAt: String(note.createdAt ?? note.CreatedAt ?? ''),
+      };
+    })
+    .filter((note) => note.id && note.body);
+}
+
+function mapTags(raw: unknown): CandidateTag[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((item) => {
+      const tag = item as Record<string, unknown>;
+      return {
+        id: String(tag.id ?? tag.Id ?? ''),
+        name: String(tag.name ?? tag.Name ?? '').trim(),
+      };
+    })
+    .filter((tag) => tag.id && tag.name);
+}
 
 function mapCandidateDto(raw: unknown): Candidate {
   const r = raw as Record<string, unknown>;
@@ -22,6 +59,7 @@ function mapCandidateDto(raw: unknown): Candidate {
         : undefined,
     source: (r.source ?? r.Source) != null ? String(r.source ?? r.Source) : undefined,
     resumeUrl: (r.resumeUrl ?? r.ResumeUrl) != null ? String(r.resumeUrl ?? r.ResumeUrl) : undefined,
+    tags: mapTags(r.tags ?? r.Tags),
     dynamicAnswersJson:
       dynamicAnswersJsonRaw != null && String(dynamicAnswersJsonRaw).trim()
         ? String(dynamicAnswersJsonRaw)
@@ -79,6 +117,49 @@ export const candidatesApi = {
     form.append('Resume', payload.resume);
     const raw = await apiClient.post<unknown>('/candidates/from-apply-form', form, true);
     return mapCandidateDto(raw);
+  },
+
+  listTags: async (): Promise<CandidateTag[]> => {
+    const raw = await apiClient.get<unknown>('/candidates/tags', true);
+    return mapTags(raw);
+  },
+
+  addTag: async (candidateId: string, name: string): Promise<CandidateTag> => {
+    const raw = await apiClient.post<unknown>(
+      `/candidates/${encodeURIComponent(candidateId)}/tags`,
+      { name },
+      true
+    );
+    const [tag] = mapTags([raw]);
+    if (!tag) throw { message: 'Invalid tag response' };
+    return tag;
+  },
+
+  removeTag: async (candidateId: string, tagId: string): Promise<void> => {
+    await apiClient.delete(`/candidates/${encodeURIComponent(candidateId)}/tags/${encodeURIComponent(tagId)}`, true);
+  },
+
+  listNotes: async (candidateId: string): Promise<CandidateNote[]> => {
+    const raw = await apiClient.get<unknown>(`/candidates/${encodeURIComponent(candidateId)}/notes`, true);
+    return mapNotes(raw);
+  },
+
+  addNote: async (candidateId: string, body: string): Promise<CandidateNote> => {
+    const raw = await apiClient.post<unknown>(
+      `/candidates/${encodeURIComponent(candidateId)}/notes`,
+      { body },
+      true
+    );
+    const [note] = mapNotes([raw]);
+    if (!note) throw { message: 'Invalid note response' };
+    return note;
+  },
+
+  deleteNote: async (candidateId: string, noteId: string): Promise<void> => {
+    await apiClient.delete(
+      `/candidates/${encodeURIComponent(candidateId)}/notes/${encodeURIComponent(noteId)}`,
+      true
+    );
   },
 
   getById: async (id: string): Promise<Candidate> => {

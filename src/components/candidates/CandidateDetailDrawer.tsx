@@ -12,6 +12,8 @@ import { useCandidate } from '../../hooks/useCandidate';
 import { candidatesApi } from '../../api/candidatesApi';
 import Modal from '../Modal';
 import SourcePill from './SourcePill';
+import CandidateTags from './CandidateTags';
+import CandidateNotes from './CandidateNotes';
 import { useBackdropDismiss } from '../../hooks/useBackdropDismiss';
 import { displayCandidateEmail, isPlaceholderCandidateEmail } from '../../lib/candidateEmail';
 import { formatDynamicAnswerDisplayValue, parseDynamicAnswersJson } from '../sourcing/sourcingUtils';
@@ -505,6 +507,20 @@ export default function CandidateDetailDrawer({
                 </div>
 
               </div>
+
+              {candidateId && (
+                <CandidateTags
+                  candidateId={candidateId}
+                  tags={data.tags ?? []}
+                  onChanged={() => {
+                    refetch();
+                    onUpdated?.();
+                  }}
+                  onError={setSaveError}
+                />
+              )}
+
+              {candidateId && <CandidateNotes candidateId={candidateId} onError={setSaveError} />}
 
               <div className="pt-4 border-t border-gray-200">
                 <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">{t('candidates.drawer.metadata')}</h3>
