@@ -154,6 +154,7 @@
     "saveLead": "No se pudo guardar el lead.",
     "saveCampaign": "No se pudo guardar la campaña.",
     "deleteCampaign": "No se pudo eliminar la campaña.",
+    "duplicateCampaign": "No se pudo duplicar la campaña.",
     "whatsappJobRequired": "Selecciona un empleo.",
     "saveSource": "No se pudo guardar la conexión.",
     "action": "Algo salió mal. Intenta de nuevo."
@@ -168,7 +169,8 @@
     "archived": "Lead archivado.",
     "campaignPaused": "Campaña en pausa.",
     "campaignActivated": "Campaña activada.",
-    "campaignDeleted": "Campaña eliminada."
+    "campaignDeleted": "Campaña eliminada.",
+    "campaignDuplicated": "Campaña duplicada."
   },
   "campaign": {
     "createTitle": "Crear campaña",
@@ -234,6 +236,8 @@
     "emptyValue": "—",
     "pause": "Pausar",
     "activate": "Activar",
+    "duplicate": "Duplicar",
+    "badgeDuplicate": "Duplicada",
     "delete": "Eliminar",
     "deleteUnnamed": "esta campaña",
     "confirmDelete": "¿Eliminar la campaña «{{name}}»? No se puede deshacer.",

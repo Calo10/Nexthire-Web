@@ -1,4 +1,4 @@
-export type JobBotAnswerType = 'text' | 'number' | 'yes_no' | 'file';
+export type JobBotAnswerType = 'text' | 'number' | 'yes_no' | 'date' | 'file';
 
 export interface JobBotQuestion {
   id: string;

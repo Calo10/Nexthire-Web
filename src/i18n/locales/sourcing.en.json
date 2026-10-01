@@ -154,6 +154,7 @@
     "saveLead": "Could not save lead.",
     "saveCampaign": "Could not save campaign.",
     "deleteCampaign": "Could not delete campaign.",
+    "duplicateCampaign": "Could not duplicate campaign.",
     "whatsappJobRequired": "Select a job.",
     "saveSource": "Could not save source connection.",
     "action": "Something went wrong. Please try again."
@@ -168,7 +169,8 @@
     "archived": "Lead archived.",
     "campaignPaused": "Campaign paused.",
     "campaignActivated": "Campaign activated.",
-    "campaignDeleted": "Campaign deleted."
+    "campaignDeleted": "Campaign deleted.",
+    "campaignDuplicated": "Campaign duplicated."
   },
   "campaign": {
     "createTitle": "Create Campaign",
@@ -234,6 +236,8 @@
     "emptyValue": "—",
     "pause": "Pause",
     "activate": "Activate",
+    "duplicate": "Duplicate",
+    "badgeDuplicate": "Duplicate",
     "delete": "Delete",
     "deleteUnnamed": "this campaign",
     "confirmDelete": "Delete campaign \"{{name}}\"? This cannot be undone.",

@@ -12,7 +12,11 @@ import { useCandidate } from '../../hooks/useCandidate';
 import { candidatesApi } from '../../api/candidatesApi';
 import Modal from '../Modal';
 import SourcePill from './SourcePill';
+import CandidateTags from './CandidateTags';
+import CandidateNotes from './CandidateNotes';
 import { useBackdropDismiss } from '../../hooks/useBackdropDismiss';
+import { displayCandidateEmail, isPlaceholderCandidateEmail } from '../../lib/candidateEmail';
+import { formatDynamicAnswerDisplayValue, parseDynamicAnswersJson } from '../sourcing/sourcingUtils';
 
 function formatDate(dateString: string, locale: string) {
   try {
@@ -139,15 +143,21 @@ export default function CandidateDetailDrawer({
   useEffect(() => {
     if (!data) return;
     const split = splitE164Phone(data.phone || '');
+    const email = isPlaceholderCandidateEmail(data.email) ? '' : data.email || '';
     setDraft({
       firstName: data.firstName || '',
       lastName: data.lastName || '',
-      email: data.email || '',
+      email,
       phoneCountryCode: split.callingCode || '506',
       phoneNationalNumber: split.nationalNumber || '',
       source: normalizeCandidateSourceForSelect(data.source),
     });
   }, [data]);
+
+  const dynamicAnswers = useMemo(
+    () => parseDynamicAnswersJson(data?.dynamicAnswersJson),
+    [data?.dynamicAnswersJson]
+  );
 
   const viewerUrl = useMemo(() => {
     const url = String(resumeModalUrl || '').trim();
@@ -291,7 +301,7 @@ export default function CandidateDetailDrawer({
             <h2 className="text-xl font-bold text-dark-text truncate">
               {isLoading ? t('common.loading') : fullName || t('candidates.candidate')}
             </h2>
-            <p className="text-sm text-gray-600 truncate">{data?.email || ''}</p>
+            <p className="text-sm text-gray-600 truncate">{displayCandidateEmail(data?.email, '')}</p>
           </div>
           <button
             onClick={onClose}
@@ -364,9 +374,27 @@ export default function CandidateDetailDrawer({
                 ) : (
                   <div>
                     <p className="text-xs font-semibold text-gray-500 uppercase mb-1">{t('candidates.fields.email')}</p>
-                    <p className="text-sm text-dark-text">{data.email || '-'}</p>
+                    <p className="text-sm text-dark-text">{displayCandidateEmail(data.email)}</p>
                   </div>
                 )}
+
+                {dynamicAnswers.length > 0 ? (
+                  <div className="pt-2">
+                    <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
+                      {t('candidates.drawer.applicationAnswers')}
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                      {dynamicAnswers.map((answer) => (
+                        <div key={answer.questionId || answer.key || answer.label}>
+                          <p className="text-xs font-medium text-gray-500">{answer.label}</p>
+                          <p className="font-medium text-gray-800 break-words">
+                            {formatDynamicAnswerDisplayValue(answer.value, t)}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
 
                 {/* Resume actions */}
                 <div className="pt-2">
@@ -479,6 +507,20 @@ export default function CandidateDetailDrawer({
                 </div>
 
               </div>
+
+              {candidateId && (
+                <CandidateTags
+                  candidateId={candidateId}
+                  tags={data.tags ?? []}
+                  onChanged={() => {
+                    refetch();
+                    onUpdated?.();
+                  }}
+                  onError={setSaveError}
+                />
+              )}
+
+              {candidateId && <CandidateNotes candidateId={candidateId} onError={setSaveError} />}
 
               <div className="pt-4 border-t border-gray-200">
                 <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">{t('candidates.drawer.metadata')}</h3>

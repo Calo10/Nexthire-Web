@@ -70,6 +70,20 @@ export default function PublicBotQuestionFields({
           );
         }
 
+        if (question.answerType === 'date') {
+          return (
+            <TextField
+              key={question.id}
+              label={label}
+              required={required}
+              type="date"
+              value={values[question.id] ?? ''}
+              onChange={(e) => onValueChange(question.id, e.target.value)}
+              error={error}
+            />
+          );
+        }
+
         if (question.answerType === 'file') {
           const file = files[question.id];
           return (

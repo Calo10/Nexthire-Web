@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import PhoneDisplay from '../PhoneDisplay';
 import SourcePill from './SourcePill';
 import type { Candidate } from '../../types/candidates';
+import { displayCandidateEmail, isPlaceholderCandidateEmail } from '../../lib/candidateEmail';
 
 interface CandidatesMobileListProps {
   candidates: Candidate[];
@@ -55,12 +56,26 @@ export default function CandidatesMobileList({
             className="w-full text-left bg-white rounded-xl border border-gray-200 p-4 shadow-sm active:bg-gray-50 transition-colors"
           >
             <div className="flex items-start justify-between gap-3 mb-2">
-              <h3 className="text-base font-semibold text-dark-text leading-snug">{fullName}</h3>
+              <div className="min-w-0">
+                <h3 className="text-base font-semibold text-dark-text leading-snug">{fullName}</h3>
+                {c.tags && c.tags.length > 0 && (
+                  <div className="mt-1 flex flex-wrap gap-1">
+                    {c.tags.map((tag) => (
+                      <span
+                        key={tag.id}
+                        className="inline-flex rounded-full bg-purple-100 px-2 py-0.5 text-[11px] font-medium text-purple-800"
+                      >
+                        {tag.name}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
               {c.source ? <SourcePill source={c.source} className="shrink-0" /> : null}
             </div>
 
-            {c.email && (
-              <p className="text-sm text-gray-600 truncate mb-1">{c.email}</p>
+            {c.email && !isPlaceholderCandidateEmail(c.email) && (
+              <p className="text-sm text-gray-600 truncate mb-1">{displayCandidateEmail(c.email)}</p>
             )}
 
             <div className="flex items-center justify-between gap-2 text-xs text-gray-500 mt-2">

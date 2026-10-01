@@ -437,6 +437,20 @@ export function metaErrorMessageFromUnknown(e: unknown): string | null {
   if (userMsg) return userMsg;
   if (title) return title;
 
+  const metaCode = Number(details?.metaCode ?? details?.meta_code ?? o.metaCode ?? o.meta_code);
+  const metaError =
+    String(details?.metaError ?? details?.meta_error ?? o.metaError ?? o.meta_error ?? '').trim();
+
+  // OAuth / token problems (Meta code 190) — point to Sources immediately.
+  if (metaCode === 190 || /access token|session has expired|OAuthException/i.test(metaError)) {
+    return (
+      metaError ||
+      'Meta access token expired or invalid. Reconnect Meta Ads in Sourcing → Sources.'
+    );
+  }
+
+  if (metaError) return metaError;
+
   const permissionError =
     Boolean(details?.permissionError) || Boolean(o.permissionError) || o.status === 403;
   if (permissionError) {

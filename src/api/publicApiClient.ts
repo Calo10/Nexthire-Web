@@ -3,10 +3,16 @@ export interface PublicApiError extends Error {
   details?: unknown;
 }
 
-const DEFAULT_BASE =
+const configuredApiBase = (
   import.meta.env.VITE_PUBLIC_API_BASE_URL ||
   import.meta.env.VITE_API_BASE_URL ||
-  'http://localhost:5000';
+  ''
+).trim();
+const DEFAULT_BASE = configuredApiBase
+  ? configuredApiBase.replace(/\/+$/, '')
+  : import.meta.env.DEV
+    ? ''
+    : 'http://localhost:5000';
 
 const API_ROOT = String(DEFAULT_BASE).replace(/\/+$/, '');
 const BASE_URL = `${String(DEFAULT_BASE).replace(/\/+$/, '')}/api/public`;

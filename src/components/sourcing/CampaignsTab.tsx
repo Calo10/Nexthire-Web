@@ -11,7 +11,7 @@ import {
   metaErrorMessageFromUnknown,
   pauseMetaCampaign,
 } from '../../api/metaCampaignApi';
-import { deleteSourcingCampaign, getSourcingCampaigns, updateSourcingCampaignStatus } from '../../api/sourcingApi';
+import { deleteSourcingCampaign, duplicateSourcingCampaign, getSourcingCampaigns, updateSourcingCampaignStatus } from '../../api/sourcingApi';
 import type { SourcingCampaign } from '../../types/sourcing';
 import type { MetaAdAccountStatus, MetaCampaignInsights } from '../../types/metaCampaign';
 import type { Job } from '../../types/dashboard';
@@ -279,6 +279,27 @@ export default function CampaignsTab({
     }
   };
 
+  const duplicateCampaign = async (c: SourcingCampaign) => {
+    const rowId = c.id != null ? String(c.id) : '';
+    if (!rowId) return;
+    setPendingId(rowId);
+    try {
+      await duplicateSourcingCampaign(rowId);
+      onToastSuccess(t('sourcing.toast.campaignDuplicated'));
+      await load();
+      await loadInsights();
+    } catch (e: unknown) {
+      onToastError(
+        metaErrorMessageFromUnknown(e) ??
+          (e && typeof e === 'object' && 'message' in e
+            ? String((e as { message: string }).message)
+            : t('sourcing.errors.duplicateCampaign'))
+      );
+    } finally {
+      setPendingId(null);
+    }
+  };
+
   const metaCreateDisabled = metaAdsLoading || !metaAdsReady;
   const showMetaTooltip = !metaAdsReady && !metaAdsLoading;
 
@@ -493,13 +514,11 @@ export default function CampaignsTab({
                   const platformLabel = platformCode ? campaignPlatformLabel(platformCode, t) : '';
                   const isMeta = isMetaAdsCampaign(c);
                   const metrics = insightFor(c);
-                  const dbLeads = c.leadsCount ?? c.leads;
+                  // Only leads attributed to THIS campaign id (API leadsCount). Do not fall back to
+                  // Meta insights / job-level aggregates — duplicates must start at 0.
+                  const rawLeads = c.leadsCount ?? c.LeadsCount ?? c.leads;
                   const leadsNum =
-                    dbLeads != null && Number.isFinite(Number(dbLeads))
-                      ? Number(dbLeads)
-                      : metrics?.metaLeads != null && Number.isFinite(Number(metrics.metaLeads))
-                        ? Number(metrics.metaLeads)
-                        : null;
+                    rawLeads != null && Number.isFinite(Number(rawLeads)) ? Number(rawLeads) : null;
                   const leads = leadsNum != null ? formatCount(leadsNum) : '—';
                   const costPerCandidate = computeCostPerCandidate(metrics?.spend, leadsNum);
                   const insightsRef = metaCampaignInsightsRef(c);
@@ -509,7 +528,16 @@ export default function CampaignsTab({
                       key={id || String(c.externalCampaignId)}
                       className="border-b border-gray-100 hover:bg-purple-50/40"
                     >
-                      <td className="px-4 py-3 font-medium text-dark-text">{c.name || '—'}</td>
+                      <td className="px-4 py-3 font-medium text-dark-text">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="truncate">{c.name || '—'}</span>
+                          {c.isDuplicate || c.IsDuplicate ? (
+                            <span className="shrink-0 inline-flex items-center rounded-md bg-violet-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-violet-800">
+                              {t('sourcing.campaign.badgeDuplicate')}
+                            </span>
+                          ) : null}
+                        </div>
+                      </td>
                       <td className="px-4 py-3 text-gray-700">{c.jobTitle || jobTitleById(c.jobId)}</td>
                       <td className="px-4 py-3">
                         {platformCode ? (
@@ -580,6 +608,15 @@ export default function CampaignsTab({
                             disabled={busy}
                           >
                             {t('sourcing.actions.view')}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="!py-1 !px-2"
+                            onClick={() => void duplicateCampaign(c)}
+                            disabled={busy || !id}
+                          >
+                            {t('sourcing.campaign.duplicate')}
                           </Button>
                           <Button
                             variant="secondary"
