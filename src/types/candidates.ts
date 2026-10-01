@@ -26,6 +26,8 @@ export interface CandidatesListResponse {
   page?: number;
   pageSize?: number;
   total?: number;
+  totalCount?: number;
+  totalPages?: number;
 }
 
 export interface GetCandidatesParams {

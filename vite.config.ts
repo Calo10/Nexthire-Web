@@ -5,10 +5,10 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
-    // Same-origin /api in dev → no browser CORS. API stays on :5000.
+    // Same-origin /api in dev. Chrome blocks localhost:5173 -> localhost:5000 as a CORS / local-network request.
     proxy: {
       '/api': {
-        target: 'http://localhost:5000',
+        target: 'http://127.0.0.1:5000',
         changeOrigin: true,
       },
     },

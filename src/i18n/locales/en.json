@@ -1478,6 +1478,11 @@
       "source": "Source",
       "created": "Created"
     },
+    "pagination": {
+      "showing": "Showing {{from}}–{{to}} of {{total}}",
+      "prev": "Previous",
+      "next": "Next"
+    },
     "empty": {
       "title": "No candidates found",
       "subtitle": "Try adjusting your search or add your first candidate.",
