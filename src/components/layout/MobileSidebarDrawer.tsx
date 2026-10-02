@@ -4,6 +4,8 @@ import { appNavItems } from '../../config/appNavItems';
 import { useAuth } from '../../contexts/AuthContext';
 import LanguageSwitcher from '../LanguageSwitcher';
 import { useBackdropDismiss } from '../../hooks/useBackdropDismiss';
+import { useWhatsAppUnreadConversationCount } from '../../hooks/useWhatsAppUnreadConversationCount';
+import OrgSidebarMark from '../OrgSidebarMark';
 
 interface MobileSidebarDrawerProps {
   isOpen: boolean;
@@ -13,6 +15,7 @@ interface MobileSidebarDrawerProps {
 export default function MobileSidebarDrawer({ isOpen, onClose }: MobileSidebarDrawerProps) {
   const { t } = useTranslation();
   const { user, logout } = useAuth();
+  const unreadWhatsAppConversations = useWhatsAppUnreadConversationCount();
   const backdropDismiss = useBackdropDismiss(onClose);
 
   return (
@@ -59,7 +62,15 @@ export default function MobileSidebarDrawer({ isOpen, onClose }: MobileSidebarDr
               }
             >
               {item.icon}
-              <span>{t(`navigation.${item.translationKey}`)}</span>
+              <span className="flex-1">{t(`navigation.${item.translationKey}`)}</span>
+              {item.translationKey === 'whatsapp' && unreadWhatsAppConversations > 0 ? (
+                <span
+                  className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[11px] font-semibold text-white"
+                  title={t('whatsappInbox.unread', { count: unreadWhatsAppConversations })}
+                >
+                  {unreadWhatsAppConversations > 99 ? '99+' : unreadWhatsAppConversations}
+                </span>
+              ) : null}
             </NavLink>
           ))}
         </nav>
@@ -67,9 +78,7 @@ export default function MobileSidebarDrawer({ isOpen, onClose }: MobileSidebarDr
         <div className="p-4 border-t border-gray-200 space-y-3">
           <LanguageSwitcher />
           <div className="flex items-center gap-3 px-2">
-            <div className="w-9 h-9 bg-primary rounded-full flex items-center justify-center text-white text-sm font-semibold shrink-0">
-              {user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'U'}
-            </div>
+            <OrgSidebarMark className="w-9 h-9 text-sm" />
             <p className="text-sm font-medium text-dark-text truncate flex-1">
               {user?.name || user?.email || 'User'}
             </p>

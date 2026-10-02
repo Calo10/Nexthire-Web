@@ -37,7 +37,51 @@ function upsertIntoStage(cols: KanbanColumn[], stageId: string, card: KanbanAppl
   });
 }
 
-export function useKanban(shouldFetch: boolean, jobId: string | null): UseKanbanResult {
+function mergeKanbanBoards(boards: ApplicationsKanbanResponse[]): ApplicationsKanbanResponse {
+  const stages = boards.find((board) => board.stages.length > 0)?.stages ?? [];
+  const byStage = new Map<string, KanbanColumn>();
+  for (const stage of stages) {
+    byStage.set(stage.id, { stageId: stage.id, stageName: stage.name, items: [] });
+  }
+  const seen = new Set<string>();
+  for (const board of boards) {
+    for (const column of board.columns) {
+      const current = byStage.get(column.stageId) ?? {
+        stageId: column.stageId,
+        stageName: column.stageName,
+        items: [],
+      };
+      for (const item of column.items) {
+        if (seen.has(item.id)) continue;
+        seen.add(item.id);
+        current.items.push(item);
+      }
+      byStage.set(column.stageId, current);
+    }
+  }
+  const columns = stages.length
+    ? stages.map((stage) => byStage.get(stage.id)).filter((column): column is KanbanColumn => !!column)
+    : [...byStage.values()];
+  return { stages, columns };
+}
+
+async function loadAllJobsKanban(jobIds: string[]): Promise<ApplicationsKanbanResponse> {
+  try {
+    return await applicationsApi.kanban(null);
+  } catch (error) {
+    const status = (error as ApiError).status;
+    if ((status !== 400 && status !== 404) || jobIds.length === 0) throw error;
+    const boards = await Promise.all(jobIds.map((id) => applicationsApi.kanban(id)));
+    return mergeKanbanBoards(boards);
+  }
+}
+
+export function useKanban(
+  shouldFetch: boolean,
+  jobId: string | null,
+  allJobs = false,
+  allJobIds: string[] = []
+): UseKanbanResult {
   const [data, setData] = useState<ApplicationsKanbanResponse | null>(null);
   const [columns, setColumns] = useState<KanbanColumn[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -47,7 +91,7 @@ export function useKanban(shouldFetch: boolean, jobId: string | null): UseKanban
   const refetch = useCallback(() => setRefreshIndex((i) => i + 1), []);
 
   useEffect(() => {
-    if (!shouldFetch || !jobId) {
+    if (!shouldFetch || (!jobId && !allJobs)) {
       setData(null);
       setColumns([]);
       setIsLoading(false);
@@ -60,7 +104,9 @@ export function useKanban(shouldFetch: boolean, jobId: string | null): UseKanban
       setIsLoading(true);
       setError(null);
       try {
-        const res = await applicationsApi.kanban(jobId);
+        const res = allJobs
+          ? await loadAllJobsKanban(allJobIds)
+          : await applicationsApi.kanban(jobId);
         if (cancelled) return;
         setData(res);
         setColumns(res.columns || []);
@@ -78,7 +124,7 @@ export function useKanban(shouldFetch: boolean, jobId: string | null): UseKanban
     return () => {
       cancelled = true;
     };
-  }, [shouldFetch, jobId, refreshIndex]);
+  }, [shouldFetch, jobId, allJobs, allJobIds, refreshIndex]);
 
   const inflight = useRef<Set<string>>(new Set());
 

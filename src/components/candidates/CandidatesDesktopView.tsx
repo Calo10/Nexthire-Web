@@ -5,6 +5,7 @@ import ErrorMessage from '../ErrorMessage';
 import SelectField from '../SelectField';
 import TextField from '../TextField';
 import CandidatesTable from './CandidatesTable';
+import TagFilterSelect from './TagFilterSelect';
 import { FILTER_CONTROL_CLASS, type CandidatesPageState } from '../../hooks/useCandidatesPage';
 
 export default function CandidatesDesktopView({
@@ -17,6 +18,9 @@ export default function CandidatesDesktopView({
   setFrom,
   to,
   setTo,
+  tagIds,
+  setTagIds,
+  tagOptions,
   setIsNewModalOpen,
   candidates,
   page,
@@ -72,7 +76,7 @@ export default function CandidatesDesktopView({
         </div>
 
         {/* Filters Row — equal-width columns (date inputs have a large default min-width) */}
-        <div className="mb-6 grid w-full grid-cols-1 sm:grid-cols-[repeat(3,minmax(0,1fr))] gap-4 items-end">
+        <div className="mb-6 grid w-full grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 items-end">
           <SelectField
             label={t('candidates.filters.source')}
             value={source}
@@ -92,6 +96,12 @@ export default function CandidatesDesktopView({
             type="date"
             value={to}
             onChange={(e) => setTo(e.target.value)}
+            className={FILTER_CONTROL_CLASS}
+          />
+          <TagFilterSelect
+            tags={tagOptions}
+            selectedIds={tagIds}
+            onChange={setTagIds}
             className={FILTER_CONTROL_CLASS}
           />
         </div>

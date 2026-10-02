@@ -75,6 +75,9 @@ function buildQuery(params?: GetCandidatesParams): string {
   if (params?.source) qp.set('source', params.source);
   if (params?.from) qp.set('from', params.from);
   if (params?.to) qp.set('to', params.to);
+  for (const tagId of params?.tagIds ?? []) {
+    if (tagId) qp.append('tagIds', tagId);
+  }
   qp.set('page', String(params?.page ?? 1));
   qp.set('pageSize', String(params?.pageSize ?? 25));
   const query = qp.toString();
@@ -181,6 +184,17 @@ export const candidatesApi = {
    * GET /api/candidates/{candidateId}/resume/download-url
    * Response can be a string URL or an object like { url: "..." }.
    */
+  uploadResume: async (candidateId: string, file: File): Promise<Candidate> => {
+    const form = new FormData();
+    form.append('resume', file);
+    const raw = await apiClient.post<unknown>(
+      `/candidates/${encodeURIComponent(candidateId)}/resume`,
+      form,
+      true
+    );
+    return mapCandidateDto(raw);
+  },
+
   resumeDownloadUrl: async (candidateId: string): Promise<string | null> => {
     const result = await apiClient.get<unknown>(`/candidates/${encodeURIComponent(candidateId)}/resume/download-url`, true);
     if (!result) return null;

@@ -5,6 +5,8 @@ import type { KanbanApplicationCard } from '../../types/applications';
 import userPlaceholder from '../../assets/user_placeholder.svg';
 import { useTranslation } from 'react-i18next';
 import { fitScoreTone } from '../sourcing/sourcingUtils';
+import { tagColorClass } from '../../lib/candidateTagStyle';
+import { unreadCountForCandidate, useWhatsAppUnread } from '../../hooks/useWhatsAppUnreadConversationCount';
 
 function titleCase(raw: string): string {
   const s = String(raw || '').trim();
@@ -88,6 +90,8 @@ export function PipelineCardView({
   dndStyle?: React.CSSProperties;
 }) {
   const { t } = useTranslation();
+  const whatsAppUnread = useWhatsAppUnread();
+  const unreadMessages = unreadCountForCandidate(whatsAppUnread, card.candidateId, card.candidatePhone);
   const isRejected = (card.status || '').toLowerCase().includes('reject');
 
   const chips = useMemo(() => {
@@ -120,10 +124,24 @@ export function PipelineCardView({
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3 min-w-0">
-          <img src={userPlaceholder} alt="" className="w-9 h-9 rounded-full border border-gray-200 object-cover flex-shrink-0" />
+          <span className="relative flex-shrink-0">
+            <img src={userPlaceholder} alt="" className="w-9 h-9 rounded-full border border-gray-200 object-cover" />
+            {unreadMessages > 0 ? (
+              <span
+                className="absolute -top-1 -right-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold leading-none text-white"
+                title={t('whatsappInbox.unread', { count: unreadMessages })}
+              >
+                {unreadMessages > 9 ? '9+' : unreadMessages}
+              </span>
+            ) : null}
+          </span>
           <div className="min-w-0">
             <p className="text-sm font-semibold text-dark-text leading-snug truncate">{card.candidateName || '—'}</p>
-            <p className="mt-0.5 text-xs text-gray-600 truncate">{card.jobTitle || ''}</p>
+            {card.jobTitle ? (
+              <p className={`mt-1 inline-flex max-w-full truncate rounded-md px-2 py-0.5 text-xs font-medium ${tagColorClass(card.jobTitle)}`}>
+                {card.jobTitle}
+              </p>
+            ) : null}
           </div>
         </div>
 

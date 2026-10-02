@@ -5,7 +5,6 @@ import { useDashboardSummary } from './useDashboardSummary';
 import { useCandidates } from './useCandidates';
 import { useApplicationsByStage } from './useApplicationsByStage';
 import { useActivityTrend } from './useActivityTrend';
-import { useMyJobs } from './useMyJobs';
 import { useUpcomingTasks } from './useUpcomingTasks';
 import { useJobs } from './useJobs';
 import type { Job, Task } from '../types/dashboard';
@@ -20,20 +19,17 @@ export function useDashboardPage() {
   const dateFilterRef = useRef<HTMLDivElement>(null);
 
   const filterParams = useMemo(() => {
+    if (dateRange === 'all') {
+      return { from: '', to: '' };
+    }
+
     const now = new Date();
     const to = now.toISOString();
-
-    let days = 7;
-    if (dateRange === '7d') days = 7;
-    else if (dateRange === '30d') days = 30;
-    else if (dateRange === '90d') days = 90;
-    else if (dateRange === '1y') days = 365;
-
+    const days = dateRange === '30d' ? 30 : dateRange === '90d' ? 90 : dateRange === '1y' ? 365 : 7;
     const fromDate = new Date(now);
     fromDate.setDate(fromDate.getDate() - days);
-    const from = fromDate.toISOString();
 
-    return { from, to };
+    return { from: fromDate.toISOString(), to };
   }, [dateRange]);
 
   const shouldFetch = isAuthenticated && !authLoading;
@@ -49,13 +45,14 @@ export function useDashboardPage() {
   const { data: activityTrend, isLoading: activityLoading, error: activityError } = useActivityTrend(
     shouldFetch ? filterParams : undefined,
   );
-  const { data: myJobs, isLoading: jobsLoading, error: jobsError } = useMyJobs(
-    shouldFetch ? filterParams : undefined,
-  );
   const { data: tasks, isLoading: tasksLoading, error: tasksError } = useUpcomingTasks(
     shouldFetch ? filterParams : undefined,
   );
-  const { data: allJobs } = useJobs(shouldFetch);
+  const { data: allJobs, isLoading: jobsLoading, error: jobsError } = useJobs(shouldFetch);
+  const myJobs = useMemo(
+    () => (allJobs || []).filter((job) => String(job.status || '').toLowerCase() === 'open'),
+    [allJobs],
+  );
 
   const interviewStageCount = useMemo(() => {
     if (applicationsLoading || applicationsError) return null;

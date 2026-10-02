@@ -298,8 +298,8 @@ export const applicationsApi = {
    *   "columns": [{ "stageId": "stage-1", "stageName": "Applied", "items": [{ "id": "...", "candidateName": "...", "jobTitle": "...", "createdAt": "..." }] }]
    * }
    */
-  kanban: async (jobId: string): Promise<ApplicationsKanbanResponse> => {
-    const query = buildQuery({ jobId });
+  kanban: async (jobId?: string | null): Promise<ApplicationsKanbanResponse> => {
+    const query = jobId ? buildQuery({ jobId }) : '';
     const result = await apiClient.get<unknown>(`/applications/kanban${query}`, true);
     return normalizeKanbanResponse(result);
   },
@@ -331,6 +331,31 @@ export const applicationsApi = {
       status: result?.status ?? null,
       createdAt: result?.createdAt ?? null,
       fitScore: pickFitScore(result),
+    };
+  },
+
+  /**
+   * POST /api/applications/from-apply-form
+   * Multipart body matching public job apply, plus jobId. Creates the candidate and the pipeline card.
+   */
+  createFromApplyForm: async (form: FormData): Promise<KanbanApplicationCard> => {
+    if (!form.has('Source') && !form.has('source')) {
+      form.append('Source', 'panel_apply');
+      form.append('source', 'panel_apply');
+    }
+    const result = await apiClient.post<any>('/applications/from-apply-form', form, true);
+    return {
+      id: String(result?.id ?? result?.applicationId ?? ''),
+      candidateId: String(result?.candidateId ?? ''),
+      candidateName: String(result?.candidateName ?? ''),
+      candidateEmail: result?.candidateEmail ?? result?.candidate?.email ?? null,
+      candidatePhone: pickCandidatePhone(result),
+      jobId: result?.jobId ?? null,
+      stageId: String(result?.stageId ?? result?.currentStageId ?? ''),
+      status: result?.status ?? null,
+      createdAt: result?.createdAt ?? null,
+      fitScore: pickFitScore(result),
+      jobTitle: result?.jobTitle ?? null,
     };
   },
 

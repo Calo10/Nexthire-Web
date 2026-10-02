@@ -108,8 +108,11 @@ export function splitE164Phone(raw: string | null | undefined): { callingCode: s
         nationalNumber: digits.slice(meta.callingCode.length),
       };
     }
-    // Unknown: best-effort, keep first 1-3 as calling code
-    return { callingCode: digits.slice(0, Math.min(3, digits.length)) || '506', nationalNumber: digits.slice(Math.min(3, digits.length)) };
+    // Not a known country code (e.g. +407-301-3708). Keep the full number under +1.
+    if (digits.length === 11 && digits.startsWith('1')) {
+      return { callingCode: '1', nationalNumber: digits.slice(1) };
+    }
+    return { callingCode: '1', nationalNumber: digits };
   }
 
   // If user saved without +, treat as national number (default CR)

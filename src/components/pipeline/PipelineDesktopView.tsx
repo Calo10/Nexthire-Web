@@ -2,7 +2,6 @@ import TopBar from '../TopBar';
 import Card from '../Card';
 import Button from '../Button';
 import ErrorMessage from '../ErrorMessage';
-import PipelineSummaryTiles from './PipelineSummaryTiles';
 import PipelineBoard from './PipelineBoard';
 import ApplicationInspectorPanel from './ApplicationInspectorPanel';
 import type { PipelinePageState } from '../../hooks/usePipelinePage';
@@ -11,10 +10,11 @@ export default function PipelineDesktopView({
   t,
   locale,
   jobsError,
-  selectedJobId,
   setSelectedJobId,
-  selectedJob,
   jobOptions,
+  jobSelectValue,
+  nameQuery,
+  setNameQuery,
   jobsLoading,
   data,
   columns,
@@ -22,8 +22,6 @@ export default function PipelineDesktopView({
   toastError,
   toastSuccess,
   setIsCreateOpen,
-  isOverviewCollapsed,
-  setIsOverviewCollapsed,
   inspectorOpen,
   layoutCollapsed,
   selectedApplicationId,
@@ -53,22 +51,41 @@ export default function PipelineDesktopView({
         <div className="flex items-start justify-between gap-6 mb-6">
           <div className="min-w-0">
             <h1 className="text-3xl font-bold text-dark-text">{t('pipeline.title')}</h1>
-            <div className="mt-3 w-full max-w-sm">
-              <label className="block text-sm font-medium text-gray-700 mb-2">{t('pipeline.selectJob')}</label>
-              <select
-                className="w-full px-4 py-3 bg-white/80 backdrop-blur border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
-                value={selectedJobId}
-                onChange={(e) => setSelectedJobId(e.target.value)}
-                disabled={jobsLoading}
-              >
-                {jobOptions.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </select>
+            <div className="mt-3 flex flex-wrap items-end gap-3">
+              <div className="w-full sm:w-72">
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t('pipeline.selectJob')}</label>
+                <select
+                  className="w-full px-4 py-3 bg-white/80 backdrop-blur border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+                  value={jobSelectValue}
+                  onChange={(e) => setSelectedJobId(e.target.value)}
+                  disabled={jobsLoading}
+                >
+                  {jobOptions.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="relative w-full sm:w-72">
+                <svg
+                  className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input
+                  type="text"
+                  placeholder={t('pipeline.searchPlaceholder')}
+                  value={nameQuery}
+                  onChange={(e) => setNameQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+                />
+              </div>
               {jobsError ? (
-                <div className="mt-2">
+                <div className="w-full">
                   <ErrorMessage message={jobsError.message || 'Failed to load jobs'} />
                 </div>
               ) : null}
@@ -76,7 +93,7 @@ export default function PipelineDesktopView({
           </div>
 
           <div className="flex items-center gap-3">
-            <Button variant="primary" size="md" onClick={() => setIsCreateOpen(true)} disabled={!selectedJob}>
+            <Button variant="primary" size="md" onClick={() => setIsCreateOpen(true)} disabled={jobsLoading}>
               <div className="flex items-center gap-2">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -96,37 +113,6 @@ export default function PipelineDesktopView({
           <div className="mb-6 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{toastSuccess}</div>
         ) : null}
 
-        {/* Overview panel (collapsible) */}
-        {selectedJobId && data?.stages?.length ? (
-          <div className="mb-6 rounded-2xl border border-gray-200 bg-white/60 backdrop-blur-md shadow-sm overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-4">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-primary/70" />
-                <p className="text-sm font-semibold text-dark-text">{t('pipeline.overview')}</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsOverviewCollapsed((v) => !v)}
-                className="p-2 rounded-lg hover:bg-white/70 text-gray-600 transition-colors"
-                aria-label={isOverviewCollapsed ? 'Expand overview' : 'Collapse overview'}
-              >
-                <svg
-                  className={`w-5 h-5 transition-transform ${isOverviewCollapsed ? 'rotate-180' : ''}`}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-            </div>
-
-            <div className="px-5 pb-5">
-              {!isOverviewCollapsed ? <PipelineSummaryTiles stages={data.stages} columns={columns} /> : null}
-            </div>
-          </div>
-        ) : null}
-
         {/* Main area: board + inspector */}
         <div
           className={`grid grid-cols-1 gap-6 lg:items-stretch ${
@@ -134,9 +120,7 @@ export default function PipelineDesktopView({
           }`}
         >
           <Card className="flex min-h-0 flex-col overflow-hidden p-0 lg:h-[calc(100vh-140px)]">
-            {!selectedJobId ? (
-              <div className="p-10 text-center text-sm text-gray-600">{t('pipeline.selectJob')}</div>
-            ) : isLoading ? (
+            {isLoading ? (
               <div className="p-6">
                 <div className="flex gap-6 overflow-x-auto scrollbar-subtle scrollbar-subtle-x pb-2">
                   {[1, 2, 3, 4].map((i) => (
