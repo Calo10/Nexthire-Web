@@ -15,6 +15,7 @@ interface Props {
   orgSegment: string;
   jobId: string;
   whatsappConfigured: boolean;
+  whatsappPhone?: string | null;
   fieldErrors?: { url?: string; whatsapp?: string; destination?: string };
 }
 
@@ -28,6 +29,7 @@ export default function CampaignStepDestination({
   orgSegment,
   jobId,
   whatsappConfigured,
+  whatsappPhone = null,
   fieldErrors,
 }: Props) {
   const { t } = useTranslation();
@@ -35,7 +37,7 @@ export default function CampaignStepDestination({
   const defaultJobUrl = buildPublicJobPostUrl(origin, orgSegment, jobId);
   const effectiveJobUrl = jobPostUrlOverride.trim() || defaultJobUrl;
 
-  const waUrl = destinationType === 'whatsapp' ? buildWhatsappDestinationUrl(whatsappMessage) : '';
+  const waUrl = destinationType === 'whatsapp' ? buildWhatsappDestinationUrl(whatsappMessage, whatsappPhone || '') : '';
   const previewUrl = destinationType === 'whatsapp' ? waUrl : effectiveJobUrl;
 
   const errMsg = fieldErrors?.url || fieldErrors?.whatsapp || fieldErrors?.destination;

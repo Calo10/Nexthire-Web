@@ -1,4 +1,4 @@
-import { buildWhatsappMeUrl, sourcingWhatsAppPhoneFromEnv } from './sourcingWhatsAppApplyLink';
+import { buildWhatsappMeUrl, sourcingWhatsAppDigits } from './sourcingWhatsAppApplyLink';
 
 export function defaultWhatsappApplyMessage(jobCode: string): string {
   return `Quiero aplicar al job post ${jobCode}`;
@@ -22,8 +22,8 @@ export function resolveSiteOrigin(): string {
   return '';
 }
 
-export function buildWhatsappDestinationUrl(message: string): string {
-  const phone = sourcingWhatsAppPhoneFromEnv();
-  if (!phone || !message.trim()) return '';
-  return buildWhatsappMeUrl(phone, message.trim());
+export function buildWhatsappDestinationUrl(message: string, phone: string): string {
+  const digits = sourcingWhatsAppDigits(phone);
+  if (!digits || !message.trim()) return '';
+  return buildWhatsappMeUrl(digits, message.trim());
 }
