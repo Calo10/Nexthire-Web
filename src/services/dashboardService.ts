@@ -44,7 +44,9 @@ export const dashboardService = {
     return apiClient.get(`/dashboard/recent-activity${buildQuery(toQueryParams(params))}`, true);
   },
   getCandidates: async (params: DashboardParams): Promise<Candidate[]> => {
-    return apiClient.get(`/dashboard/recent-candidates${buildQuery(toQueryParams(params))}`, true);
+    const query = buildQuery(toQueryParams(params));
+    const suffix = query ? `${query}&limit=50` : '?limit=50';
+    return apiClient.get(`/dashboard/recent-candidates${suffix}`, true);
   },
   getApplicationsByStage: async (params: DashboardParams): Promise<ApplicationsByStage[]> => {
     return apiClient.get(`/dashboard/applications-by-stage${buildQuery(toQueryParams(params))}`, true);

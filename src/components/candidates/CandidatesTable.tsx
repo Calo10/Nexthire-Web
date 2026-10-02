@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import type { Candidate } from '../../types/candidates';
 import SourcePill from './SourcePill';
+import TagPill from './TagPill';
 import PhoneDisplay from '../PhoneDisplay';
 import { displayCandidateEmail } from '../../lib/candidateEmail';
 import CandidatesPagination from './CandidatesPagination';
@@ -72,12 +73,7 @@ export default function CandidatesTable({
                       {c.tags && c.tags.length > 0 && (
                         <div className="mt-1 flex flex-wrap gap-1">
                           {c.tags.map((tag) => (
-                            <span
-                              key={tag.id}
-                              className="inline-flex rounded-full bg-purple-100 px-2 py-0.5 text-[11px] font-medium text-purple-800"
-                            >
-                              {tag.name}
-                            </span>
+                            <TagPill key={tag.id} name={tag.name} />
                           ))}
                         </div>
                       )}

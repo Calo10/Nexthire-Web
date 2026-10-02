@@ -11,6 +11,7 @@ import {
 import type { SourcingLead } from '../../types/sourcing';
 import LeadStatusPill from './LeadStatusPill';
 import { fitScoreTone, formatDynamicAnswerDisplayValue, leadDisplayName, parseDynamicAnswersJson } from './sourcingUtils';
+import ViewResumeDocumentButton, { isResumeAnswer, isResumeDocumentId } from '../ViewResumeDocumentButton';
 import { useBackdropDismiss } from '../../hooks/useBackdropDismiss';
 
 interface Props {
@@ -158,9 +159,16 @@ export default function LeadDetailDrawer({ isOpen, leadId, onClose, onUpdated }:
                     {dynamicAnswers.map((answer) => (
                       <div key={answer.questionId || answer.key || answer.label}>
                         <p className="text-xs font-medium text-gray-500">{answer.label}</p>
-                        <p className="font-medium text-gray-800 break-words">
-                          {formatDynamicAnswerDisplayValue(answer.value, t)}
-                        </p>
+                        {isResumeDocumentId(answer.value) || isResumeAnswer(answer) ? (
+                          <ViewResumeDocumentButton
+                            documentId={answer.value}
+                            disabled={!isResumeDocumentId(answer.value)}
+                          />
+                        ) : (
+                          <p className="font-medium text-gray-800 break-words">
+                            {formatDynamicAnswerDisplayValue(answer.value, t)}
+                          </p>
+                        )}
                       </div>
                     ))}
                   </div>

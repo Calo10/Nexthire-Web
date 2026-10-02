@@ -201,7 +201,7 @@ export default function PipelinePage() {
         onClose={() => page.setIsCreateOpen(false)}
         onCreated={(card) => {
           const createdJobId = String(card.jobId || '');
-          if (createdJobId && createdJobId !== String(page.selectedJobId)) {
+          if (createdJobId && page.selectedJobId && createdJobId !== String(page.selectedJobId)) {
             page.setSelectedJobId(createdJobId);
             setTimeout(() => page.refetch(), 300);
             return;

@@ -91,6 +91,17 @@ function normalizeCandidatesPage(result: unknown, requested: { page: number; pag
   };
 }
 
+function candidateTagIds(candidate: Candidate): string[] {
+  const raw = candidate as Candidate & { Tags?: Array<{ id?: string; Id?: string }> };
+  const tags = candidate.tags ?? raw.Tags ?? [];
+  return tags.map((tag) => String(tag.id ?? (tag as { Id?: string }).Id ?? '')).filter(Boolean);
+}
+
+function matchesSelectedTags(candidate: Candidate, selected: Set<string>): boolean {
+  if (selected.size === 0) return true;
+  return candidateTagIds(candidate).some((id) => selected.has(id));
+}
+
 export function useCandidatesList(shouldFetch: boolean, params: GetCandidatesParams): UseCandidatesListReturn {
   const [data, setData] = useState<Candidate[]>([]);
   const [meta, setMeta] = useState<CandidatesListMeta>({
@@ -103,7 +114,19 @@ export function useCandidatesList(shouldFetch: boolean, params: GetCandidatesPar
   const [error, setError] = useState<ApiError | null>(null);
   const [refreshIndex, setRefreshIndex] = useState(0);
 
-  const stableParams = useMemo(() => params, [params.search, params.source, params.from, params.to, params.page, params.pageSize]);
+  const tagKey = (params.tagIds ?? []).join(',');
+  const stableParams = useMemo(
+    () => ({
+      search: params.search,
+      source: params.source,
+      from: params.from,
+      to: params.to,
+      tagIds: tagKey ? tagKey.split(',') : undefined,
+      page: params.page,
+      pageSize: params.pageSize,
+    }),
+    [params.search, params.source, params.from, params.to, params.page, params.pageSize, tagKey],
+  );
 
   const refetch = useCallback(() => {
     setRefreshIndex((i) => i + 1);
@@ -121,15 +144,58 @@ export function useCandidatesList(shouldFetch: boolean, params: GetCandidatesPar
       setIsLoading(true);
       setError(null);
       try {
+        const selected = new Set((stableParams.tagIds ?? []).filter(Boolean));
         const result = await candidatesApi.list(stableParams);
-        if (!cancelled) {
-          const normalized = normalizeCandidatesPage(result, {
-            page: stableParams.page ?? 1,
-            pageSize: stableParams.pageSize ?? 25,
-          });
+        if (cancelled) return;
+
+        const normalized = normalizeCandidatesPage(result, {
+          page: stableParams.page ?? 1,
+          pageSize: stableParams.pageSize ?? 25,
+        });
+
+        const serverIgnoredTags =
+          selected.size > 0 && normalized.items.some((candidate) => !matchesSelectedTags(candidate, selected));
+
+        if (!serverIgnoredTags) {
           setData(normalized.items);
           setMeta(normalized.meta);
+          return;
         }
+
+        const fetchSize = 200;
+        const collected: Candidate[] = [];
+        let fetched = 0;
+        let total = 0;
+        let fetchPage = 1;
+        do {
+          const pageResult = await candidatesApi.list({
+            search: stableParams.search,
+            source: stableParams.source,
+            from: stableParams.from,
+            to: stableParams.to,
+            page: fetchPage,
+            pageSize: fetchSize,
+          });
+          if (cancelled) return;
+          const chunk = normalizeCandidatesPage(pageResult, { page: fetchPage, pageSize: fetchSize });
+          total = chunk.meta.total;
+          collected.push(...chunk.items);
+          fetched += chunk.items.length;
+          if (chunk.items.length === 0) break;
+          fetchPage += 1;
+        } while (fetched < total && fetchPage <= 40);
+
+        const filtered = collected.filter((candidate) => matchesSelectedTags(candidate, selected));
+        const uiPage = stableParams.page ?? 1;
+        const uiSize = stableParams.pageSize ?? 25;
+        const start = (uiPage - 1) * uiSize;
+        setData(filtered.slice(start, start + uiSize));
+        setMeta({
+          page: uiPage,
+          pageSize: uiSize,
+          total: filtered.length,
+          totalPages: Math.max(1, Math.ceil(filtered.length / uiSize)),
+        });
       } catch (e) {
         if (!cancelled) {
           setError(e as ApiError);

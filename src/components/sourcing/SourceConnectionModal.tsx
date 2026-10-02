@@ -198,9 +198,14 @@ function buildLinkedinConfigJson(fields: LinkedinConfigState, previousJson: stri
   return JSON.stringify(merged);
 }
 
-const TWILIO_CONFIG_KEYS = ['Twilio:AccountSid', 'Twilio:AuthToken', 'Twilio:DefaultFromWhatsAppNumber'] as const;
+const TWILIO_CONFIG_KEYS = [
+  'Twilio:AccountSid',
+  'Twilio:AuthToken',
+  'Twilio:DefaultFromWhatsAppNumber',
+  'Twilio:DefaultWhatsAppContentSid',
+] as const;
 
-type TwilioConfigField = 'AccountSid' | 'AuthToken' | 'DefaultFromWhatsAppNumber';
+type TwilioConfigField = 'AccountSid' | 'AuthToken' | 'DefaultFromWhatsAppNumber' | 'DefaultWhatsAppContentSid';
 
 type TwilioConfigState = Record<TwilioConfigField, string>;
 
@@ -208,6 +213,7 @@ const TWILIO_FIELD_TO_JSON_KEY: Record<TwilioConfigField, (typeof TWILIO_CONFIG_
   AccountSid: 'Twilio:AccountSid',
   AuthToken: 'Twilio:AuthToken',
   DefaultFromWhatsAppNumber: 'Twilio:DefaultFromWhatsAppNumber',
+  DefaultWhatsAppContentSid: 'Twilio:DefaultWhatsAppContentSid',
 };
 
 function emptyTwilioConfig(): TwilioConfigState {
@@ -215,6 +221,7 @@ function emptyTwilioConfig(): TwilioConfigState {
     AccountSid: '',
     AuthToken: '',
     DefaultFromWhatsAppNumber: '',
+    DefaultWhatsAppContentSid: '',
   };
 }
 
@@ -225,6 +232,11 @@ const LEGACY_TWILIO_KEY_MAP: Record<TwilioConfigField, string[]> = {
     'Twilio:DefaultFromWhatsAppNumber',
     'twilio_default_from_whatsapp_number',
     'default_from_whatsapp_number',
+  ],
+  DefaultWhatsAppContentSid: [
+    'Twilio:DefaultWhatsAppContentSid',
+    'defaultWhatsAppContentSid',
+    'DefaultWhatsAppContentSid',
   ],
 };
 
@@ -523,6 +535,13 @@ export default function SourceConnectionModal({
               value={twilioConfig.DefaultFromWhatsAppNumber}
               onChange={(e) => setTwilioField('DefaultFromWhatsAppNumber', e.target.value)}
               placeholder={t('sourcing.sources.twilio.defaultFromWhatsAppNumberPlaceholder')}
+              autoComplete="off"
+            />
+            <TextField
+              label={t('sourcing.sources.twilio.defaultWhatsAppContentSid')}
+              value={twilioConfig.DefaultWhatsAppContentSid}
+              onChange={(e) => setTwilioField('DefaultWhatsAppContentSid', e.target.value)}
+              placeholder={t('sourcing.sources.twilio.defaultWhatsAppContentSidPlaceholder')}
               autoComplete="off"
             />
           </div>

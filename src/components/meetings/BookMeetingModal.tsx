@@ -29,6 +29,7 @@ export default function BookMeetingModal({ isOpen, onClose, onBooked, hostTimezo
   const [eventTypeUri, setEventTypeUri] = useState('');
   const [slots, setSlots] = useState<CalendlyAvailableTime[]>([]);
   const [selectedStart, setSelectedStart] = useState('');
+  const [selectedDay, setSelectedDay] = useState('');
   const [inviteeName, setInviteeName] = useState('');
   const [inviteeEmail, setInviteeEmail] = useState('');
   const [loadingTypes, setLoadingTypes] = useState(false);
@@ -110,6 +111,36 @@ export default function BookMeetingModal({ isOpen, onClose, onBooked, hostTimezo
     }
     return Array.from(map.entries());
   }, [slots]);
+
+  useEffect(() => {
+    if (!slotsByDay.length) {
+      setSelectedDay('');
+      return;
+    }
+    setSelectedDay((current) => (current && slotsByDay.some(([key]) => key === current) ? current : slotsByDay[0][0]));
+  }, [slotsByDay]);
+
+  const activeDaySlots = useMemo(
+    () => slotsByDay.find(([dayKey]) => dayKey === selectedDay)?.[1] ?? [],
+    [selectedDay, slotsByDay]
+  );
+
+  const slotsByPeriod = useMemo(() => {
+    const groups: Record<'morning' | 'afternoon' | 'evening', CalendlyAvailableTime[]> = {
+      morning: [],
+      afternoon: [],
+      evening: [],
+    };
+    for (const slot of activeDaySlots) {
+      const hour = new Date(slot.startTime).getHours();
+      if (hour < 12) groups.morning.push(slot);
+      else if (hour < 17) groups.afternoon.push(slot);
+      else groups.evening.push(slot);
+    }
+    return (['morning', 'afternoon', 'evening'] as const)
+      .map((period) => ({ period, slots: groups[period] }))
+      .filter((group) => group.slots.length > 0);
+  }, [activeDaySlots]);
 
   const canSubmit =
     !!eventTypeUri &&
@@ -193,41 +224,85 @@ export default function BookMeetingModal({ isOpen, onClose, onBooked, hostTimezo
           ) : error ? null : slots.length === 0 ? (
             <p className="text-sm text-gray-500">{t('meetings.book.noSlots')}</p>
           ) : (
-            <div className="space-y-4 max-h-64 overflow-y-auto pr-1">
-              {slotsByDay.map(([dayKey, daySlots]) => (
-                <div key={dayKey}>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">
-                    {new Date(dayKey).toLocaleDateString(i18n.language, {
+            <div className="space-y-4">
+              <div>
+                <p className="text-xs font-medium text-gray-500 mb-2">{t('meetings.book.pickDay')}</p>
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                  {slotsByDay.map(([dayKey]) => {
+                    const date = new Date(dayKey);
+                    const active = selectedDay === dayKey;
+                    return (
+                      <button
+                        key={dayKey}
+                        type="button"
+                        onClick={() => setSelectedDay(dayKey)}
+                        className={`shrink-0 min-w-[4.75rem] rounded-xl border px-3 py-2 text-center transition-colors ${
+                          active
+                            ? 'border-primary bg-primary/10 text-primary'
+                            : 'border-gray-200 bg-white text-gray-700 hover:border-primary/40'
+                        }`}
+                      >
+                        <span className="block text-[11px] font-medium uppercase tracking-wide">
+                          {date.toLocaleDateString(i18n.language, { weekday: 'short' })}
+                        </span>
+                        <span className="block text-lg font-semibold leading-tight">
+                          {date.toLocaleDateString(i18n.language, { day: 'numeric' })}
+                        </span>
+                        <span className={`block text-[11px] ${active ? 'text-primary/70' : 'text-gray-500'}`}>
+                          {date.toLocaleDateString(i18n.language, { month: 'short' })}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="max-h-64 space-y-4 overflow-y-auto pr-1">
+                {slotsByPeriod.map((group) => (
+                  <div key={group.period}>
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                      {t(`meetings.book.${group.period}`)}
+                    </p>
+                    <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                      {group.slots.map((slot) => {
+                        const selected = selectedStart === slot.startTime;
+                        const label = new Date(slot.startTime).toLocaleTimeString(i18n.language, {
+                          hour: 'numeric',
+                          minute: '2-digit',
+                        });
+                        return (
+                          <button
+                            key={slot.startTime}
+                            type="button"
+                            onClick={() => setSelectedStart(slot.startTime)}
+                            className={`rounded-lg border px-2 py-2 text-sm transition-colors ${
+                              selected
+                                ? 'border-primary bg-primary font-semibold text-white'
+                                : 'border-gray-200 bg-white text-gray-700 hover:border-primary/40 hover:bg-primary/5'
+                            }`}
+                          >
+                            {label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {selectedStart ? (
+                <p className="text-sm font-medium text-primary">
+                  {t('meetings.book.selected', {
+                    when: new Date(selectedStart).toLocaleString(i18n.language, {
                       weekday: 'long',
                       month: 'short',
                       day: 'numeric',
-                    })}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {daySlots.map((slot) => {
-                      const selected = selectedStart === slot.startTime;
-                      const label = new Date(slot.startTime).toLocaleTimeString(i18n.language, {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      });
-                      return (
-                        <button
-                          key={slot.startTime}
-                          type="button"
-                          onClick={() => setSelectedStart(slot.startTime)}
-                          className={`px-3 py-1.5 rounded-lg text-sm border transition-colors ${
-                            selected
-                              ? 'border-[#0077E6] bg-sky-50 text-sky-900 font-semibold'
-                              : 'border-gray-200 bg-white text-gray-700 hover:border-sky-300'
-                          }`}
-                        >
-                          {label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
+                      hour: 'numeric',
+                      minute: '2-digit',
+                    }),
+                  })}
+                </p>
+              ) : null}
             </div>
           )}
         </div>

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Button from '../Button';
 import TextField from '../TextField';
@@ -17,6 +17,8 @@ import CandidateNotes from './CandidateNotes';
 import { useBackdropDismiss } from '../../hooks/useBackdropDismiss';
 import { displayCandidateEmail, isPlaceholderCandidateEmail } from '../../lib/candidateEmail';
 import { formatDynamicAnswerDisplayValue, parseDynamicAnswersJson } from '../sourcing/sourcingUtils';
+import ViewResumeDocumentButton, { isResumeAnswer, isResumeDocumentId } from '../ViewResumeDocumentButton';
+import CandidateWhatsAppThread from '../whatsapp/CandidateWhatsAppThread';
 
 function formatDate(dateString: string, locale: string) {
   try {
@@ -52,6 +54,7 @@ function Spinner({ className = 'w-4 h-4' }: { className?: string }) {
 interface CandidateDetailDrawerProps {
   isOpen: boolean;
   candidateId: string | null;
+  candidate?: Candidate | null;
   onClose: () => void;
   onUpdated?: () => void;
   onDeleted?: () => void;
@@ -60,6 +63,7 @@ interface CandidateDetailDrawerProps {
 export default function CandidateDetailDrawer({
   isOpen,
   candidateId,
+  candidate,
   onClose,
   onUpdated,
   onDeleted,
@@ -67,14 +71,22 @@ export default function CandidateDetailDrawer({
   const { t, i18n } = useTranslation();
   const backdropDismiss = useBackdropDismiss(onClose);
   const shouldFetch = isOpen && !!candidateId;
-  const { data, isLoading, error, refetch } = useCandidate(shouldFetch, candidateId);
+  const { data: fetched, error, refetch } = useCandidate(shouldFetch, candidateId);
+  const data =
+    fetched?.id === candidateId ? fetched : candidate?.id === candidateId ? candidate : null;
+  const [drawerTab, setDrawerTab] = useState<'details' | 'whatsapp'>('details');
+  const [waNeedsHuman, setWaNeedsHuman] = useState(false);
+  const [waUnreadCount, setWaUnreadCount] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
   const [resumeUrl, setResumeUrl] = useState<string | null>(null);
-  const [resumePrefetchLoading, setResumePrefetchLoading] = useState(false);
+  const [resumeFileKey, setResumeFileKey] = useState(0);
+  const [resumeUploading, setResumeUploading] = useState(false);
+  const [resumeUploadError, setResumeUploadError] = useState<string | null>(null);
+  const [resumeJustUploaded, setResumeJustUploaded] = useState(false);
 
   const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
   const [resumeModalLoading, setResumeModalLoading] = useState(false);
@@ -107,6 +119,9 @@ export default function CandidateDetailDrawer({
     source: '',
   });
 
+  const handleNeedsHuman = useCallback((value: boolean) => setWaNeedsHuman(value), []);
+  const handleUnreadCount = useCallback((count: number) => setWaUnreadCount(count), []);
+
   const fullName = useMemo(() => {
     if (!data) return '';
     return `${data.firstName || ''} ${data.lastName || ''}`.trim();
@@ -117,28 +132,36 @@ export default function CandidateDetailDrawer({
     setIsEditing(false);
     setSaveError(null);
     setSuccess(null);
-  }, [isOpen]);
+    setResumeJustUploaded(false);
+    setResumeUploadError(null);
+    setDrawerTab('details');
+    setWaNeedsHuman(false);
+    setWaUnreadCount(0);
+  }, [isOpen, candidateId]);
+
+  const hasResumeDocument = Boolean(String(data?.resumeUrl || '').trim());
+  const showResumeUpload = !resumeJustUploaded && !hasResumeDocument;
 
   useEffect(() => {
-    if (!isOpen || !candidateId) return;
+    if (!isOpen || !candidateId || !hasResumeDocument) {
+      setResumeUrl(null);
+      return;
+    }
     let cancelled = false;
     const run = async () => {
-      setResumePrefetchLoading(true);
       try {
         const url = await candidatesApi.resumeDownloadUrl(candidateId);
         if (cancelled) return;
         setResumeUrl(url);
       } catch {
         if (!cancelled) setResumeUrl(null);
-      } finally {
-        if (!cancelled) setResumePrefetchLoading(false);
       }
     };
     run();
     return () => {
       cancelled = true;
     };
-  }, [candidateId, isOpen]);
+  }, [candidateId, hasResumeDocument, isOpen]);
 
   useEffect(() => {
     if (!data) return;
@@ -148,7 +171,7 @@ export default function CandidateDetailDrawer({
       firstName: data.firstName || '',
       lastName: data.lastName || '',
       email,
-      phoneCountryCode: split.callingCode || '506',
+      phoneCountryCode: split.callingCode || '1',
       phoneNationalNumber: split.nationalNumber || '',
       source: normalizeCandidateSourceForSelect(data.source),
     });
@@ -258,6 +281,30 @@ export default function CandidateDetailDrawer({
     }
   };
 
+  const handleUploadResume = async (file: File | null) => {
+    if (!candidateId || !file || resumeUploading) return;
+    setResumeUploading(true);
+    setResumeUploadError(null);
+    try {
+      await candidatesApi.uploadResume(candidateId, file);
+      setResumeFileKey((k) => k + 1);
+      setResumeJustUploaded(true);
+      refetch();
+      onUpdated?.();
+      try {
+        const url = await candidatesApi.resumeDownloadUrl(candidateId);
+        setResumeUrl(url);
+      } catch {
+        setResumeUrl(null);
+      }
+    } catch (e) {
+      const msg = e && typeof e === 'object' && 'message' in e ? String((e as { message: string }).message) : t('candidates.drawer.resume.uploadFailed');
+      setResumeUploadError(msg);
+    } finally {
+      setResumeUploading(false);
+    }
+  };
+
   const handleViewResume = async () => {
     if (!candidateId) return;
     if (resumeModalLoading) return;
@@ -280,8 +327,7 @@ export default function CandidateDetailDrawer({
   };
 
   const handleAnalyzeResume = async () => {
-    if (!candidateId) return;
-    if (!resumeUrl) return;
+    if (!candidateId || !hasResumeDocument) return;
     if (analysisLoading) return;
     setIsAnalysisModalOpen(true);
     await loadAnalysis(candidateId);
@@ -299,7 +345,7 @@ export default function CandidateDetailDrawer({
         <div className="p-6 border-b border-gray-200 flex items-start justify-between gap-4">
           <div className="min-w-0">
             <h2 className="text-xl font-bold text-dark-text truncate">
-              {isLoading ? t('common.loading') : fullName || t('candidates.candidate')}
+              {fullName || t('candidates.candidate')}
             </h2>
             <p className="text-sm text-gray-600 truncate">{displayCandidateEmail(data?.email, '')}</p>
           </div>
@@ -314,19 +360,73 @@ export default function CandidateDetailDrawer({
           </button>
         </div>
 
+        <div className="px-6 pt-4 flex-shrink-0">
+          <div className="flex bg-gray-100 rounded-lg p-1">
+            <button
+              type="button"
+              onClick={() => setDrawerTab('details')}
+              className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                drawerTab === 'details' ? 'bg-white text-primary shadow-sm' : 'text-gray-600 hover:text-dark-text'
+              }`}
+            >
+              {t('candidates.drawer.details')}
+            </button>
+            <button
+              type="button"
+              onClick={() => setDrawerTab('whatsapp')}
+              className={`flex-1 min-w-0 px-2 py-2 rounded-md text-sm font-medium transition-colors inline-flex items-center justify-center gap-1.5 ${
+                drawerTab === 'whatsapp' ? 'bg-white text-primary shadow-sm' : 'text-gray-600 hover:text-dark-text'
+              }`}
+            >
+              <img
+                src="https://cdn.simpleicons.org/whatsapp"
+                alt=""
+                width={16}
+                height={16}
+                className="w-4 h-4 shrink-0 object-contain"
+                loading="lazy"
+                aria-hidden="true"
+              />
+              <span className="truncate">{t('pipeline.inspector.tabs.whatsappConversation')}</span>
+              {waUnreadCount > 0 ? (
+                <span
+                  className="inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-[#00a884] px-1.5 text-[11px] font-semibold text-white"
+                  title={t('whatsappInbox.unread', { count: waUnreadCount })}
+                >
+                  {waUnreadCount > 99 ? '99+' : waUnreadCount}
+                </span>
+              ) : null}
+              {waNeedsHuman ? (
+                <span
+                  className="h-2 w-2 shrink-0 rounded-full bg-amber-500"
+                  title={t('pipeline.inspector.whatsapp.needsHuman')}
+                  aria-label={t('pipeline.inspector.whatsapp.needsHuman')}
+                />
+              ) : null}
+            </button>
+          </div>
+        </div>
+
+        {candidateId ? (
+          <div className={drawerTab === 'whatsapp' ? 'flex flex-1 min-h-0 flex-col' : 'hidden'}>
+            <CandidateWhatsAppThread
+              candidateId={candidateId}
+              phone={data?.phone}
+              active={isOpen && drawerTab === 'whatsapp'}
+              onNeedsHumanChange={handleNeedsHuman}
+              onUnreadCountChange={handleUnreadCount}
+            />
+          </div>
+        ) : null}
+        {drawerTab === 'whatsapp' ? null : (
+        <>
         {/* Body */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {error && <ErrorMessage message={error.message || t('candidates.errors.loadCandidate')} />}
           {saveError && <ErrorMessage message={saveError} />}
           {success && <SuccessMessage message={success} />}
 
-          {isLoading ? (
-            <div className="space-y-3">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="h-14 bg-gray-200 rounded animate-pulse"></div>
-              ))}
-            </div>
-          ) : data ? (
+          {data ? (
             <>
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">{t('candidates.drawer.details')}</h3>
@@ -387,9 +487,16 @@ export default function CandidateDetailDrawer({
                       {dynamicAnswers.map((answer) => (
                         <div key={answer.questionId || answer.key || answer.label}>
                           <p className="text-xs font-medium text-gray-500">{answer.label}</p>
-                          <p className="font-medium text-gray-800 break-words">
-                            {formatDynamicAnswerDisplayValue(answer.value, t)}
-                          </p>
+                          {isResumeDocumentId(answer.value) || isResumeAnswer(answer) ? (
+                            <ViewResumeDocumentButton
+                              documentId={answer.value}
+                              disabled={!isResumeDocumentId(answer.value)}
+                            />
+                          ) : (
+                            <p className="font-medium text-gray-800 break-words">
+                              {formatDynamicAnswerDisplayValue(answer.value, t)}
+                            </p>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -408,7 +515,7 @@ export default function CandidateDetailDrawer({
                       variant="outline"
                       size="sm"
                       className="w-full border-purple-200 text-primary hover:bg-purple-50 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
-                      disabled={!candidateId || resumeModalLoading}
+                      disabled={showResumeUpload || !candidateId || resumeModalLoading}
                       onClick={handleViewResume}
                     >
                       <div className="flex items-center justify-center gap-2">
@@ -427,12 +534,12 @@ export default function CandidateDetailDrawer({
                         <span>{t('candidates.drawer.resume.view')}</span>
                       </div>
                     </Button>
-
+                    {showResumeUpload ? null : (
                     <Button
                       variant="primary"
                       size="sm"
                       className="w-full disabled:opacity-50 disabled:cursor-not-allowed"
-                      disabled={!candidateId || !resumeUrl || analysisLoading || resumePrefetchLoading}
+                      disabled={!candidateId || analysisLoading}
                       onClick={handleAnalyzeResume}
                     >
                       <div className="flex items-center justify-center gap-2">
@@ -451,7 +558,33 @@ export default function CandidateDetailDrawer({
                         <span>{t('candidates.drawer.resume.analyze')}</span>
                       </div>
                     </Button>
+                    )}
                   </div>
+                  {showResumeUpload ? (
+                    <div className="mt-3 w-full">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        {t('candidates.drawer.resume.uploadLabel')}
+                      </label>
+                      <p className="text-xs text-gray-500 mb-2">{t('candidates.drawer.resume.uploadHint')}</p>
+                      <div className="rounded-lg border border-gray-300 bg-white px-4 py-3">
+                        <input
+                          key={resumeFileKey}
+                          type="file"
+                          accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                          disabled={!candidateId || resumeUploading}
+                          onChange={(e) => {
+                            const file = e.target.files?.[0] || null;
+                            void handleUploadResume(file);
+                          }}
+                          className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-primary/10 file:text-primary hover:file:bg-primary/20 disabled:opacity-50"
+                        />
+                        {resumeUploading ? (
+                          <p className="mt-2 text-xs text-gray-500">{t('candidates.drawer.resume.uploading')}</p>
+                        ) : null}
+                      </div>
+                      {resumeUploadError ? <p className="mt-1 text-sm text-red-600">{resumeUploadError}</p> : null}
+                    </div>
+                  ) : null}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
@@ -555,6 +688,8 @@ export default function CandidateDetailDrawer({
             </Button>
           </div>
         </div>
+        </>
+        )}
       </div>
     </div>
 

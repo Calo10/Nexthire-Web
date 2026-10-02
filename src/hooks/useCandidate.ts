@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ApiError } from '../lib/api';
 import { candidatesApi } from '../api/candidatesApi';
 import type { Candidate } from '../types/candidates';
@@ -15,6 +15,8 @@ export function useCandidate(shouldFetch: boolean, candidateId: string | null): 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<ApiError | null>(null);
   const [refreshIndex, setRefreshIndex] = useState(0);
+  const dataRef = useRef<Candidate | null>(null);
+  dataRef.current = data;
 
   const refetch = useCallback(() => setRefreshIndex((i) => i + 1), []);
 
@@ -23,7 +25,7 @@ export function useCandidate(shouldFetch: boolean, candidateId: string | null): 
 
     let cancelled = false;
     const run = async () => {
-      setIsLoading(true);
+      if (dataRef.current?.id !== candidateId) setIsLoading(true);
       setError(null);
       try {
         const result = await candidatesApi.getById(candidateId);

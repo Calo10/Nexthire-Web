@@ -42,6 +42,8 @@ function toHtmlFromPlainText(input: string) {
   return escaped.replace(/\n/g, '<br/>');
 }
 
+const ALL_JOBS = 'all';
+
 function normalizePhoneForSend(raw: string) {
   const trimmed = String(raw || '').trim();
   if (!trimmed) return '';
@@ -74,13 +76,13 @@ export function usePipelinePage() {
   // URL is the single source of truth for the selected job (avoids URL↔state ping-pong).
   const setSelectedJobId = useCallback(
     (id: string) => {
-      const nextId = String(id || '');
+      const nextId = String(id || '') === ALL_JOBS ? ALL_JOBS : String(id || '');
       setSearchParams(
         (prev) => {
           const current = prev.get('jobId') || '';
           if (current === nextId) return prev;
           const next = new URLSearchParams(prev);
-          if (nextId) next.set('jobId', nextId);
+          if (nextId && nextId !== ALL_JOBS) next.set('jobId', nextId);
           else next.delete('jobId');
           // Stale inspector for a previous job should not stay open.
           next.delete('applicationId');
@@ -88,45 +90,52 @@ export function usePipelinePage() {
         },
         { replace: true }
       );
-      if (nextId) localStorage.setItem('nhPipelineJobId', nextId);
+      localStorage.setItem('nhPipelineJobId', nextId || ALL_JOBS);
     },
     [setSearchParams]
   );
 
   // Resolve a valid jobId into the URL when missing or invalid.
+  // "all" (or no jobId) shows every application, without filtering by job.
   useEffect(() => {
-    if (jobsLoading || !jobs?.length) return;
+    if (jobsLoading) return;
 
-    const validIds = new Set(jobs.map((j) => String(j.id)));
-    const stored = localStorage.getItem('nhPipelineJobId') || '';
-    const resolved =
-      (jobIdParam && validIds.has(jobIdParam) && jobIdParam) ||
-      (stored && validIds.has(stored) && stored) ||
-      String(jobs[0].id);
-
-    if (jobIdParam === resolved) return;
-    setSelectedJobId(resolved);
+    const validIds = new Set((jobs || []).map((j) => String(j.id)));
+    if (jobIdParam && validIds.has(jobIdParam)) return;
+    if (!jobIdParam) {
+      const stored = localStorage.getItem('nhPipelineJobId') || '';
+      if (stored && stored !== ALL_JOBS && validIds.has(stored)) {
+        setSelectedJobId(stored);
+      }
+      return;
+    }
+    setSelectedJobId(ALL_JOBS);
   }, [jobs, jobsLoading, jobIdParam, setSelectedJobId]);
 
-  const selectedJobId = jobIdParam || '';
+  const viewingAllJobs = !jobIdParam || jobIdParam === ALL_JOBS;
+  const selectedJobId = viewingAllJobs ? '' : jobIdParam || '';
 
   const selectedJob: Job | null = useMemo(() => {
     if (!selectedJobId) return null;
     return (jobs || []).find((j) => String(j.id) === String(selectedJobId)) || null;
   }, [jobs, selectedJobId]);
 
+  const allJobIds = useMemo(() => (jobs || []).map((job) => String(job.id)), [jobs]);
+
   const { data, columns, isLoading, error: kanbanError, moveOptimistic, updateStatusOptimistic, insertIntoFirstStage, refetch } = useKanban(
-    shouldFetch,
-    selectedJobId || null
+    shouldFetch && !jobsLoading,
+    selectedJobId || null,
+    viewingAllJobs,
+    allJobIds
   );
 
+  const [nameQuery, setNameQuery] = useState('');
   const [toastError, setToastError] = useState<string | null>(null);
   const [toastSuccess, setToastSuccess] = useState<string | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedApplicationId, setSelectedApplicationId] = useState<string | null>(applicationIdParam || null);
   const [inspectorLoading, setInspectorLoading] = useState(false);
   const [isInspectorCollapsed, setIsInspectorCollapsed] = useState(false);
-  const [isOverviewCollapsed, setIsOverviewCollapsed] = useState(true);
   const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
 
   const [isAddNoteOpen, setIsAddNoteOpen] = useState(false);
@@ -204,8 +213,10 @@ export function usePipelinePage() {
 
   const jobOptions = useMemo(() => {
     const list = jobs || [];
-    if (!list.length) return [{ value: '', label: t('pipeline.selectJob') }];
-    return list.map((j) => ({ value: String(j.id), label: j.title }));
+    return [
+      { value: ALL_JOBS, label: t('pipeline.viewAll') },
+      ...list.map((j) => ({ value: String(j.id), label: j.title })),
+    ];
   }, [jobs, t]);
 
   const handleMove = async (applicationId: string, toStageId: string) => {
@@ -498,7 +509,16 @@ export function usePipelinePage() {
     !!String(messageBody || '').trim();
   const canSendMessage = canSendEmail || canSendWhatsApp;
 
-  const isEmpty = !isLoading && selectedJobId && columns.every((c) => c.items.length === 0);
+  const visibleColumns = useMemo(() => {
+    const query = nameQuery.trim().toLowerCase();
+    if (!query) return columns;
+    return columns.map((column) => ({
+      ...column,
+      items: column.items.filter((item) => String(item.candidateName || '').toLowerCase().includes(query)),
+    }));
+  }, [columns, nameQuery]);
+
+  const isEmpty = !isLoading && !jobsLoading && columns.every((c) => c.items.length === 0);
 
   const inspectorOpen = !!selectedApplicationId;
   const layoutCollapsed = inspectorOpen && isInspectorCollapsed;
@@ -541,10 +561,14 @@ export function usePipelinePage() {
     jobsError,
     selectedJobId,
     setSelectedJobId,
+    viewingAllJobs,
+    jobSelectValue: viewingAllJobs ? ALL_JOBS : selectedJobId,
     selectedJob,
     jobOptions,
+    nameQuery,
+    setNameQuery,
     data,
-    columns,
+    columns: visibleColumns,
     isLoading,
     kanbanError,
     refetch,
@@ -557,8 +581,6 @@ export function usePipelinePage() {
     inspectorLoading,
     isInspectorCollapsed,
     setIsInspectorCollapsed,
-    isOverviewCollapsed,
-    setIsOverviewCollapsed,
     historyRefreshKey,
     isAddNoteOpen,
     setIsAddNoteOpen,
