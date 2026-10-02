@@ -19,6 +19,7 @@ import { getSourcingCampaigns, getSourcingDashboard } from '../api/sourcingApi';
 import { computeCostPerCandidate } from '../components/sourcing/sourcingUtils';
 import { useMetaAdsSourceConnection } from '../hooks/sourcing/useMetaAdsSourceConnection';
 import { useTwilioSourceConnection } from '../hooks/sourcing/useTwilioSourceConnection';
+import { whatsAppNumberFromTwilioConnection } from '../lib/sourcingTwilioSource';
 import type { SourcingDashboard } from '../types/sourcing';
 import { useJobs } from '../hooks/useJobs';
 
@@ -54,10 +55,13 @@ export default function SourcingPage() {
     shouldFetch,
     refreshKey
   );
-  const { isReady: twilioReady, isLoading: twilioLoading, refresh: refreshTwilioConnection } = useTwilioSourceConnection(
-    shouldFetch,
-    refreshKey
-  );
+  const {
+    connection: twilioConnection,
+    isReady: twilioReady,
+    isLoading: twilioLoading,
+    refresh: refreshTwilioConnection,
+  } = useTwilioSourceConnection(shouldFetch, refreshKey);
+  const whatsappPhone = whatsAppNumberFromTwilioConnection(twilioConnection);
 
   const refreshSourceConnections = useCallback(() => {
     void refreshMetaAdsConnection();
@@ -317,6 +321,7 @@ export default function SourcingPage() {
         createMode={campaignCreateMode}
         jobs={jobsLoading ? [] : jobs}
         twilioReady={twilioReady}
+        whatsappPhone={whatsappPhone}
         onGoToSources={() => {
           setCampaignModalOpen(false);
           setCampaignCreateMode('full');
@@ -337,6 +342,7 @@ export default function SourcingPage() {
             jobs={jobsLoading ? [] : jobs}
             jobsLoading={jobsLoading}
             metaAdsReady={metaAdsReady}
+            whatsappPhone={whatsappPhone}
             onGoToSources={() => {
               setMetaCampaignModalOpen(false);
               goToSourcesTab();

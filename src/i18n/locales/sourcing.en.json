@@ -180,7 +180,7 @@
     "whatsappSubtitle": "We generate a WhatsApp link and QR code with the apply message prefilled, based on the job you pick.",
     "whatsappPrefillMessage": "I want to apply to job post {{ref}}",
     "whatsappAutoName": "WhatsApp — {{job}}",
-    "whatsappMissingPhoneEnv": "The WhatsApp number candidates should message isn’t set up yet. Ask whoever deploys the app to configure it (full number with country code, digits only) so links and QR codes can be generated.",
+    "whatsappMissingPhoneEnv": "Set the WhatsApp number in Sources → Twilio so links and QR codes use that number.",
     "whatsappShareLink": "Share link",
     "whatsappCopyLink": "Copy link",
     "whatsappLinkCopied": "Copied",
