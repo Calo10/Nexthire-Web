@@ -10,6 +10,7 @@ import { candidateSourceSelectOptions, normalizeCandidateSourceForSelect } from 
 import { getCountryCallingCodeOptions, onlyDigits, splitE164Phone, toE164Phone } from '../../lib/phone';
 import { useCandidate } from '../../hooks/useCandidate';
 import { candidatesApi } from '../../api/candidatesApi';
+import type { Candidate } from '../../types/candidates';
 import Modal from '../Modal';
 import SourcePill from './SourcePill';
 import CandidateTags from './CandidateTags';
