@@ -19,7 +19,7 @@ import {
   jobPostRef,
   parseJobIdFromWhatsappLandingUrl,
   parseJobTitleFromWhatsappAutoName,
-  sourcingWhatsAppPhoneFromEnv,
+  sourcingWhatsAppDigits,
 } from '../../lib/sourcingWhatsAppApplyLink';
 
 function strId(v: unknown): string {
@@ -137,6 +137,8 @@ interface Props {
   /** When `whatsapp-apply`, only the job is required; platform is fixed to WhatsApp. */
   createMode?: 'full' | 'whatsapp-apply';
   twilioReady?: boolean;
+  /** WhatsApp number from the Twilio source connection (Sources). */
+  whatsappPhone?: string | null;
   onGoToSources?: () => void;
   onSuccess: () => void;
 }
@@ -151,6 +153,7 @@ export default function CampaignModal({
   campaignId,
   createMode = 'full',
   twilioReady = true,
+  whatsappPhone = null,
   onGoToSources,
   onSuccess,
 }: Props) {
@@ -310,7 +313,7 @@ export default function CampaignModal({
   }, [t, form.platform]);
 
   const isWhatsapp = (form.platform || '').toLowerCase() === 'whatsapp';
-  const phoneDigits = useMemo(() => sourcingWhatsAppPhoneFromEnv(), []);
+  const phoneDigits = useMemo(() => sourcingWhatsAppDigits(whatsappPhone), [whatsappPhone]);
 
   const applyMessage = useMemo(() => {
     if (!form.jobId) return '';
@@ -371,7 +374,7 @@ export default function CampaignModal({
     setSubmitError(null);
     try {
       if (isWhatsapp) {
-        const digits = sourcingWhatsAppPhoneFromEnv();
+        const digits = phoneDigits;
         if (!form.jobId) {
           setSubmitError(t('sourcing.errors.whatsappJobRequired'));
           return;

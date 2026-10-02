@@ -4,10 +4,6 @@ export function sourcingWhatsAppDigits(raw: string | undefined | null): string {
   return String(raw).replace(/\D/g, '');
 }
 
-export function sourcingWhatsAppPhoneFromEnv(): string {
-  return sourcingWhatsAppDigits(import.meta.env.VITE_SOURCING_WHATSAPP_PHONE);
-}
-
 /** Plain job id (UUID or numeric) embedded in the WhatsApp prefill — no prefix letter. */
 export function jobPostRef(jobId: string | number): string {
   return String(jobId).trim();

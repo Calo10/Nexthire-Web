@@ -180,7 +180,7 @@
     "whatsappSubtitle": "Generamos un enlace de WhatsApp y un código QR con el mensaje de aplicación listo, según el empleo que elijas.",
     "whatsappPrefillMessage": "Quiero aplicar al job post {{ref}}",
     "whatsappAutoName": "WhatsApp — {{job}}",
-    "whatsappMissingPhoneEnv": "Todavía no está configurado el número de WhatsApp al que deben escribir los candidatos. Pide al equipo técnico que lo configure en el despliegue (número completo con código de país, solo dígitos).",
+    "whatsappMissingPhoneEnv": "Configura el número de WhatsApp en Fuentes → Twilio para que el enlace y el código QR usen ese número.",
     "whatsappShareLink": "Enlace para compartir",
     "whatsappCopyLink": "Copiar enlace",
     "whatsappLinkCopied": "Copiado",

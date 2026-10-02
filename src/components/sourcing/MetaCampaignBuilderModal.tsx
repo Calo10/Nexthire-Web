@@ -6,7 +6,7 @@ import Button from '../Button';
 import Card from '../Card';
 import ErrorMessage from '../ErrorMessage';
 import { resolveTenantId } from '../../lib/resolveTenantId';
-import { sourcingWhatsAppPhoneFromEnv } from '../../lib/sourcingWhatsAppApplyLink';
+import { sourcingWhatsAppDigits } from '../../lib/sourcingWhatsAppApplyLink';
 import {
   buildPublicJobPostUrl,
   buildWhatsappDestinationUrl,
@@ -60,6 +60,8 @@ interface Props {
   jobs: Job[];
   jobsLoading?: boolean;
   metaAdsReady?: boolean;
+  /** WhatsApp number from the Twilio source connection (Sources). */
+  whatsappPhone?: string | null;
   onGoToSources?: () => void;
   onSuccess: () => void;
 }
@@ -70,6 +72,7 @@ export default function MetaCampaignBuilderModal({
   jobs,
   jobsLoading = false,
   metaAdsReady = true,
+  whatsappPhone = null,
   onGoToSources,
   onSuccess,
 }: Props) {
@@ -118,7 +121,8 @@ export default function MetaCampaignBuilderModal({
   const [createResult, setCreateResult] = useState<MetaCampaignCreateResult | null>(null);
   const [sourcingSyncError, setSourcingSyncError] = useState<string | null>(null);
 
-  const whatsappConfigured = Boolean(sourcingWhatsAppPhoneFromEnv());
+  const whatsappDigits = useMemo(() => sourcingWhatsAppDigits(whatsappPhone), [whatsappPhone]);
+  const whatsappConfigured = Boolean(whatsappDigits);
   const {
     isReady: calendlyReady,
     schedulingUrl: calendlySchedulingUrl,
@@ -215,12 +219,12 @@ export default function MetaCampaignBuilderModal({
   }, [platformFacebook, platformInstagram]);
 
   const destinationUrlForPayload = useMemo(() => {
-    if (destinationType === 'whatsapp') return buildWhatsappDestinationUrl(whatsappMessage);
+    if (destinationType === 'whatsapp') return buildWhatsappDestinationUrl(whatsappMessage, whatsappDigits);
     if (destinationType === 'calendly') return calendlySchedulingUrl.trim();
     const origin = resolveSiteOrigin();
     const def = buildPublicJobPostUrl(origin, tenantId, selectedJobId);
     return jobPostUrlOverride.trim() || def;
-  }, [destinationType, whatsappMessage, calendlySchedulingUrl, jobPostUrlOverride, tenantId, selectedJobId]);
+  }, [destinationType, whatsappMessage, whatsappDigits, calendlySchedulingUrl, jobPostUrlOverride, tenantId, selectedJobId]);
 
   const objectiveLabel = t(`metaCampaign.objectives.${objective}.label`, { defaultValue: objective });
   const destinationLabel =
@@ -274,7 +278,7 @@ export default function MetaCampaignBuilderModal({
         if (destinationType === 'whatsapp') {
           if (!whatsappConfigured) next.whatsapp = t('metaCampaign.validation.whatsappEnv');
           else {
-            const waUrl = buildWhatsappDestinationUrl(whatsappMessage);
+            const waUrl = buildWhatsappDestinationUrl(whatsappMessage, whatsappDigits);
             if (!whatsappMessage.trim() || !waUrl || !isValidWhatsappMeUrl(waUrl)) {
               next.destination = t('metaCampaign.validation.destination');
             }
@@ -317,6 +321,7 @@ export default function MetaCampaignBuilderModal({
       ageRangeLocked,
       destinationType,
       whatsappConfigured,
+      whatsappDigits,
       whatsappMessage,
       calendlyReady,
       calendlySchedulingUrl,
@@ -483,7 +488,7 @@ export default function MetaCampaignBuilderModal({
       if (!publisherPlatforms.length) next._ = 'x';
       if (!ageRangeLocked && ageMin >= ageMax) next._ = 'x';
       if (destinationType === 'whatsapp') {
-        const waUrl = buildWhatsappDestinationUrl(whatsappMessage);
+        const waUrl = buildWhatsappDestinationUrl(whatsappMessage, whatsappDigits);
         if (!whatsappConfigured || !whatsappMessage.trim() || !waUrl || !isValidWhatsappMeUrl(waUrl)) {
           next._ = 'x';
         }
@@ -518,6 +523,7 @@ export default function MetaCampaignBuilderModal({
     ageRangeLocked,
     destinationType,
     whatsappConfigured,
+    whatsappDigits,
     whatsappMessage,
     calendlyReady,
     calendlySchedulingUrl,
