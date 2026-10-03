@@ -3,6 +3,7 @@ import ErrorMessage from '../ErrorMessage';
 import TextField from '../TextField';
 import CandidatesMobileList from './CandidatesMobileList';
 import CandidatesPagination from './CandidatesPagination';
+import TagFilterSelect from './TagFilterSelect';
 import type { CandidatesPageState } from '../../hooks/useCandidatesPage';
 
 export default function CandidatesMobileView({
@@ -15,6 +16,9 @@ export default function CandidatesMobileView({
   setFrom,
   to,
   setTo,
+  tagIds,
+  setTagIds,
+  tagOptions,
   setIsNewModalOpen,
   candidates,
   page,
@@ -85,6 +89,10 @@ export default function CandidatesMobileView({
               </button>
             ))}
           </div>
+        </div>
+
+        <div className="mb-4">
+          <TagFilterSelect tags={tagOptions} selectedIds={tagIds} onChange={setTagIds} className="text-sm" />
         </div>
 
         <div className="grid grid-cols-2 gap-3 mb-4">

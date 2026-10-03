@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
+import { candidatesApi } from '../api/candidatesApi';
 import { candidateSourceSelectOptions } from '../lib/candidateSources';
 import { useCandidatesList } from './useCandidatesList';
-import type { Candidate } from '../types/candidates';
+import type { Candidate, CandidateTag } from '../types/candidates';
 
 export const FILTER_CONTROL_CLASS = 'h-12 min-h-12 max-h-12 box-border py-2.5 text-sm min-w-0 w-full';
 
@@ -18,6 +19,8 @@ export function useCandidatesPage() {
   const [source, setSourceState] = useState('');
   const [from, setFromState] = useState('');
   const [to, setToState] = useState('');
+  const [tagIds, setTagIdsState] = useState<string[]>([]);
+  const [tagOptions, setTagOptions] = useState<CandidateTag[]>([]);
   const [page, setPage] = useState(1);
 
   const setSearchQuery = (value: string) => {
@@ -36,9 +39,28 @@ export function useCandidatesPage() {
     setToState(value);
     setPage(1);
   };
+  const setTagIds = (ids: string[]) => {
+    setTagIdsState(ids);
+    setPage(1);
+  };
+
+  const loadTags = useCallback(async () => {
+    try {
+      const tags = await candidatesApi.listTags();
+      setTagOptions(tags);
+    } catch {
+      setTagOptions([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!shouldFetch) return;
+    loadTags();
+  }, [shouldFetch, loadTags]);
 
   const [isNewModalOpen, setIsNewModalOpen] = useState(false);
   const [selectedCandidateId, setSelectedCandidateId] = useState<string | null>(null);
+  const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const params = useMemo(
@@ -47,10 +69,11 @@ export function useCandidatesPage() {
       source: source || undefined,
       from: from || undefined,
       to: to || undefined,
+      tagIds: tagIds.length > 0 ? tagIds : undefined,
       page,
       pageSize: CANDIDATES_PAGE_SIZE,
     }),
-    [searchQuery, source, from, to, page],
+    [searchQuery, source, from, to, tagIds, page],
   );
 
   const { data: candidates, meta, isLoading, error, refetch } = useCandidatesList(shouldFetch, params);
@@ -62,6 +85,7 @@ export function useCandidatesPage() {
 
   const handleRowClick = (c: Candidate) => {
     setSelectedCandidateId(c.id);
+    setSelectedCandidate(c);
     setIsDrawerOpen(true);
   };
 
@@ -84,10 +108,15 @@ export function useCandidatesPage() {
     setFrom,
     to,
     setTo,
+    tagIds,
+    setTagIds,
+    tagOptions,
+    loadTags,
     isNewModalOpen,
     setIsNewModalOpen,
     selectedCandidateId,
     setSelectedCandidateId,
+    selectedCandidate,
     isDrawerOpen,
     setIsDrawerOpen,
     candidates,

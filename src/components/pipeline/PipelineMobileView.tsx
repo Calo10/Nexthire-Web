@@ -1,38 +1,18 @@
 import Button from '../Button';
 import ErrorMessage from '../ErrorMessage';
-import type { KanbanColumn, KanbanStage } from '../../types/applications';
 import PipelineMobileBoard from './PipelineMobileBoard';
 import ApplicationInspectorPanel from './ApplicationInspectorPanel';
 import type { PipelinePageState } from '../../hooks/usePipelinePage';
-
-function MobileStageCounts({ stages, columns }: { stages: KanbanStage[]; columns: KanbanColumn[] }) {
-  if (!stages?.length) return null;
-
-  const countByStage = new Map(columns.map((c) => [c.stageId, c.items.length]));
-
-  return (
-    <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 mb-4">
-      {stages.map((s) => (
-        <div
-          key={s.id}
-          className="shrink-0 rounded-xl border border-gray-200 bg-white px-3 py-2 min-w-[88px]"
-        >
-          <p className="text-[10px] text-gray-500 truncate max-w-[120px]">{s.name}</p>
-          <p className="text-lg font-bold text-dark-text">{countByStage.get(s.id) || 0}</p>
-        </div>
-      ))}
-    </div>
-  );
-}
 
 export default function PipelineMobileView({
   t,
   locale,
   jobsError,
-  selectedJobId,
   setSelectedJobId,
-  selectedJob,
   jobOptions,
+  jobSelectValue,
+  nameQuery,
+  setNameQuery,
   jobsLoading,
   data,
   columns,
@@ -63,19 +43,40 @@ export default function PipelineMobileView({
       <div className="p-4">
         <h1 className="text-lg font-semibold text-dark-text mb-3">{t('pipeline.title')}</h1>
 
-        <label className="block text-xs font-medium text-gray-500 mb-1.5">{t('pipeline.selectJob')}</label>
-        <select
-          className="w-full px-3 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm mb-3"
-          value={selectedJobId}
-          onChange={(e) => setSelectedJobId(e.target.value)}
-          disabled={jobsLoading}
-        >
-          {jobOptions.map((o) => (
-            <option key={o.value} value={o.value}>
-              {o.label}
-            </option>
-          ))}
-        </select>
+        <div className="grid grid-cols-1 gap-3 mb-3">
+          <div>
+            <label className="block text-xs font-medium text-gray-500 mb-1.5">{t('pipeline.selectJob')}</label>
+            <select
+              className="w-full px-3 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+              value={jobSelectValue}
+              onChange={(e) => setSelectedJobId(e.target.value)}
+              disabled={jobsLoading}
+            >
+              {jobOptions.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="relative">
+            <svg
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              type="text"
+              placeholder={t('pipeline.searchPlaceholder')}
+              value={nameQuery}
+              onChange={(e) => setNameQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+            />
+          </div>
+        </div>
         {jobsError ? (
           <div className="mb-3">
             <ErrorMessage message={jobsError.message || 'Failed to load jobs'} />
@@ -87,7 +88,7 @@ export default function PipelineMobileView({
           size="md"
           className="w-full justify-center mb-4"
           onClick={() => setIsCreateOpen(true)}
-          disabled={!selectedJob}
+          disabled={jobsLoading}
         >
           <div className="flex items-center gap-2">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -108,18 +109,7 @@ export default function PipelineMobileView({
           </div>
         ) : null}
 
-        {selectedJobId && data?.stages?.length ? (
-          <div className="mb-4">
-            <p className="text-xs font-medium text-gray-500 mb-2">{t('pipeline.overview')}</p>
-            <MobileStageCounts stages={data.stages} columns={columns} />
-          </div>
-        ) : null}
-
-        {!selectedJobId ? (
-          <div className="text-center py-12 text-sm text-gray-600 bg-white rounded-xl border border-gray-200">
-            {t('pipeline.selectJob')}
-          </div>
-        ) : isLoading ? (
+        {isLoading ? (
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
               <div key={i} className="h-32 bg-white rounded-xl border border-gray-200 animate-pulse" />

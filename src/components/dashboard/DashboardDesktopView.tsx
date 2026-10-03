@@ -267,8 +267,8 @@ export default function DashboardDesktopView({
                 {t('dashboard.noJobsFound')}
               </div>
             ) : (
-              <div className="space-y-3">
-                {(myJobs || []).slice(0, 5).map((job) => (
+              <div className="max-h-80 space-y-3 overflow-y-auto pr-1">
+                {(myJobs || []).map((job) => (
                   <div key={job.id} className="border-b border-gray-200 pb-3 last:border-0 last:pb-0">
                     <div className="flex items-start justify-between mb-1">
                       <h4 className="text-sm font-medium text-dark-text">{job.title || 'Untitled Job'}</h4>
@@ -306,8 +306,8 @@ export default function DashboardDesktopView({
           ) : (
             <Card className="p-6">
               <h3 className="text-lg font-semibold text-dark-text mb-4">{t('dashboard.recentCandidates')}</h3>
-              <div className="space-y-3">
-                {(candidates || []).slice(0, 5).map((candidate) => {
+              <div className="max-h-80 space-y-3 overflow-y-auto pr-1">
+                {(candidates || []).map((candidate) => {
                   const stageInfo = getStageInfo(candidate.currentStageName || 'Applied');
                   return (
                     <div key={candidate.candidateId} className="border-b border-gray-200 pb-3 last:border-0 last:pb-0">

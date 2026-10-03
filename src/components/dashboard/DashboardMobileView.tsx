@@ -212,8 +212,8 @@ export default function DashboardMobileView({
         ) : (myJobs || []).length === 0 ? (
           <div className="text-center py-6 text-gray-500 text-sm">{t('dashboard.noJobsFound')}</div>
         ) : (
-          <div className="space-y-3">
-            {(myJobs || []).slice(0, 5).map((job) => (
+          <div className="max-h-80 space-y-3 overflow-y-auto pr-1">
+            {(myJobs || []).map((job) => (
               <div key={job.id} className="border-b border-gray-200 pb-3 last:border-0 last:pb-0">
                 <div className="flex items-start justify-between mb-1">
                   <h4 className="text-sm font-medium text-dark-text">{job.title || 'Untitled Job'}</h4>
@@ -244,8 +244,8 @@ export default function DashboardMobileView({
         ) : (candidates || []).length === 0 ? (
           <div className="text-center py-6 text-gray-500 text-sm">{t('dashboard.noCandidatesFound')}</div>
         ) : (
-          <div className="space-y-3">
-            {(candidates || []).slice(0, 5).map((candidate) => {
+          <div className="max-h-80 space-y-3 overflow-y-auto pr-1">
+            {(candidates || []).map((candidate) => {
               const stageInfo = getStageInfo(candidate.currentStageName || 'Applied');
               return (
                 <div key={candidate.candidateId} className="border-b border-gray-200 pb-3 last:border-0 last:pb-0">

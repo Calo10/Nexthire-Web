@@ -24,6 +24,7 @@ import AiAgentsPage from './pages/AiAgentsPage';
 import TeamsPage from './pages/TeamsPage';
 import SourcingPage from './pages/SourcingPage';
 import MeetingsPage from './pages/MeetingsPage';
+import WhatsAppInboxPage from './pages/WhatsAppInboxPage';
 import PublicJobsPage from './pages/public/PublicJobsPage';
 import PublicJobDetailsPage from './pages/public/PublicJobDetailsPage';
 import OrganizationSetupPage from './pages/onboarding/OrganizationSetupPage';
@@ -160,6 +161,17 @@ function App() {
           />
 
           <Route
+            path="/app/whatsapp"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <WhatsAppInboxPage />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
             path="/app/sourcing"
             element={
               <ProtectedRoute>
@@ -264,6 +276,17 @@ function App() {
               <ProtectedRoute>
                 <DashboardLayout>
                   <PipelinePage />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/whatsapp"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <WhatsAppInboxPage />
                 </DashboardLayout>
               </ProtectedRoute>
             }

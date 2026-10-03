@@ -25,6 +25,7 @@ export default function CandidatesPage() {
       <CandidateDetailDrawer
         isOpen={page.isDrawerOpen}
         candidateId={page.selectedCandidateId}
+        candidate={page.selectedCandidate}
         onClose={() => page.setIsDrawerOpen(false)}
         onUpdated={() => page.refetch()}
         onDeleted={() => {

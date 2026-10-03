@@ -31,6 +31,13 @@ export interface ApiError {
   details?: Record<string, unknown>;
 }
 
+function safeApiErrorText(raw: unknown, fallback: string): string {
+  const text = typeof raw === 'string' ? raw.trim() : '';
+  if (!text || text.length > 240) return fallback;
+  if (/authorization|bearer\s|cookie:|sec-ch-ua|sec-fetch|<!doctype|<html|user-agent/i.test(text)) return fallback;
+  return text;
+}
+
 // Callback for 401 handling
 let onUnauthorized: (() => void) | null = null;
 let lastLoginTime: number = 0;
@@ -203,8 +210,7 @@ class ApiClient {
           responseText = await response.clone().text();
           errorData = responseText ? JSON.parse(responseText) : {};
         } catch (e) {
-          // If JSON parse fails, use text as error message
-          errorData = { message: responseText || 'Unknown error' };
+          errorData = {};
         }
         
         // Enhanced logging for errors (dev only)
@@ -237,32 +243,28 @@ class ApiClient {
         let errorMessage = 'An error occurred. Please try again.';
 
         if (response.status === 401) {
-          errorMessage =
-            errorData.message ||
-            errorData.error ||
-            'Your session has expired. Please log in again.';
+          errorMessage = safeApiErrorText(
+            errorData.message || errorData.error,
+            'Your session has expired. Please log in again.'
+          );
         } else if (response.status === 400) {
-          errorMessage = errorData.message || errorData.error || 'Please check your input and try again.';
+          errorMessage = safeApiErrorText(errorData.message || errorData.error, 'Please check your input and try again.');
         } else if (response.status === 403) {
-          errorMessage = errorData.message || errorData.error || 'You do not have permission to perform this action.';
+          errorMessage = safeApiErrorText(errorData.message || errorData.error, 'You do not have permission to perform this action.');
         } else if (response.status === 404) {
-          errorMessage = errorData.message || errorData.error || 'The requested resource was not found.';
+          errorMessage = safeApiErrorText(errorData.message || errorData.error, 'The requested resource was not found.');
         } else if (response.status === 429) {
           errorMessage = 'Too many requests. Please try again later.';
         } else if (response.status >= 500) {
-          // Server errors (500, 502, 503, etc.) - show server error message, NOT 401
-          errorMessage = errorData.message || errorData.error || 'Server error. Please try again later.';
-          // Log full error details for debugging
+          errorMessage = safeApiErrorText(errorData.message || errorData.error, 'Server error. Please try again later.');
           if (import.meta.env.DEV) {
             console.error('[ApiClient] Server Error Details:', {
               status: response.status,
               endpoint,
-              errorData,
-              responseBody: responseText,
             });
           }
         } else if (errorData.message || errorData.error) {
-          errorMessage = errorData.message || errorData.error;
+          errorMessage = safeApiErrorText(errorData.message || errorData.error, errorMessage);
         }
         
         throw {

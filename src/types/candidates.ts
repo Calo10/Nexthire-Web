@@ -49,6 +49,7 @@ export interface GetCandidatesParams {
   source?: string;
   from?: string; // ISO or YYYY-MM-DD
   to?: string; // ISO or YYYY-MM-DD
+  tagIds?: string[];
   page?: number;
   pageSize?: number;
 }

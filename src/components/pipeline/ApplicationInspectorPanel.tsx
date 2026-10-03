@@ -455,6 +455,9 @@ export default function ApplicationInspectorPanel(props: ApplicationInspectorPan
   const [notesItems, setNotesItems] = useState<ApplicationNote[]>([]);
   const [noteDeleteId, setNoteDeleteId] = useState<string | null>(null);
   const [noteDeleteError, setNoteDeleteError] = useState<string | null>(null);
+  const [noteDraft, setNoteDraft] = useState('');
+  const [noteSaving, setNoteSaving] = useState(false);
+  const [noteSaveError, setNoteSaveError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isOpen || collapsed) return;
@@ -497,6 +500,35 @@ export default function ApplicationInspectorPanel(props: ApplicationInspectorPan
       cancelled = true;
     };
   }, [application?.id, collapsed, isOpen, historyRefreshKey, onUnauthorized, t, tab]);
+
+  useEffect(() => {
+    setNoteDraft('');
+    setNoteSaveError(null);
+  }, [application?.id]);
+
+  const handleCreateNote = async () => {
+    if (!application?.id || noteSaving) return;
+    const body = noteDraft.trim();
+    if (!body) {
+      setNoteSaveError(t('pipeline.inspector.addNote.validation'));
+      return;
+    }
+    setNoteSaving(true);
+    setNoteSaveError(null);
+    try {
+      const created = await applicationsApi.createNote(application.id, body);
+      setNotesItems((prev) => [created, ...prev.filter((note) => note.id !== created.id)]);
+      setNoteDraft('');
+    } catch (e) {
+      if (isUnauthorized(e)) {
+        onUnauthorized?.();
+        return;
+      }
+      setNoteSaveError(e && typeof e === 'object' && 'message' in e ? String((e as { message: string }).message) : t('pipeline.errors.load'));
+    } finally {
+      setNoteSaving(false);
+    }
+  };
 
   const handleDeleteNote = async (noteId: string) => {
     const ok = window.confirm(t('pipeline.inspector.notes.deleteConfirm'));
@@ -614,13 +646,16 @@ export default function ApplicationInspectorPanel(props: ApplicationInspectorPan
           return;
         }
         if (!silent) {
-          const msg =
-            e && typeof e === 'object' && 'message' in e
-              ? String((e as any).message)
-              : t('pipeline.inspector.whatsapp.loadError');
-          setWaError(msg);
-          setWaConversation(null);
-          setWaMessages([]);
+          const status = e && typeof e === 'object' && 'status' in e ? Number((e as { status?: number }).status) : 0;
+          if (status === 404) {
+            setWaError(null);
+            setWaConversation(null);
+            setWaMessages([]);
+          } else {
+            setWaError(t('pipeline.inspector.whatsapp.loadError'));
+            setWaConversation(null);
+            setWaMessages([]);
+          }
         }
       } finally {
         if (!silent) setWaLoading(false);
@@ -630,9 +665,30 @@ export default function ApplicationInspectorPanel(props: ApplicationInspectorPan
   );
 
   useEffect(() => {
-    if (!isOpen || collapsed || panelTab !== 'whatsapp') return;
-
+    if (!isOpen || collapsed || !application?.candidateId) return;
     void loadWhatsappConversation();
+  }, [application?.candidateId, collapsed, historyRefreshKey, isOpen, loadWhatsappConversation]);
+
+  useEffect(() => {
+    if (panelTab !== 'whatsapp') return;
+    const id = String(waConversation?.id || '').trim();
+    const tid = String(tenantId || '').trim();
+    const unread = waConversation?.unreadCount ?? 0;
+    if (!id || !tid || unread <= 0) return;
+    let cancelled = false;
+    void whatsappApi.markRead(id, tid)
+      .then(() => {
+        if (cancelled) return;
+        setWaConversation((current) => (current ? { ...current, unreadCount: 0 } : current));
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [panelTab, tenantId, waConversation?.id, waConversation?.unreadCount]);
+
+  useEffect(() => {
+    if (!isOpen || collapsed || panelTab !== 'whatsapp') return;
 
     const intervalId = window.setInterval(() => {
       void loadWhatsappConversation({ silent: true });
@@ -641,15 +697,7 @@ export default function ApplicationInspectorPanel(props: ApplicationInspectorPan
     return () => {
       window.clearInterval(intervalId);
     };
-  }, [
-    application?.candidateId,
-    collapsed,
-    historyRefreshKey,
-    isOpen,
-    loadWhatsappConversation,
-    panelTab,
-    tenantId,
-  ]);
+  }, [collapsed, isOpen, loadWhatsappConversation, panelTab]);
 
   useEffect(() => {
     if (!isOpen || collapsed || panelTab !== 'whatsapp' || !application?.candidateId) {
@@ -685,8 +733,10 @@ export default function ApplicationInspectorPanel(props: ApplicationInspectorPan
     el.scrollTop = el.scrollHeight;
   }, [panelTab, waLoading, waMessages]);
 
+  const canComposeWhatsapp = waMessages.length > 0;
+
   const handleWhatsappPanelSend = async () => {
-    if (!application?.candidateId || waSending || !twilioReady) return;
+    if (!application?.candidateId || waSending || !twilioReady || !canComposeWhatsapp) return;
     const tid = String(tenantId || '').trim();
     const cid = String(application.candidateId || '').trim();
     const to = normalizePhoneForWa(waTargetPhoneRaw);
@@ -757,6 +807,68 @@ export default function ApplicationInspectorPanel(props: ApplicationInspectorPan
         return;
       }
       setToastError(t('pipeline.message.whatsappSendFailed'));
+    } finally {
+      setWaSending(false);
+    }
+  };
+
+  const handleWhatsappIntroduction = async () => {
+    if (!application?.candidateId || waSending || !twilioReady) return;
+    const tid = String(tenantId || '').trim();
+    const cid = String(application.candidateId || '').trim();
+    setToastError(null);
+    setWaSending(true);
+    try {
+      const sent = await whatsappApi.sendIntroduction(cid);
+      const optimistic: WhatsappMessageDto = {
+        id: `local-out-${Date.now()}`,
+        conversationId: String(waConversation?.id ?? ''),
+        direction: 'outbound',
+        providerMessageId: null,
+        fromPhone: null,
+        toPhone: normalizePhoneForWa(waTargetPhoneRaw) || null,
+        body: sent.body,
+        createdAtUtc: new Date().toISOString(),
+      };
+      setWaMessages((prev) => [...prev, optimistic]);
+      if (!tid) return;
+      const mergeServerWithLocals = (prev: WhatsappMessageDto[], sorted: WhatsappMessageDto[]) => {
+        const locals = prev.filter((m) => String(m.id).startsWith('local-out-'));
+        if (sorted.length === 0 && prev.length > 0) return prev;
+        const remainingLocals = locals.filter(
+          (l) =>
+            !sorted.some(
+              (s) =>
+                String(s.direction || '').toLowerCase() === 'outbound' &&
+                String(s.body || '').trim() === String(l.body || '').trim()
+            )
+        );
+        return [...sorted, ...remainingLocals].sort(
+          (a, b) => new Date(a.createdAtUtc).getTime() - new Date(b.createdAtUtc).getTime()
+        );
+      };
+      const waitBeforeMs = [0, 400, 900, 1800];
+      for (const w of waitBeforeMs) {
+        if (w > 0) await new Promise((r) => window.setTimeout(r, w));
+        try {
+          const data = await whatsappApi.getConversationByCandidate(tid, cid);
+          if (data.conversation) setWaConversation(data.conversation);
+          const sorted = [...(data.messages || [])].sort(
+            (a, b) => new Date(a.createdAtUtc).getTime() - new Date(b.createdAtUtc).getTime()
+          );
+          setWaMessages((prev) => mergeServerWithLocals(prev, sorted));
+          if (sorted.length > 0) return;
+        } catch {
+          return;
+        }
+      }
+    } catch (e) {
+      if (isUnauthorized(e)) {
+        onUnauthorized?.();
+        return;
+      }
+      const message = e && typeof e === 'object' && 'message' in e ? String((e as { message?: string }).message || '') : '';
+      setToastError(message || t('pipeline.inspector.whatsapp.introductionFailed'));
     } finally {
       setWaSending(false);
     }
@@ -846,7 +958,7 @@ export default function ApplicationInspectorPanel(props: ApplicationInspectorPan
                 variant="outline"
                 size="sm"
                 className="w-full border-purple-200 text-primary hover:bg-purple-50 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={!application?.candidateId || isLoadingResume || isAnalyzingAI}
+                disabled={!application?.candidateId || !resumeUrl || isLoadingResume || isAnalyzingAI}
                 onClick={handleViewResume}
               >
                 <div className="flex items-center justify-center gap-2">
@@ -941,6 +1053,21 @@ export default function ApplicationInspectorPanel(props: ApplicationInspectorPan
                       aria-hidden="true"
                     />
                     <span className="truncate">{t('pipeline.inspector.tabs.whatsappConversation')}</span>
+                    {(waConversation?.unreadCount ?? 0) > 0 ? (
+                      <span
+                        className="inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-[#00a884] px-1.5 text-[11px] font-semibold text-white"
+                        title={t('whatsappInbox.unread', { count: waConversation?.unreadCount ?? 0 })}
+                      >
+                        {(waConversation?.unreadCount ?? 0) > 99 ? '99+' : waConversation?.unreadCount}
+                      </span>
+                    ) : null}
+                    {String(waConversation?.status || '').toLowerCase() === 'needs_human' ? (
+                      <span
+                        className="h-2 w-2 shrink-0 rounded-full bg-amber-500"
+                        title={t('pipeline.inspector.whatsapp.needsHuman')}
+                        aria-label={t('pipeline.inspector.whatsapp.needsHuman')}
+                      />
+                    ) : null}
                   </button>
                 </HoverTooltip>
               </div>
@@ -1053,7 +1180,7 @@ export default function ApplicationInspectorPanel(props: ApplicationInspectorPan
                     </div>
                   ) : tab === 'notes' ? (
                     <div>
-                      <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">Notes</h3>
+                      <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">{t('pipeline.inspector.tabs.notes')}</h3>
                       {notesLoading ? (
                         <div className="space-y-3">
                           {[1, 2].map((i) => (
@@ -1097,6 +1224,28 @@ export default function ApplicationInspectorPanel(props: ApplicationInspectorPan
                           })}
                         </div>
                       )}
+                      <form
+                        className="mt-4 space-y-2"
+                        onSubmit={(event) => {
+                          event.preventDefault();
+                          void handleCreateNote();
+                        }}
+                      >
+                        <textarea
+                          value={noteDraft}
+                          maxLength={4000}
+                          rows={3}
+                          onChange={(event) => setNoteDraft(event.target.value)}
+                          placeholder={t('pipeline.inspector.addNote.placeholder')}
+                          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                        />
+                        {noteSaveError ? <p className="text-sm text-red-600">{noteSaveError}</p> : null}
+                        <div className="flex justify-end">
+                          <Button type="submit" variant="outline" size="sm" disabled={noteSaving || !noteDraft.trim() || !application?.id}>
+                            {noteSaving ? t('common.actions.saving') : t('pipeline.inspector.addNote.save')}
+                          </Button>
+                        </div>
+                      </form>
                     </div>
                   ) : (
                     <div>
@@ -1147,9 +1296,14 @@ export default function ApplicationInspectorPanel(props: ApplicationInspectorPan
               </div>
             ) : (
               <div className="flex-1 flex flex-col min-h-0 overflow-hidden bg-white">
-                <div ref={waScrollRef} className="flex-1 overflow-y-auto px-3 py-4 space-y-2 min-h-0 bg-white">
+                {String(waConversation?.status || '').toLowerCase() === 'needs_human' ? (
+                  <div className="flex-shrink-0 border-b border-amber-200 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-900">
+                    {t('pipeline.inspector.whatsapp.needsHuman')}
+                  </div>
+                ) : null}
+                <div ref={waScrollRef} className={`flex-1 min-h-0 bg-white ${canComposeWhatsapp ? 'overflow-y-auto px-3 py-4 space-y-2' : 'flex flex-col'}`}>
                   {waLoading && waMessages.length === 0 ? (
-                    <div className="space-y-3 py-2">
+                    <div className="space-y-3 px-3 py-4">
                       {[1, 2, 3, 4].map((i) => (
                         <div key={i} className={`flex ${i % 2 ? 'justify-end' : 'justify-start'}`}>
                           <div className="h-11 w-48 max-w-[70%] rounded-2xl bg-gray-100 animate-pulse" />
@@ -1157,9 +1311,19 @@ export default function ApplicationInspectorPanel(props: ApplicationInspectorPan
                       ))}
                     </div>
                   ) : waError ? (
-                    <div className="text-sm text-red-800 bg-red-50 border border-red-200 rounded-xl p-4">{waError}</div>
+                    <div className="m-3 text-sm text-red-800 bg-red-50 border border-red-200 rounded-xl p-4">{waError}</div>
                   ) : waMessages.length === 0 ? (
-                    <p className="text-sm text-gray-600 text-center px-2 py-10">{t('pipeline.inspector.whatsapp.noMessages')}</p>
+                    <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
+                      <p className="text-sm text-gray-600">{t('pipeline.inspector.whatsapp.noMessages')}</p>
+                      <button
+                        type="button"
+                        onClick={() => void handleWhatsappIntroduction()}
+                        disabled={waSending || !application?.candidateId}
+                        className="inline-flex items-center justify-center rounded-full bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-40"
+                      >
+                        {waSending ? <Spinner className="w-4 h-4 text-white" /> : t('pipeline.inspector.whatsapp.sendIntroduction')}
+                      </button>
+                    </div>
                   ) : (
                     waMessages.map((m) => {
                       const inbound = String(m.direction || '').toLowerCase() === 'inbound';
@@ -1195,13 +1359,14 @@ export default function ApplicationInspectorPanel(props: ApplicationInspectorPan
                       }}
                       rows={2}
                       placeholder={t('pipeline.inspector.whatsapp.composePlaceholder')}
-                      disabled={waSending || !String(tenantId || '').trim()}
+                      disabled={!canComposeWhatsapp || waSending || !String(tenantId || '').trim()}
                       className="flex-1 min-h-[44px] max-h-28 resize-y rounded-lg border border-gray-300 px-3 py-2 text-sm text-dark-text placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary disabled:bg-gray-50 disabled:text-gray-400"
                     />
                     <button
                       type="button"
                       onClick={() => void handleWhatsappPanelSend()}
                       disabled={
+                        !canComposeWhatsapp ||
                         waSending ||
                         !String(tenantId || '').trim() ||
                         !normalizePhoneForWa(waTargetPhoneRaw) ||

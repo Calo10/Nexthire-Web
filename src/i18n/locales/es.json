@@ -316,8 +316,8 @@
     "signOut": "Cerrar sesión",
     "applicationsByStage": "Aplicaciones por Etapa",
     "activityTrend": "Tendencia de Actividad",
-    "myJobs": "Mis Trabajos",
-    "noJobsFound": "No se encontraron trabajos",
+    "myJobs": "Puestos abiertos",
+    "noJobsFound": "No hay puestos abiertos",
     "applications": "aplicaciones",
     "recentCandidates": "Candidatos Recientes",
     "noCandidatesFound": "No se encontraron candidatos",
@@ -340,12 +340,24 @@
     "candidates": "Candidatos",
     "tasks": "Tareas",
     "pipeline": "Pipeline",
+    "whatsapp": "WhatsApp",
     "sourcing": "Sourcing",
     "templates": "Plantillas",
     "aiAgents": "Agentes AI",
     "team": "Equipos",
     "settings": "Configuración",
     "meetings": "Reuniones"
+  },
+  "whatsappInbox": {
+    "search": "Buscar o empezar un chat",
+    "emptyList": "No hay conversaciones",
+    "selectChat": "Selecciona un chat para ver los mensajes",
+    "loadError": "No se pudieron cargar las conversaciones",
+    "messagesError": "No se pudieron cargar los mensajes",
+    "sendFailed": "No se pudo enviar el mensaje",
+    "composePlaceholder": "Escribe un mensaje",
+    "noMessages": "Aún no hay mensajes en esta conversación.",
+    "unread": "{{count}} sin leer"
   },
   "aiAgents": {
     "title": "Agentes AI",
@@ -812,6 +824,8 @@
     "title": "Pipeline",
     "overview": "Resumen",
     "selectJob": "Seleccionar trabajo",
+    "searchPlaceholder": "Buscar por nombre",
+    "viewAll": "Ver todos",
     "addApplication": "Agregar aplicación",
     "actions": {
       "reject": "Rechazar",
@@ -856,15 +870,18 @@
         "missingTenant": "No se pudo obtener la organización. Vuelve a iniciar sesión o recarga la página.",
         "loadError": "No se pudieron cargar los mensajes de WhatsApp.",
         "noMessages": "Aún no hay mensajes en esta conversación.",
+        "needsHuman": "Pidió hablar con una persona",
         "composePlaceholder": "Escribe un mensaje…",
-        "configureRequired": "Conecta y activa Twilio en Fuentes para ver las conversaciones de WhatsApp."
+        "configureRequired": "Conecta y activa Twilio en Fuentes para ver las conversaciones de WhatsApp.",
+        "sendIntroduction": "Enviar presentación",
+        "introductionFailed": "No se pudo enviar la presentación de WhatsApp."
       },
       "resume": {
         "tab": "Resume",
         "notesTab": "Notes",
-        "view": "Ver Curriculum",
+        "view": "Ver currículum",
         "analyze": "Analizar con AI",
-        "modalTitle": "Curriculum",
+        "modalTitle": "Currículum",
         "analysisModalTitle": "Análisis AI",
         "analysis": {
           "refresh": "Actualizar análisis",
@@ -929,10 +946,22 @@
     },
     "modal": {
       "title": "Agregar aplicación",
-      "subtitle": "Crear una nueva aplicación",
+      "subtitle": "Elige el puesto y luego un candidato, o crea uno nuevo",
       "candidate": "Candidato",
       "job": "Trabajo",
-      "create": "Crear aplicación"
+      "create": "Crear aplicación",
+      "searchJob": "Puesto",
+      "searchJobPlaceholder": "Buscar puesto",
+      "searchCandidate": "Candidato",
+      "searchCandidatePlaceholder": "Buscar por nombre, correo o teléfono",
+      "existing": "Candidato existente",
+      "newCandidate": "Crear candidato",
+      "noJobs": "No hay puestos que coincidan",
+      "noCandidates": "No hay candidatos que coincidan",
+      "pickJob": "Selecciona un puesto para continuar",
+      "pickCandidateHint": "Elige un candidato para crear la aplicación",
+      "loadingQuestions": "Cargando preguntas del puesto…",
+      "emailExists": "Ya existe un candidato con ese correo. Elígelo de la lista."
     }
   },
   "jobs": {
@@ -1460,7 +1489,11 @@
       "source": "Fuente",
       "sourceAll": "Todas",
       "from": "Desde",
-      "to": "Hasta"
+      "to": "Hasta",
+      "tags": "Etiquetas",
+      "tagsAll": "Todas las etiquetas",
+      "tagsSelected": "{{count}} etiquetas",
+      "tagsEmpty": "No hay etiquetas"
     },
     "sources": {
       "linkedin": "LinkedIn",
@@ -1513,11 +1546,13 @@
     "placeholders": {
       "email": "nombre@empresa.com",
       "phone": "p.ej., 8966 7186",
-      "tag": "Ej. Senior, Referido"
+      "tag": "Buscar o crear etiqueta"
     },
     "tags": {
       "add": "Agregar",
       "empty": "Sin etiquetas",
+      "pickExisting": "Seleccionar etiqueta existente",
+      "create": "Crear \"{{name}}\"",
       "remove": "Quitar etiqueta {{name}}"
     },
     "notes": {
@@ -1553,13 +1588,17 @@
       "confirmDelete": "¿Eliminar este candidato? Esta acción no se puede deshacer.",
       "resume": {
         "title": "Acciones de CV",
-        "view": "Ver Curriculum",
+        "view": "Ver currículum",
         "analyze": "Analizar con AI",
-        "modalTitle": "Curriculum",
+        "modalTitle": "Currículum",
         "analysisModalTitle": "Análisis AI",
         "openInNewTab": "Descargar",
         "noResume": "No hay CV disponible",
         "failed": "No se pudo procesar el CV",
+        "uploadLabel": "Currículum",
+        "uploadHint": "PDF o Word — mismo flujo de subida que la postulación pública.",
+        "uploading": "Subiendo…",
+        "uploadFailed": "No se pudo subir el CV",
         "analysis": {
           "refresh": "Actualizar análisis",
           "cached": "En caché",
@@ -1752,6 +1791,11 @@
       "subtitle": "Elige un tipo de evento y un horario disponible.",
       "eventType": "Tipo de evento",
       "pickSlot": "Horarios disponibles (próximos 7 días)",
+      "pickDay": "Elige un día",
+      "morning": "Mañana",
+      "afternoon": "Tarde",
+      "evening": "Noche",
+      "selected": "Seleccionado: {{when}}",
       "inviteeName": "Nombre del invitado",
       "inviteeEmail": "Email del invitado",
       "submit": "Agendar",
