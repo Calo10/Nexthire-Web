@@ -18,7 +18,7 @@ export default function PipelineDesktopView({
   jobsLoading,
   data,
   columns,
-  isLoading,
+  boardLoading,
   toastError,
   toastSuccess,
   setIsCreateOpen,
@@ -120,19 +120,11 @@ export default function PipelineDesktopView({
           }`}
         >
           <Card className="flex min-h-0 flex-col overflow-hidden p-0 lg:h-[calc(100vh-140px)]">
-            {isLoading ? (
-              <div className="p-6">
-                <div className="flex gap-6 overflow-x-auto scrollbar-subtle scrollbar-subtle-x pb-2">
-                  {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="w-[320px] shrink-0 bg-white rounded-2xl shadow-sm border border-gray-200 p-4 min-h-[560px]">
-                      <div className="h-6 bg-gray-200 rounded w-2/3 animate-pulse mb-4" />
-                      <div className="space-y-3">
-                        {[1, 2, 3].map((j) => (
-                          <div key={j} className="h-28 bg-gray-200 rounded-2xl animate-pulse" />
-                        ))}
-                      </div>
-                    </div>
-                  ))}
+            {boardLoading ? (
+              <div className="flex flex-1 items-center justify-center py-24">
+                <div className="text-center">
+                  <div className="inline-block h-8 w-8 animate-spin rounded-full border-b-2 border-primary" />
+                  <p className="mt-4 text-gray-600">{t('common.loading')}</p>
                 </div>
               </div>
             ) : isEmpty ? (

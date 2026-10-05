@@ -16,7 +16,7 @@ export default function PipelineMobileView({
   jobsLoading,
   data,
   columns,
-  isLoading,
+  boardLoading,
   toastError,
   toastSuccess,
   setIsCreateOpen,
@@ -109,11 +109,12 @@ export default function PipelineMobileView({
           </div>
         ) : null}
 
-        {isLoading ? (
-          <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="h-32 bg-white rounded-xl border border-gray-200 animate-pulse" />
-            ))}
+        {boardLoading ? (
+          <div className="flex items-center justify-center rounded-xl border border-gray-200 bg-white py-24">
+            <div className="text-center">
+              <div className="inline-block h-8 w-8 animate-spin rounded-full border-b-2 border-primary" />
+              <p className="mt-4 text-gray-600">{t('common.loading')}</p>
+            </div>
           </div>
         ) : isEmpty ? (
           <div className="text-center py-12 px-4 bg-white rounded-xl border border-gray-200">
