@@ -26,6 +26,8 @@ function formatMessageTime(iso: string | null | undefined, locale: string) {
 }
 
 function displayName(conversation: WhatsappConversationDto) {
+  const candidateName = String(conversation.candidateName || '').trim();
+  if (candidateName) return candidateName;
   const name = String(conversation.profileName || '').trim();
   if (name) return name;
   return String(conversation.phoneNumber || '').replace(/^whatsapp:/i, '');
