@@ -31,6 +31,7 @@ export default function PipelineDesktopView({
   closeInspector,
   handleMove,
   handleUpdateApplicationStatus,
+  handleDeleteApplication,
   openAddNote,
   openSendMessageFor,
   pipelineTenantId,
@@ -173,6 +174,10 @@ export default function PipelineDesktopView({
                 onArchive={() => {
                   if (!selectedCard?.id) return Promise.resolve();
                   return handleUpdateApplicationStatus(selectedCard.id, 'archived');
+                }}
+                onDelete={() => {
+                  if (!selectedCard?.id) return Promise.resolve();
+                  return handleDeleteApplication(selectedCard.id);
                 }}
                 onUnauthorized={handleUnauthorized}
               />

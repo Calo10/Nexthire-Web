@@ -118,6 +118,7 @@ export interface ApplicationInspectorPanelProps {
   onToggleCollapsed: () => void;
   onReject?: () => Promise<void> | void;
   onArchive?: () => Promise<void> | void;
+  onDelete?: () => Promise<void> | void;
   onUnauthorized?: () => void;
 }
 
@@ -138,6 +139,7 @@ export default function ApplicationInspectorPanel(props: ApplicationInspectorPan
     onToggleCollapsed,
     onReject,
     onArchive,
+    onDelete,
     onUnauthorized,
   } = props;
   const { t } = useTranslation();
@@ -153,7 +155,7 @@ export default function ApplicationInspectorPanel(props: ApplicationInspectorPan
   const [waComposeBody, setWaComposeBody] = useState('');
   const [waSending, setWaSending] = useState(false);
   const [waPhoneHydrated, setWaPhoneHydrated] = useState<string | null>(null);
-  const [actionLoading, setActionLoading] = useState<'reject' | 'archive' | null>(null);
+  const [actionLoading, setActionLoading] = useState<'reject' | 'archive' | 'delete' | null>(null);
   // Notes creation is handled by PipelinePage (keeps modal above all overlays)
 
   const [toastSuccess, setToastSuccess] = useState<string | null>(null);
@@ -1394,7 +1396,7 @@ export default function ApplicationInspectorPanel(props: ApplicationInspectorPan
           </div>
 
           {/* Footer actions */}
-          <div className="p-6 border-t border-gray-200 flex items-center justify-between gap-3">
+          <div className="p-6 border-t border-gray-200 flex flex-wrap items-center justify-between gap-3">
             <Button
               variant="outline"
               size="sm"
@@ -1415,23 +1417,43 @@ export default function ApplicationInspectorPanel(props: ApplicationInspectorPan
                   ? t('pipeline.actions.unreject')
                   : t('pipeline.actions.reject')}
             </Button>
-            <Button
-              variant="primary"
-              size="sm"
-              className="bg-red-600 hover:bg-red-700 from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 focus:ring-red-600"
-              disabled={!application || actionLoading !== null}
-              onClick={async () => {
-                if (!onArchive) return;
-                try {
-                  setActionLoading('archive');
-                  await onArchive();
-                } finally {
-                  setActionLoading(null);
-                }
-              }}
-            >
-              {actionLoading === 'archive' ? t('common.actions.saving') : t('pipeline.actions.archive')}
-            </Button>
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-red-300 text-red-700 hover:bg-red-50 focus:ring-red-600"
+                disabled={!application || actionLoading !== null}
+                onClick={async () => {
+                  if (!onDelete || !application) return;
+                  if (!window.confirm(t('pipeline.inspector.deleteConfirm'))) return;
+                  try {
+                    setActionLoading('delete');
+                    await onDelete();
+                  } finally {
+                    setActionLoading(null);
+                  }
+                }}
+              >
+                {actionLoading === 'delete' ? t('common.actions.saving') : t('pipeline.actions.delete')}
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                className="bg-red-600 hover:bg-red-700 from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 focus:ring-red-600"
+                disabled={!application || actionLoading !== null}
+                onClick={async () => {
+                  if (!onArchive) return;
+                  try {
+                    setActionLoading('archive');
+                    await onArchive();
+                  } finally {
+                    setActionLoading(null);
+                  }
+                }}
+              >
+                {actionLoading === 'archive' ? t('common.actions.saving') : t('pipeline.actions.archive')}
+              </Button>
+            </div>
           </div>
         </>
       )}

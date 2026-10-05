@@ -830,7 +830,8 @@
     "actions": {
       "reject": "Reject",
       "unreject": "Unreject",
-      "archive": "Archive"
+      "archive": "Archive",
+      "delete": "Delete application"
     },
     "status": {
       "active": "Active",
@@ -849,6 +850,7 @@
       "load": "Failed to load pipeline",
       "move": "Could not move application. Reverted.",
       "updateStatus": "Failed to update application status.",
+      "delete": "Could not delete the application.",
       "create": "Failed to create application.",
       "duplicate": "This candidate already has an application for the selected job.",
       "validation": "Please select a candidate and a job."
@@ -858,6 +860,7 @@
       "tasks": "Tasks",
       "noTasks": "No tasks for this application.",
       "noNotes": "No notes for this application.",
+      "deleteConfirm": "Delete this application? The candidate stays in your database.",
       "tabs": {
         "history": "Stage History",
         "notes": "Notes",

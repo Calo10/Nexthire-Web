@@ -468,6 +468,20 @@ export function usePipelinePage() {
     }
   };
 
+  const handleDeleteApplication = async (applicationId: string) => {
+    try {
+      await applicationsApi.deleteApplication(applicationId);
+      closeInspector();
+      refetch();
+    } catch (e) {
+      if (isUnauthorized(e)) {
+        handleUnauthorized();
+        return;
+      }
+      setToastError(t('pipeline.errors.delete'));
+    }
+  };
+
   const handleUpdateApplicationStatus = async (applicationId: string, status: string) => {
     const terminal = status === 'rejected' || status === 'archived';
     try {
@@ -628,6 +642,7 @@ export function usePipelinePage() {
     closeInspector,
     handleMove,
     handleUpdateApplicationStatus,
+    handleDeleteApplication,
     openAddNote,
     openSendMessageFor,
     pipelineTenantId,
