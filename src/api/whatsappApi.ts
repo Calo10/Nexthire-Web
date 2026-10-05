@@ -11,6 +11,7 @@ export interface WhatsappConversationDto {
   id: string;
   phoneNumber: string;
   profileName: string | null;
+  candidateName?: string | null;
   candidateId: string;
   jobId: string | null;
   applicationId: string | null;
@@ -52,6 +53,7 @@ function mapConversation(raw: unknown): WhatsappConversationDto | null {
     id,
     phoneNumber: String(r.phoneNumber ?? r.PhoneNumber ?? ''),
     profileName: (r.profileName ?? r.ProfileName) != null ? String(r.profileName ?? r.ProfileName) : null,
+    candidateName: (r.candidateName ?? r.CandidateName) != null ? String(r.candidateName ?? r.CandidateName) : null,
     candidateId: (r.candidateId ?? r.CandidateId) != null ? String(r.candidateId ?? r.CandidateId) : '',
     jobId: (r.jobId ?? r.JobId) != null ? String(r.jobId ?? r.JobId) : null,
     applicationId: (r.applicationId ?? r.ApplicationId) != null ? String(r.applicationId ?? r.ApplicationId) : null,

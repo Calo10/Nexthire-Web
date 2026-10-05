@@ -830,7 +830,8 @@
     "actions": {
       "reject": "Rechazar",
       "unreject": "Quitar rechazo",
-      "archive": "Archivar"
+      "archive": "Archivar",
+      "delete": "Eliminar aplicación"
     },
     "status": {
       "active": "Activa",
@@ -849,6 +850,7 @@
       "load": "No se pudo cargar el pipeline",
       "move": "No se pudo mover la aplicación. Se revirtió.",
       "updateStatus": "No se pudo actualizar el estado de la aplicación.",
+      "delete": "No se pudo eliminar la aplicación.",
       "create": "No se pudo crear la aplicación.",
       "duplicate": "Este candidato ya tiene una aplicación para el trabajo seleccionado.",
       "validation": "Selecciona un candidato y un trabajo."
@@ -858,6 +860,7 @@
       "tasks": "Tareas",
       "noTasks": "No hay tareas para esta aplicación.",
       "noNotes": "No hay notas para esta aplicación.",
+      "deleteConfirm": "¿Eliminar esta aplicación? El candidato se conserva.",
       "tabs": {
         "history": "Stage History",
         "notes": "Notes",

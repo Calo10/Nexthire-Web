@@ -367,6 +367,11 @@ export const applicationsApi = {
     await apiClient.put<void>(`/applications/${encodeURIComponent(applicationId)}`, { status }, true);
   },
 
+  /** DELETE /api/applications/{id} — removes the application only, not the candidate. */
+  deleteApplication: async (applicationId: string): Promise<void> => {
+    await apiClient.delete<void>(`/applications/${encodeURIComponent(applicationId)}`, true);
+  },
+
   /**
    * GET /api/applications/{id}/stage-history?limit=50
    */
