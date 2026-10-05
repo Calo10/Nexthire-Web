@@ -519,6 +519,8 @@ export function usePipelinePage() {
   }, [columns, nameQuery]);
 
   const isEmpty = !isLoading && !jobsLoading && columns.every((c) => c.items.length === 0);
+  const boardLoading =
+    authLoading || jobsLoading || isLoading || (shouldFetch && !kanbanError && data === null);
 
   const inspectorOpen = !!selectedApplicationId;
   const layoutCollapsed = inspectorOpen && isInspectorCollapsed;
@@ -570,6 +572,7 @@ export function usePipelinePage() {
     data,
     columns: visibleColumns,
     isLoading,
+    boardLoading,
     kanbanError,
     refetch,
     insertIntoFirstStage,
