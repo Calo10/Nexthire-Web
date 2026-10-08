@@ -203,9 +203,10 @@ const TWILIO_CONFIG_KEYS = [
   'Twilio:AuthToken',
   'Twilio:DefaultFromWhatsAppNumber',
   'Twilio:DefaultWhatsAppContentSid',
+  'Twilio:FollowUpWhatsAppContentSid',
 ] as const;
 
-type TwilioConfigField = 'AccountSid' | 'AuthToken' | 'DefaultFromWhatsAppNumber' | 'DefaultWhatsAppContentSid';
+type TwilioConfigField = 'AccountSid' | 'AuthToken' | 'DefaultFromWhatsAppNumber' | 'DefaultWhatsAppContentSid' | 'FollowUpWhatsAppContentSid';
 
 type TwilioConfigState = Record<TwilioConfigField, string>;
 
@@ -214,6 +215,7 @@ const TWILIO_FIELD_TO_JSON_KEY: Record<TwilioConfigField, (typeof TWILIO_CONFIG_
   AuthToken: 'Twilio:AuthToken',
   DefaultFromWhatsAppNumber: 'Twilio:DefaultFromWhatsAppNumber',
   DefaultWhatsAppContentSid: 'Twilio:DefaultWhatsAppContentSid',
+  FollowUpWhatsAppContentSid: 'Twilio:FollowUpWhatsAppContentSid',
 };
 
 function emptyTwilioConfig(): TwilioConfigState {
@@ -222,6 +224,7 @@ function emptyTwilioConfig(): TwilioConfigState {
     AuthToken: '',
     DefaultFromWhatsAppNumber: '',
     DefaultWhatsAppContentSid: '',
+    FollowUpWhatsAppContentSid: '',
   };
 }
 
@@ -237,6 +240,11 @@ const LEGACY_TWILIO_KEY_MAP: Record<TwilioConfigField, string[]> = {
     'Twilio:DefaultWhatsAppContentSid',
     'defaultWhatsAppContentSid',
     'DefaultWhatsAppContentSid',
+  ],
+  FollowUpWhatsAppContentSid: [
+    'Twilio:FollowUpWhatsAppContentSid',
+    'followUpWhatsAppContentSid',
+    'FollowUpWhatsAppContentSid',
   ],
 };
 
@@ -541,6 +549,13 @@ export default function SourceConnectionModal({
               label={t('sourcing.sources.twilio.defaultWhatsAppContentSid')}
               value={twilioConfig.DefaultWhatsAppContentSid}
               onChange={(e) => setTwilioField('DefaultWhatsAppContentSid', e.target.value)}
+              placeholder={t('sourcing.sources.twilio.defaultWhatsAppContentSidPlaceholder')}
+              autoComplete="off"
+            />
+            <TextField
+              label={t('sourcing.sources.twilio.followUpWhatsAppContentSid')}
+              value={twilioConfig.FollowUpWhatsAppContentSid}
+              onChange={(e) => setTwilioField('FollowUpWhatsAppContentSid', e.target.value)}
               placeholder={t('sourcing.sources.twilio.defaultWhatsAppContentSidPlaceholder')}
               autoComplete="off"
             />

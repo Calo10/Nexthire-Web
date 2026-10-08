@@ -13,6 +13,8 @@ import { candidatesApi } from '../../api/candidatesApi';
 import { whatsappApi, type WhatsappConversationDto, type WhatsappMessageDto } from '../../api/whatsappApi';
 import { useBackdropDismiss } from '../../hooks/useBackdropDismiss';
 import HoverTooltip from '../HoverTooltip';
+import PhoneDisplay from '../PhoneDisplay';
+import { displayCandidateEmail } from '../../lib/candidateEmail';
 
 type TabKey = 'history' | 'notes' | 'tasks';
 type PanelTabKey = 'activity' | 'whatsapp';
@@ -30,6 +32,18 @@ function formatDateTime(dateString: string | null | undefined, locale: string) {
   } catch {
     return String(dateString);
   }
+}
+
+function CandidateContact({ email, phone }: { email?: string | null; phone?: string | null }) {
+  const shownEmail = displayCandidateEmail(email, '');
+  const shownPhone = String(phone || '').trim();
+  if (!shownEmail && !shownPhone) return null;
+  return (
+    <div className="space-y-1 text-sm text-gray-700">
+      {shownPhone ? <PhoneDisplay phone={shownPhone} className="text-sm text-gray-700" /> : null}
+      {shownEmail ? <p className="truncate">{shownEmail}</p> : null}
+    </div>
+  );
 }
 
 function formatMessageTime(iso: string | null | undefined, locale: string) {
@@ -954,6 +968,8 @@ export default function ApplicationInspectorPanel(props: ApplicationInspectorPan
           <div className="px-6 pt-4">
             {toastError ? <ErrorMessage message={toastError} /> : null}
             {toastSuccess ? <SuccessMessage message={toastSuccess} /> : null}
+
+            <CandidateContact email={application.candidateEmail} phone={application.candidatePhone} />
 
             <div className="mt-3 grid grid-cols-2 gap-3">
               <Button

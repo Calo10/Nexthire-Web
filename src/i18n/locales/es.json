@@ -357,7 +357,18 @@
     "sendFailed": "No se pudo enviar el mensaje",
     "composePlaceholder": "Escribe un mensaje",
     "noMessages": "Aún no hay mensajes en esta conversación.",
-    "unread": "{{count}} sin leer"
+    "unread": "{{count}} sin leer",
+    "delivery": {
+      "queued": "En cola",
+      "sent": "Enviado",
+      "delivered": "Entregado",
+      "read": "Leído",
+      "undelivered": "No entregado",
+      "marketingRefused": "Meta no entregó este mensaje de marketing"
+    },
+    "windowClosed": "Pasaron 24 horas desde el último mensaje del candidato. Un texto libre ya no llega. Envía la plantilla.",
+    "sendTemplate": "Enviar plantilla",
+    "windowClosedNoCandidate": "Pasaron 24 horas. Un texto libre ya no llega y esta conversación no tiene un candidato para enviar la plantilla."
   },
   "aiAgents": {
     "title": "Agentes AI",

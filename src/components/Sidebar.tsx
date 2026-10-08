@@ -1,14 +1,14 @@
 import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../contexts/AuthContext';
 import { appNavItems } from '../config/appNavItems';
 import { useWhatsAppUnreadConversationCount } from '../hooks/useWhatsAppUnreadConversationCount';
 import Logo from './Logo';
 import OrgSidebarMark from './OrgSidebarMark';
+import { useCurrentDisplayName } from '../hooks/useCurrentDisplayName';
 
 export default function Sidebar() {
   const { t } = useTranslation();
-  const { user } = useAuth();
+  const displayName = useCurrentDisplayName();
   const unreadWhatsAppConversations = useWhatsAppUnreadConversationCount();
 
   return (
@@ -54,7 +54,7 @@ export default function Sidebar() {
           <OrgSidebarMark />
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-dark-text truncate">
-              {user?.name || user?.email || 'User'}
+              {displayName}
             </p>
           </div>
         </div>

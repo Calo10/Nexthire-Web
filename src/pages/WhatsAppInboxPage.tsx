@@ -6,7 +6,9 @@ import { whatsappApi, type WhatsappConversationDto, type WhatsappMessageDto } fr
 import { useAuth } from '../contexts/AuthContext';
 import { useTwilioSourceConnection } from '../hooks/sourcing/useTwilioSourceConnection';
 import { resolveTenantId } from '../lib/resolveTenantId';
+import { isCustomerCareWindowOpen } from '../lib/whatsappCustomerCareWindow';
 import Button from '../components/Button';
+import { WhatsAppDeliveryCaption } from '../components/whatsapp/WhatsAppDeliveryCaption';
 
 function formatListTime(iso: string | null | undefined, locale: string) {
   if (!iso) return '';
@@ -72,6 +74,7 @@ export default function WhatsAppInboxPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const selected = conversations.find((c) => c.id === selectedId) ?? null;
+  const sessionClosed = !messagesLoading && !messagesError && !isCustomerCareWindowOpen(messages);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -201,8 +204,24 @@ export default function WhatsAppInboxPage() {
     el.scrollTop = el.scrollHeight;
   }, [messages, messagesLoading, selectedId]);
 
+  const handleSendTemplate = async () => {
+    const candidateId = selected?.candidateId?.trim();
+    if (!selectedId || !candidateId || sending || !twilioReady) return;
+    setSending(true);
+    setSendError(null);
+    try {
+      await whatsappApi.sendFollowUp(candidateId);
+      await loadMessages(selectedId, { silent: true });
+    } catch (e) {
+      if (handleAuthError(e)) return;
+      setSendError(t('pipeline.inspector.whatsapp.introductionFailed'));
+    } finally {
+      setSending(false);
+    }
+  };
+
   const handleSend = async () => {
-    if (!selectedId || sending || !twilioReady) return;
+    if (!selectedId || sending || !twilioReady || sessionClosed) return;
     const body = compose.trim();
     const tid = tenantId.trim();
     if (!body || !tid) return;
@@ -220,6 +239,7 @@ export default function WhatsAppInboxPage() {
         toPhone: selected?.phoneNumber ?? null,
         body,
         createdAtUtc: new Date().toISOString(),
+        deliveryStatus: 'queued',
       };
       setMessages((prev) => [...prev, optimistic]);
       setConversations((prev) =>
@@ -374,7 +394,15 @@ export default function WhatsAppInboxPage() {
                         }`}
                       >
                         <p className="text-sm whitespace-pre-wrap break-words">{message.body}</p>
-                        <p className="text-[10px] text-[#667781] text-right mt-0.5">{formatMessageTime(message.createdAtUtc, locale)}</p>
+                        <p className="text-[10px] text-[#667781] text-right mt-0.5">
+                          {formatMessageTime(message.createdAtUtc, locale)}
+                          {inbound ? null : (
+                            <>
+                              {' · '}
+                              <WhatsAppDeliveryCaption status={message.deliveryStatus} errorCode={message.deliveryErrorCode} />
+                            </>
+                          )}
+                        </p>
                       </div>
                     </div>
                   );
@@ -391,6 +419,25 @@ export default function WhatsAppInboxPage() {
                 </div>
               ) : null}
               {sendError ? <p className="mb-2 text-xs text-red-700">{sendError}</p> : null}
+              {sessionClosed ? (
+                <div className="flex flex-col gap-2">
+                  <p className="text-xs text-amber-800">
+                    {selected?.candidateId?.trim()
+                      ? t('whatsappInbox.windowClosed')
+                      : t('whatsappInbox.windowClosedNoCandidate')}
+                  </p>
+                  {selected?.candidateId?.trim() ? (
+                    <button
+                      type="button"
+                      onClick={() => void handleSendTemplate()}
+                      disabled={sending || !twilioReady}
+                      className="inline-flex w-fit items-center justify-center rounded-full bg-[#00a884] px-4 py-2 text-sm font-medium text-white disabled:opacity-40"
+                    >
+                      {t('whatsappInbox.sendTemplate')}
+                    </button>
+                  ) : null}
+                </div>
+              ) : (
               <div className="flex items-end gap-2">
                 <textarea
                   value={compose}
@@ -418,6 +465,7 @@ export default function WhatsAppInboxPage() {
                   </svg>
                 </button>
               </div>
+              )}
             </div>
           </>
         )}

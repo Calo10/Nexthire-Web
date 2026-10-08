@@ -7,6 +7,7 @@ import { useApplicationsByStage } from './useApplicationsByStage';
 import { useActivityTrend } from './useActivityTrend';
 import { useUpcomingTasks } from './useUpcomingTasks';
 import { useJobs } from './useJobs';
+import { useCurrentDisplayName } from './useCurrentDisplayName';
 import type { Job, Task } from '../types/dashboard';
 
 export function useDashboardPage() {
@@ -154,7 +155,8 @@ export function useDashboardPage() {
   const selectedDateRangeLabel =
     dateRangeOptions.find((opt) => opt.value === dateRange)?.label || t('dashboard.dateRange.last7Days');
 
-  const welcomeTitle = t('dashboard.welcome').replace('Carlos', user?.name || user?.email || 'User');
+  const displayName = useCurrentDisplayName();
+  const welcomeTitle = t('dashboard.welcome').replace('Carlos', displayName);
 
   return {
     t,
