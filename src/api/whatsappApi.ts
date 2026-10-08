@@ -32,6 +32,8 @@ export interface WhatsappMessageDto {
   toPhone: string | null;
   body: string;
   createdAtUtc: string;
+  deliveryStatus?: string | null;
+  deliveryErrorCode?: string | null;
 }
 
 export interface ConversationsByCandidateResponse {
@@ -80,6 +82,8 @@ function mapMessage(raw: unknown): WhatsappMessageDto | null {
     toPhone: (r.toPhone ?? r.ToPhone) != null ? String(r.toPhone ?? r.ToPhone) : null,
     body: String(r.body ?? r.Body ?? ''),
     createdAtUtc: String(r.createdAtUtc ?? r.CreatedAtUtc ?? ''),
+    deliveryStatus: (r.deliveryStatus ?? r.DeliveryStatus) != null ? String(r.deliveryStatus ?? r.DeliveryStatus) : null,
+    deliveryErrorCode: (r.deliveryErrorCode ?? r.DeliveryErrorCode) != null ? String(r.deliveryErrorCode ?? r.DeliveryErrorCode) : null,
   };
 }
 
@@ -124,6 +128,19 @@ export const whatsappApi = {
       {},
       true
     );
+  },
+
+  sendFollowUp: async (candidateId: string): Promise<{ messageId: string; body: string }> => {
+    const raw = await apiClient.post<unknown>(
+      '/whatsapp/conversations/send-follow-up',
+      { candidateId },
+      true
+    );
+    const r = asRecord(raw) ?? {};
+    return {
+      messageId: String(r.messageId ?? r.MessageId ?? ''),
+      body: String(r.body ?? r.Body ?? ''),
+    };
   },
 
   sendIntroduction: async (candidateId: string): Promise<{ messageId: string; body: string }> => {

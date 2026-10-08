@@ -357,7 +357,18 @@
     "sendFailed": "Could not send the message",
     "composePlaceholder": "Type a message",
     "noMessages": "No messages in this conversation yet.",
-    "unread": "{{count}} unread"
+    "unread": "{{count}} unread",
+    "delivery": {
+      "queued": "Queued",
+      "sent": "Sent",
+      "delivered": "Delivered",
+      "read": "Read",
+      "undelivered": "Not delivered",
+      "marketingRefused": "Meta did not deliver this marketing message"
+    },
+    "windowClosed": "24 hours have passed since the candidate's last message. A freeform text will not be delivered. Send the template.",
+    "sendTemplate": "Send template",
+    "windowClosedNoCandidate": "24 hours have passed. A freeform text will not be delivered, and this conversation has no candidate to send the template."
   },
   "aiAgents": {
     "title": "AI Agents",

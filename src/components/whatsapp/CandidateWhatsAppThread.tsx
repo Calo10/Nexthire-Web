@@ -8,6 +8,8 @@ import { whatsappApi, type WhatsappConversationDto, type WhatsappMessageDto } fr
 import { useAuth } from '../../contexts/AuthContext';
 import { useTwilioSourceConnection } from '../../hooks/sourcing/useTwilioSourceConnection';
 import { resolveTenantId } from '../../lib/resolveTenantId';
+import { isCustomerCareWindowOpen } from '../../lib/whatsappCustomerCareWindow';
+import { WhatsAppDeliveryCaption } from './WhatsAppDeliveryCaption';
 
 function formatMessageTime(iso: string | null | undefined, locale: string) {
   if (!iso) return '';
@@ -178,9 +180,10 @@ export default function CandidateWhatsAppThread({
   }, [active, loading, messages]);
 
   const canCompose = messages.length > 0;
+  const sessionClosed = !loading && canCompose && !isCustomerCareWindowOpen(messages);
 
   const handleSend = async () => {
-    if (sending || !twilioReady || !canCompose) return;
+    if (sending || !twilioReady || !canCompose || sessionClosed) return;
     const tid = tenantId.trim();
     const cid = candidateId.trim();
     const to = normalizePhoneForWa(targetPhone);
@@ -208,6 +211,7 @@ export default function CandidateWhatsAppThread({
         toPhone: to,
         body,
         createdAtUtc: new Date().toISOString(),
+        deliveryStatus: 'queued',
       };
       setMessages((prev) => [...prev, optimistic]);
 
@@ -254,7 +258,7 @@ export default function CandidateWhatsAppThread({
     }
   };
 
-  const handleSendIntroduction = async () => {
+  const handleSendIntroduction = async (followUp = false) => {
     if (sending || !twilioReady) return;
     const tid = tenantId.trim();
     const cid = candidateId.trim();
@@ -262,7 +266,7 @@ export default function CandidateWhatsAppThread({
     if (!cid) return;
     setSending(true);
     try {
-      const sent = await whatsappApi.sendIntroduction(cid);
+      const sent = followUp ? await whatsappApi.sendFollowUp(cid) : await whatsappApi.sendIntroduction(cid);
       const optimistic: WhatsappMessageDto = {
         id: `local-out-${Date.now()}`,
         conversationId: String(conversation?.id ?? ''),
@@ -272,6 +276,7 @@ export default function CandidateWhatsAppThread({
         toPhone: normalizePhoneForWa(targetPhone) || null,
         body: sent.body,
         createdAtUtc: new Date().toISOString(),
+        deliveryStatus: 'queued',
       };
       setMessages((prev) => [...prev, optimistic]);
       if (!tid) return;
@@ -383,6 +388,12 @@ export default function CandidateWhatsAppThread({
                   <p className="text-sm whitespace-pre-wrap break-words leading-snug">{m.body}</p>
                   <p className={`text-[10px] mt-1 tabular-nums ${inbound ? 'text-gray-500' : 'text-gray-600'}`}>
                     {formatMessageTime(m.createdAtUtc, locale)}
+                    {inbound ? null : (
+                      <>
+                        {' · '}
+                        <WhatsAppDeliveryCaption status={m.deliveryStatus} errorCode={m.deliveryErrorCode} />
+                      </>
+                    )}
                   </p>
                 </div>
               </div>
@@ -392,6 +403,20 @@ export default function CandidateWhatsAppThread({
       </div>
       <div className="flex-shrink-0 border-t border-gray-200 bg-white p-3">
         {canCompose && sendError ? <div className="mb-2 text-sm text-red-700">{sendError}</div> : null}
+        {sessionClosed ? (
+          <div className="flex flex-col gap-2">
+            <p className="text-xs text-amber-800">{t('whatsappInbox.windowClosed')}</p>
+            <button
+              type="button"
+              onClick={() => void handleSendIntroduction(true)}
+              disabled={sending || !candidateId.trim()}
+              className="inline-flex w-fit items-center justify-center rounded-full bg-primary px-4 py-2 text-sm font-medium text-white disabled:opacity-40"
+            >
+              {sending ? <Spinner className="w-4 h-4 text-white" /> : t('whatsappInbox.sendTemplate')}
+            </button>
+          </div>
+        ) : (
+        <>
         <div className="flex items-center gap-2">
           <textarea
             value={compose}
@@ -427,6 +452,8 @@ export default function CandidateWhatsAppThread({
         {!normalizePhoneForWa(targetPhone) ? (
           <p className="text-xs text-amber-700 mt-2">{t('pipeline.message.missingRecipientPhone')}</p>
         ) : null}
+        </>
+        )}
       </div>
     </div>
   );

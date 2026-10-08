@@ -6,6 +6,7 @@ import LanguageSwitcher from '../LanguageSwitcher';
 import { useBackdropDismiss } from '../../hooks/useBackdropDismiss';
 import { useWhatsAppUnreadConversationCount } from '../../hooks/useWhatsAppUnreadConversationCount';
 import OrgSidebarMark from '../OrgSidebarMark';
+import { useCurrentDisplayName } from '../../hooks/useCurrentDisplayName';
 
 interface MobileSidebarDrawerProps {
   isOpen: boolean;
@@ -14,7 +15,8 @@ interface MobileSidebarDrawerProps {
 
 export default function MobileSidebarDrawer({ isOpen, onClose }: MobileSidebarDrawerProps) {
   const { t } = useTranslation();
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
+  const displayName = useCurrentDisplayName();
   const unreadWhatsAppConversations = useWhatsAppUnreadConversationCount();
   const backdropDismiss = useBackdropDismiss(onClose);
 
@@ -80,7 +82,7 @@ export default function MobileSidebarDrawer({ isOpen, onClose }: MobileSidebarDr
           <div className="flex items-center gap-3 px-2">
             <OrgSidebarMark className="w-9 h-9 text-sm" />
             <p className="text-sm font-medium text-dark-text truncate flex-1">
-              {user?.name || user?.email || 'User'}
+              {displayName}
             </p>
           </div>
           <button

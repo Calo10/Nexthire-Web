@@ -353,8 +353,9 @@
       "authToken": "Auth Token",
       "defaultFromWhatsAppNumber": "WhatsApp Number",
       "defaultFromWhatsAppNumberPlaceholder": "+14155238886",
-      "defaultWhatsAppContentSid": "Default WhatsApp Template SID",
-      "defaultWhatsAppContentSidPlaceholder": "HXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+      "defaultWhatsAppContentSid": "WhatsApp template SID initial conversation",
+      "defaultWhatsAppContentSidPlaceholder": "HXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+      "followUpWhatsAppContentSid": "WhatsApp template SID to reopen the conversation"
     },
     "calendly": {
       "sectionTitle": "Calendly connection",
