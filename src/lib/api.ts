@@ -913,6 +913,10 @@ export const jobsApi = {
     return apiClient.put(`/jobs/${encodeURIComponent(id)}`, payload, true);
   },
 
+  refreshUpdatedAt: async (id: string): Promise<{ updatedAt?: string; UpdatedAt?: string }> => {
+    return apiClient.post(`/jobs/${encodeURIComponent(id)}/refresh`, {}, true);
+  },
+
   // DELETE /api/jobs/{id}
   deleteJob: async (id: string): Promise<void> => {
     await apiClient.delete(`/jobs/${encodeURIComponent(id)}`, true);

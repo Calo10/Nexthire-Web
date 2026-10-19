@@ -5,6 +5,7 @@ import ErrorMessage from '../ErrorMessage';
 import SelectField from '../SelectField';
 import TextField from '../TextField';
 import CandidatesTable from './CandidatesTable';
+import ExportExcelButton from '../ExportExcelButton';
 import TagFilterSelect from './TagFilterSelect';
 import { FILTER_CONTROL_CLASS, type CandidatesPageState } from '../../hooks/useCandidatesPage';
 
@@ -32,6 +33,9 @@ export default function CandidatesDesktopView({
   error,
   handleRowClick,
   sourceOptions,
+  isExporting,
+  exportError,
+  exportToExcel,
 }: CandidatesPageState) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50">
@@ -64,6 +68,11 @@ export default function CandidatesDesktopView({
               />
             </div>
 
+            <ExportExcelButton
+              onClick={() => void exportToExcel()}
+              busy={isExporting}
+              disabled={isLoading || total === 0}
+            />
             <Button variant="primary" size="md" onClick={() => setIsNewModalOpen(true)}>
               <div className="flex items-center gap-2">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -74,6 +83,12 @@ export default function CandidatesDesktopView({
             </Button>
           </div>
         </div>
+
+        {exportError ? (
+          <div className="mb-6">
+            <ErrorMessage message={exportError} />
+          </div>
+        ) : null}
 
         {/* Filters Row — equal-width columns (date inputs have a large default min-width) */}
         <div className="mb-6 grid w-full grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 items-end">

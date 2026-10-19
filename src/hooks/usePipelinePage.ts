@@ -13,6 +13,9 @@ import type { KanbanApplicationCard } from '../types/applications';
 import type { TemplateChannel } from '../types/templates';
 import { useTemplate, useTemplatesList } from '../hooks/useTemplatesApi';
 import { useTwilioSourceConnection } from '../hooks/sourcing/useTwilioSourceConnection';
+import { displayCandidateEmail } from '../lib/candidateEmail';
+import { downloadExcel, exportFileName, formatExportDate } from '../lib/exportExcel';
+import { formatPhoneForDisplay } from '../lib/phone';
 import { resolveTenantId } from '../lib/resolveTenantId';
 
 function injectTemplateVariables(
@@ -532,6 +535,45 @@ export function usePipelinePage() {
     }));
   }, [columns, nameQuery]);
 
+  const exportToExcel = useCallback(() => {
+    const rows = visibleColumns.flatMap((column) =>
+      column.items.map((card) => {
+        const status = String(card.status || '').trim();
+        const titled = status
+          .replace(/_/g, ' ')
+          .split(' ')
+          .filter(Boolean)
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+          .join(' ');
+        return [
+          card.candidateName || '',
+          displayCandidateEmail(card.candidateEmail, ''),
+          card.candidatePhone ? formatPhoneForDisplay(card.candidatePhone).text : '',
+          card.jobTitle || '',
+          column.stageName,
+          titled,
+          card.fitScore != null ? Math.round(card.fitScore) : '',
+          formatExportDate(card.createdAt, locale),
+        ];
+      }),
+    );
+    downloadExcel(
+      exportFileName('pipeline'),
+      t('pipeline.title'),
+      [
+        t('candidates.table.name'),
+        t('candidates.table.email'),
+        t('candidates.table.phone'),
+        t('jobs.table.title'),
+        t('pipeline.stage'),
+        t('jobs.table.status'),
+        t('pipeline.fitScore'),
+        t('candidates.table.created'),
+      ],
+      rows,
+    );
+  }, [locale, t, visibleColumns]);
+
   const isEmpty = !isLoading && !jobsLoading && columns.every((c) => c.items.length === 0);
   const boardLoading =
     authLoading || jobsLoading || isLoading || (shouldFetch && !kanbanError && data === null);
@@ -585,6 +627,7 @@ export function usePipelinePage() {
     setNameQuery,
     data,
     columns: visibleColumns,
+    exportToExcel,
     isLoading,
     boardLoading,
     kanbanError,

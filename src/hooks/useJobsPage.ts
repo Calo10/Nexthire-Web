@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
+import { downloadExcel, exportFileName, formatExportDate } from '../lib/exportExcel';
 import { resolveTenantId } from '../lib/resolveTenantId';
 import { useJobs } from './useJobs';
 import type { Job } from '../types/dashboard';
@@ -23,7 +24,7 @@ function jobMatchesDateRange(createdAt: string | undefined, range: string): bool
 }
 
 export function useJobsPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { isAuthenticated, isLoading: authLoading, org } = useAuth();
   const publicJobsPath = useMemo(() => {
     const orgSegment = resolveTenantId(org);
@@ -99,6 +100,26 @@ export function useJobsPage() {
     setIsJobDrawerOpen(true);
   };
 
+  const exportToExcel = useCallback(() => {
+    const locale = i18n.language || 'en';
+    downloadExcel(
+      exportFileName('vacantes'),
+      t('jobs.title'),
+      [t('jobs.table.title'), t('jobs.table.candidates'), t('jobs.table.status'), t('jobs.table.created')],
+      filteredJobs.map((job) => {
+        const normalized = String(job.status || '').trim().toLowerCase();
+        const statusKey = `jobs.status.${normalized}`;
+        const translated = t(statusKey);
+        return [
+          job.title,
+          job.applicantsCount ?? job.applicationsCount ?? 0,
+          translated === statusKey ? String(job.status || '') : translated,
+          formatExportDate(job.createdAt, locale),
+        ];
+      }),
+    );
+  }, [filteredJobs, i18n.language, t]);
+
   return {
     t,
     publicJobsPath,
@@ -132,6 +153,7 @@ export function useJobsPage() {
     selectedDateLabel,
     selectedStatusLabel,
     openJobDrawer,
+    exportToExcel,
   };
 }
 

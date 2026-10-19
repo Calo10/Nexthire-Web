@@ -21,7 +21,10 @@
       "edit": "Editar",
       "creating": "Creando...",
       "saving": "Guardando...",
-      "saveChanges": "Guardar cambios"
+      "saveChanges": "Guardar cambios",
+      "exportExcel": "Exportar a Excel",
+      "exporting": "Exportando...",
+      "exportFailed": "No se pudo exportar a Excel."
     },
     "aria": {
       "closeModal": "Cerrar modal",
@@ -838,6 +841,8 @@
     "searchPlaceholder": "Buscar por nombre",
     "viewAll": "Ver todos",
     "addApplication": "Agregar aplicación",
+    "stage": "Etapa",
+    "fitScore": "Fit score",
     "actions": {
       "reject": "Rechazar",
       "unreject": "Quitar rechazo",
@@ -1059,11 +1064,14 @@
       "metadata": "Metadatos",
       "created": "Creado",
       "updatedAt": "Actualizado",
+      "refreshUpdated": "Actualizar fecha",
+      "refreshed": "Fecha de actualización renovada.",
       "updated": "Trabajo actualizado exitosamente.",
       "validation": "Ingresa un título del puesto.",
       "confirmDelete": "¿Eliminar este trabajo? Esta acción no se puede deshacer.",
       "errors": {
-        "save": "No se pudieron guardar los cambios."
+        "save": "No se pudieron guardar los cambios.",
+        "refresh": "No se pudo actualizar la fecha."
       }
     },
     "adDesign": {
@@ -1523,6 +1531,7 @@
       "email": "Email",
       "phone": "Teléfono",
       "source": "Fuente",
+      "tags": "Etiquetas",
       "created": "Creado"
     },
     "pagination": {
@@ -1749,6 +1758,48 @@
       "errors": {
         "load": "No se pudo cargar la configuración de la organización.",
         "save": "No se pudo guardar la configuración de la organización."
+      }
+    },
+    "pipelineStages": {
+      "title": "Columnas del pipeline",
+      "description": "Se usan en todos los empleos. La primera columna es donde caen las aplicaciones nuevas.",
+      "forbidden": "Solo owners y admins de la organización pueden administrar las columnas del pipeline.",
+      "add": "Agregar columna",
+      "addPlaceholder": "Nombre de la columna",
+      "empty": "Vacía",
+      "oneCandidate": "1 candidato",
+      "manyCandidates": "{{count}} candidatos",
+      "deleteHint": "No se puede eliminar una columna que tenga candidatos o historial.",
+      "deleteConfirm": "¿Eliminar la columna \"{{name}}\"?",
+      "confirmDelete": "Eliminar",
+      "rename": "Guardar nombre",
+      "moveUp": "Subir",
+      "moveDown": "Bajar",
+      "drag": "Arrastrar para reordenar",
+      "blocked": {
+        "in_use": "Esta columna tiene candidatos.",
+        "history": "Esta columna tiene historial de movimientos.",
+        "last_stage": "Tiene que quedar al menos una columna."
+      },
+      "toast": {
+        "created": "Columna agregada",
+        "renamed": "Columna actualizada",
+        "deleted": "Columna eliminada",
+        "reordered": "Orden actualizado"
+      },
+      "errors": {
+        "load": "No se pudieron cargar las columnas del pipeline.",
+        "save": "No se pudo guardar la columna.",
+        "delete": "No se pudo eliminar la columna.",
+        "reorder": "No se pudo actualizar el orden.",
+        "nameRequired": "El nombre es obligatorio.",
+        "nameTooLong": "El nombre debe tener 60 caracteres o menos.",
+        "duplicateName": "Ya existe una columna con ese nombre.",
+        "notFound": "La columna ya no existe.",
+        "inUse": "Esta columna tiene candidatos y no se puede eliminar.",
+        "history": "Esta columna tiene historial y no se puede eliminar.",
+        "lastStage": "Tiene que quedar al menos una columna.",
+        "orderMismatch": "El orden de las columnas no está completo. Recarga la página."
       }
     },
     "security": {
