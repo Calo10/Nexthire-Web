@@ -4,6 +4,7 @@ import Button from '../Button';
 import ErrorMessage from '../ErrorMessage';
 import PipelineBoard from './PipelineBoard';
 import ApplicationInspectorPanel from './ApplicationInspectorPanel';
+import ExportExcelButton from '../ExportExcelButton';
 import type { PipelinePageState } from '../../hooks/usePipelinePage';
 
 export default function PipelineDesktopView({
@@ -42,6 +43,7 @@ export default function PipelineDesktopView({
   inspectorLoading,
   setIsInspectorCollapsed,
   historyRefreshKey,
+  exportToExcel,
 }: PipelinePageState) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50">
@@ -94,6 +96,10 @@ export default function PipelineDesktopView({
           </div>
 
           <div className="flex items-center gap-3">
+            <ExportExcelButton
+              onClick={exportToExcel}
+              disabled={boardLoading || columns.every((column) => column.items.length === 0)}
+            />
             <Button variant="primary" size="md" onClick={() => setIsCreateOpen(true)} disabled={jobsLoading}>
               <div className="flex items-center gap-2">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

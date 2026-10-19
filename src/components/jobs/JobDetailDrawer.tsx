@@ -43,6 +43,7 @@ export default function JobDetailDrawer({ isOpen, job, onClose, onUpdated, onDel
 
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [botQuestionsOpen, setBotQuestionsOpen] = useState(false);
@@ -166,6 +167,30 @@ export default function JobDetailDrawer({ isOpen, job, onClose, onUpdated, onDel
       setSaveError(message);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleRefreshUpdated = async () => {
+    if (!job) return;
+    setSaveError(null);
+    setSuccess(null);
+    setIsRefreshing(true);
+    try {
+      const updated = (await jobsApi.refreshUpdatedAt(String(job.id))) as {
+        updatedAt?: string;
+        UpdatedAt?: string;
+      };
+      const updatedAt = updated.updatedAt ?? updated.UpdatedAt ?? new Date().toISOString();
+      onUpdated?.({ ...job, updatedAt });
+      setSuccess(t('jobs.drawer.refreshed'));
+    } catch (err) {
+      const message =
+        err && typeof err === 'object' && 'message' in err
+          ? String((err as { message?: string }).message)
+          : t('jobs.drawer.errors.refresh');
+      setSaveError(message || t('jobs.drawer.errors.refresh'));
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
@@ -303,10 +328,32 @@ export default function JobDetailDrawer({ isOpen, job, onClose, onUpdated, onDel
                 <p className="text-xs font-semibold text-gray-500 uppercase mb-1">{t('jobs.drawer.created')}</p>
                 <p className="text-sm text-dark-text">{formatDate(job?.createdAt, locale)}</p>
               </div>
-              <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase mb-1">{t('jobs.drawer.updatedAt')}</p>
+            <div>
+              <p className="text-xs font-semibold text-gray-500 uppercase mb-1">{t('jobs.drawer.updatedAt')}</p>
+              <div className="flex items-center gap-1.5">
                 <p className="text-sm text-dark-text">{formatDate(job?.updatedAt, locale)}</p>
+                <button
+                  type="button"
+                  onClick={handleRefreshUpdated}
+                  disabled={!job || isRefreshing}
+                  title={t('jobs.drawer.refreshUpdated')}
+                  aria-label={t('jobs.drawer.refreshUpdated')}
+                  className="p-1 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors disabled:opacity-40"
+                >
+                  <svg
+                    className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    aria-hidden
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M20 12a8 8 0 1 1-2.3-5.7" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M20 4v5h-5" />
+                  </svg>
+                </button>
               </div>
+            </div>
             </div>
           </div>
         </div>

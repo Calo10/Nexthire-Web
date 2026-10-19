@@ -21,7 +21,10 @@
       "edit": "Edit",
       "creating": "Creating...",
       "saving": "Saving...",
-      "saveChanges": "Save changes"
+      "saveChanges": "Save changes",
+      "exportExcel": "Export to Excel",
+      "exporting": "Exporting...",
+      "exportFailed": "Could not export to Excel."
     },
     "aria": {
       "closeModal": "Close modal",
@@ -838,6 +841,8 @@
     "searchPlaceholder": "Search by name",
     "viewAll": "View all",
     "addApplication": "Add Application",
+    "stage": "Stage",
+    "fitScore": "Fit score",
     "actions": {
       "reject": "Reject",
       "unreject": "Unreject",
@@ -1059,11 +1064,14 @@
       "metadata": "Metadata",
       "created": "Created",
       "updatedAt": "Updated",
+      "refreshUpdated": "Refresh date",
+      "refreshed": "Updated date refreshed.",
       "updated": "Job updated successfully.",
       "validation": "Please provide a job title.",
       "confirmDelete": "Delete this job? This action cannot be undone.",
       "errors": {
-        "save": "Failed to save changes."
+        "save": "Failed to save changes.",
+        "refresh": "Could not refresh the updated date."
       }
     },
     "adDesign": {
@@ -1523,6 +1531,7 @@
       "email": "Email",
       "phone": "Phone",
       "source": "Source",
+      "tags": "Tags",
       "created": "Created"
     },
     "pagination": {
@@ -1749,6 +1758,48 @@
       "errors": {
         "load": "Failed to load organization settings.",
         "save": "Failed to save organization settings."
+      }
+    },
+    "pipelineStages": {
+      "title": "Pipeline columns",
+      "description": "These columns are used for every job. New applications land in the first column.",
+      "forbidden": "Only organization owners and admins can manage pipeline columns.",
+      "add": "Add column",
+      "addPlaceholder": "Column name",
+      "empty": "Empty",
+      "oneCandidate": "1 candidate",
+      "manyCandidates": "{{count}} candidates",
+      "deleteHint": "A column with candidates or history cannot be deleted.",
+      "deleteConfirm": "Delete the \"{{name}}\" column?",
+      "confirmDelete": "Delete",
+      "rename": "Save name",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "drag": "Drag to reorder",
+      "blocked": {
+        "in_use": "This column has candidates.",
+        "history": "This column has movement history.",
+        "last_stage": "At least one column has to remain."
+      },
+      "toast": {
+        "created": "Column added",
+        "renamed": "Column updated",
+        "deleted": "Column deleted",
+        "reordered": "Order updated"
+      },
+      "errors": {
+        "load": "Failed to load pipeline columns.",
+        "save": "Failed to save the column.",
+        "delete": "Failed to delete the column.",
+        "reorder": "Failed to update the order.",
+        "nameRequired": "Name is required.",
+        "nameTooLong": "Name must be 60 characters or fewer.",
+        "duplicateName": "A column with that name already exists.",
+        "notFound": "That column no longer exists.",
+        "inUse": "This column has candidates and cannot be deleted.",
+        "history": "This column has history and cannot be deleted.",
+        "lastStage": "At least one column has to remain.",
+        "orderMismatch": "The column order is incomplete. Reload the page."
       }
     },
     "security": {
