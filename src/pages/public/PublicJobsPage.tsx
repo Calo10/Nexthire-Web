@@ -45,7 +45,7 @@ function SkeletonList() {
 
 function JobCard({ orgSlug, job, t }: { orgSlug: string; job: JobPublicDTO; t: (k: string, opts?: any) => string }) {
   const to = `/org/${encodeURIComponent(orgSlug)}/jobs/${encodeURIComponent(String(job.id))}`;
-  const posted = timeAgoLabel(job.postedAt || job.createdAt || null, t);
+  const posted = timeAgoLabel(job.updatedAt || job.postedAt || job.createdAt || null, t);
   return (
     <Link to={to} className="block">
       <div className="rounded-2xl brand-card p-6 transition-shadow hover:shadow-md">

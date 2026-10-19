@@ -1,5 +1,6 @@
 import Button from '../Button';
 import ErrorMessage from '../ErrorMessage';
+import ExportExcelButton from '../ExportExcelButton';
 import TextField from '../TextField';
 import CandidatesMobileList from './CandidatesMobileList';
 import CandidatesPagination from './CandidatesPagination';
@@ -30,6 +31,9 @@ export default function CandidatesMobileView({
   error,
   handleRowClick,
   sourceOptions,
+  isExporting,
+  exportError,
+  exportToExcel,
 }: CandidatesPageState) {
   const showEmpty = !isLoading && !error && candidates.length === 0;
 
@@ -39,19 +43,33 @@ export default function CandidatesMobileView({
         <h1 className="text-lg font-semibold text-dark-text">{t('candidates.title')}</h1>
         <p className="text-xs text-gray-600 mt-1 mb-4">{t('candidates.subtitle')}</p>
 
-        <Button
-          variant="primary"
-          size="md"
-          className="w-full justify-center mb-4"
-          onClick={() => setIsNewModalOpen(true)}
-        >
+        <div className="flex flex-col gap-2 mb-4">
+          <ExportExcelButton
+            className="w-full justify-center"
+            onClick={() => void exportToExcel()}
+            busy={isExporting}
+            disabled={isLoading || total === 0}
+          />
+          <Button
+            variant="primary"
+            size="md"
+            className="w-full justify-center"
+            onClick={() => setIsNewModalOpen(true)}
+          >
           <div className="flex items-center gap-2">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
             <span>{t('candidates.newCandidate')}</span>
           </div>
-        </Button>
+          </Button>
+        </div>
+
+        {exportError ? (
+          <div className="mb-4">
+            <ErrorMessage message={exportError} />
+          </div>
+        ) : null}
 
         <div className="relative mb-4">
           <svg

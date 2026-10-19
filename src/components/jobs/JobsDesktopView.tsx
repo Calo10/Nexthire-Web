@@ -3,6 +3,7 @@ import Card from '../Card';
 import Button from '../Button';
 import JobsTable from '../JobsTable';
 import ErrorMessage from '../ErrorMessage';
+import ExportExcelButton from '../ExportExcelButton';
 import type { JobsPageState } from '../../hooks/useJobsPage';
 
 export default function JobsDesktopView({
@@ -32,6 +33,7 @@ export default function JobsDesktopView({
   selectedDateLabel,
   selectedStatusLabel,
   openJobDrawer,
+  exportToExcel,
 }: JobsPageState) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50">
@@ -64,6 +66,10 @@ export default function JobsDesktopView({
                 <span>{t('jobs.viewPublicJobs')}</span>
               </div>
             </Button>
+            <ExportExcelButton
+              onClick={exportToExcel}
+              disabled={jobsLoading || filteredJobs.length === 0}
+            />
             <Button variant="primary" size="md" onClick={() => setIsNewJobModalOpen(true)}>
               <div className="flex items-center gap-2">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

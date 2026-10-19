@@ -3,8 +3,9 @@ import { useTranslation } from 'react-i18next';
 import Card from '../../components/Card';
 import OrganizationBrandingSection from '../../components/settings/OrganizationBrandingSection';
 import OrganizationSettingsSection from '../../components/settings/OrganizationSettingsSection';
+import PipelineStagesSection from '../../components/settings/PipelineStagesSection';
 
-type OrgTabId = 'branding' | 'orgSettings';
+type OrgTabId = 'branding' | 'orgSettings' | 'pipelineStages';
 
 export default function ProfileSettingsPage() {
   const { t } = useTranslation();
@@ -13,6 +14,7 @@ export default function ProfileSettingsPage() {
   const tabs: { id: OrgTabId; label: string }[] = [
     { id: 'branding', label: t('settings.branding.title') },
     { id: 'orgSettings', label: t('settings.orgSettings.title') },
+    { id: 'pipelineStages', label: t('settings.pipelineStages.title') },
   ];
 
   return (
@@ -41,7 +43,13 @@ export default function ProfileSettingsPage() {
         </div>
       </Card>
 
-      {tab === 'branding' ? <OrganizationBrandingSection /> : <OrganizationSettingsSection />}
+      {tab === 'branding' ? (
+        <OrganizationBrandingSection />
+      ) : tab === 'orgSettings' ? (
+        <OrganizationSettingsSection />
+      ) : (
+        <PipelineStagesSection />
+      )}
     </div>
   );
 }

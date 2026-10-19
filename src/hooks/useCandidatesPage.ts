@@ -3,7 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { candidatesApi } from '../api/candidatesApi';
 import { candidateSourceSelectOptions } from '../lib/candidateSources';
-import { useCandidatesList } from './useCandidatesList';
+import { displayCandidateEmail } from '../lib/candidateEmail';
+import { downloadExcel, exportFileName, formatExportDate } from '../lib/exportExcel';
+import { formatPhoneForDisplay } from '../lib/phone';
+import { fetchAllCandidates, useCandidatesList } from './useCandidatesList';
 import type { Candidate, CandidateTag } from '../types/candidates';
 
 export const FILTER_CONTROL_CLASS = 'h-12 min-h-12 max-h-12 box-border py-2.5 text-sm min-w-0 w-full';
@@ -11,7 +14,7 @@ export const FILTER_CONTROL_CLASS = 'h-12 min-h-12 max-h-12 box-border py-2.5 te
 const CANDIDATES_PAGE_SIZE = 25;
 
 export function useCandidatesPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const shouldFetch = isAuthenticated && !authLoading;
 
@@ -62,6 +65,8 @@ export function useCandidatesPage() {
   const [selectedCandidateId, setSelectedCandidateId] = useState<string | null>(null);
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
 
   const params = useMemo(
     () => ({
@@ -98,6 +103,45 @@ export function useCandidatesPage() {
     [t],
   );
 
+  const exportToExcel = useCallback(async () => {
+    setIsExporting(true);
+    setExportError(null);
+    try {
+      const rows = await fetchAllCandidates({
+        search: searchQuery.trim() || undefined,
+        source: source || undefined,
+        from: from || undefined,
+        to: to || undefined,
+        tagIds: tagIds.length > 0 ? tagIds : undefined,
+      });
+      const locale = i18n.language || 'en';
+      downloadExcel(
+        exportFileName('candidatos'),
+        t('candidates.title'),
+        [
+          t('candidates.table.name'),
+          t('candidates.table.email'),
+          t('candidates.table.phone'),
+          t('candidates.table.source'),
+          t('candidates.table.tags'),
+          t('candidates.table.created'),
+        ],
+        rows.map((candidate) => [
+          `${candidate.firstName || ''} ${candidate.lastName || ''}`.trim(),
+          displayCandidateEmail(candidate.email, ''),
+          candidate.phone ? formatPhoneForDisplay(candidate.phone).text : '',
+          candidate.source ? String(candidate.source) : '',
+          (candidate.tags ?? []).map((tag) => tag.name).filter(Boolean).join(', '),
+          formatExportDate(candidate.createdAt, locale),
+        ]),
+      );
+    } catch {
+      setExportError(t('common.actions.exportFailed'));
+    } finally {
+      setIsExporting(false);
+    }
+  }, [from, i18n.language, searchQuery, source, t, tagIds, to]);
+
   return {
     t,
     searchQuery,
@@ -131,6 +175,9 @@ export function useCandidatesPage() {
     handleRowClick,
     handleCreated,
     sourceOptions,
+    isExporting,
+    exportError,
+    exportToExcel,
   };
 }
 

@@ -221,3 +221,34 @@ export function useCandidatesList(shouldFetch: boolean, params: GetCandidatesPar
   return { data, meta, isLoading, error, refetch };
 }
 
+export async function fetchAllCandidates(params: GetCandidatesParams): Promise<Candidate[]> {
+  const selected = new Set((params.tagIds ?? []).filter(Boolean));
+  const fetchSize = 200;
+  const collected: Candidate[] = [];
+  let fetched = 0;
+  let total = 0;
+  let fetchPage = 1;
+
+  do {
+    const pageResult = await candidatesApi.list({
+      search: params.search,
+      source: params.source,
+      from: params.from,
+      to: params.to,
+      tagIds: selected.size > 0 ? [...selected] : undefined,
+      page: fetchPage,
+      pageSize: fetchSize,
+    });
+    const chunk = normalizeCandidatesPage(pageResult, { page: fetchPage, pageSize: fetchSize });
+    total = chunk.meta.total;
+    collected.push(...chunk.items);
+    fetched += chunk.items.length;
+    if (chunk.items.length === 0) break;
+    fetchPage += 1;
+  } while (fetched < total && fetchPage <= 50);
+
+  if (selected.size === 0) return collected;
+  const serverIgnoredTags = collected.some((candidate) => !matchesSelectedTags(candidate, selected));
+  return serverIgnoredTags ? collected.filter((candidate) => matchesSelectedTags(candidate, selected)) : collected;
+}
+

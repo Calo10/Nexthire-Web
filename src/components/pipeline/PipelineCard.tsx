@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { fitScoreTone } from '../sourcing/sourcingUtils';
 import { tagColorClass } from '../../lib/candidateTagStyle';
 import { unreadCountForCandidate, useWhatsAppUnread } from '../../hooks/useWhatsAppUnreadConversationCount';
+import PhoneDisplay from '../PhoneDisplay';
 
 function titleCase(raw: string): string {
   const s = String(raw || '').trim();
@@ -112,7 +113,7 @@ export function PipelineCardView({
       {...(dndAttributes || {})}
       {...(dndListeners || {})}
       onClick={onClick}
-      className={`group rounded-2xl border backdrop-blur-sm shadow-sm p-4 transition-colors cursor-pointer ${
+      className={`group relative rounded-2xl border backdrop-blur-sm shadow-sm p-4 transition-colors cursor-pointer ${
         isDragging ? 'opacity-90 shadow-lg' : ''
       } ${
         isSelected ? 'border-primary/40 ring-2 ring-primary/20' : isRejected ? 'border-red-200' : 'border-gray-200'
@@ -122,8 +123,90 @@ export function PipelineCardView({
           : 'bg-white/90 hover:bg-white'
       }`}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-start gap-3 min-w-0">
+      {card.fitScore != null ? (
+        <span
+          className={`absolute top-4 right-4 z-10 inline-flex min-w-[2.5rem] justify-center rounded-lg px-2 py-1 text-sm font-semibold ${fitScoreTone(card.fitScore)}`}
+        >
+          {Math.round(card.fitScore)}
+        </span>
+      ) : null}
+
+      {(onAddNote || onSendMessage) ? (
+        <div
+          className={`absolute top-3 z-20 ${card.fitScore != null ? 'right-[4.75rem]' : 'right-3'}`}
+          data-pipeline-card-menu="true"
+          onPointerDown={(e) => {
+            e.stopPropagation();
+          }}
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
+        >
+          <button
+            type="button"
+            className={`w-9 h-9 rounded-lg hover:bg-gray-100 text-gray-500 flex items-center justify-center transition-opacity ${
+              showActionsAlways ? 'opacity-100' : 'opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto'
+            }`}
+            aria-label={t('pipeline.inspector.menu.aria')}
+            data-pipeline-card-menu-button="true"
+            onPointerDown={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onToggleMenu?.();
+            }}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6h.01M12 12h.01M12 18h.01" />
+            </svg>
+          </button>
+
+          {menuOpen ? (
+            <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-lg border border-gray-200 py-1 z-50">
+              <button
+                type="button"
+                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                onPointerDown={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onCloseMenu?.();
+                  onAddNote?.();
+                }}
+              >
+                <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                {t('pipeline.inspector.menu.addNote')}
+              </button>
+              <button
+                type="button"
+                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                onPointerDown={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onCloseMenu?.();
+                  onSendMessage?.();
+                }}
+              >
+                <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.77 9.77 0 01-4-.84L3 20l1.2-3.6A7.3 7.3 0 013 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                  />
+                </svg>
+                {t('pipeline.inspector.menu.sendMessage')}
+              </button>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+
+      <div className={`flex items-start gap-3 min-w-0 ${card.fitScore != null ? (showActionsAlways ? 'pr-24' : 'pr-14') : showActionsAlways ? 'pr-12' : ''}`}>
           <span className="relative flex-shrink-0">
             <img src={userPlaceholder} alt="" className="w-9 h-9 rounded-full border border-gray-200 object-cover" />
             {unreadMessages > 0 ? (
@@ -145,95 +228,6 @@ export function PipelineCardView({
           </div>
         </div>
 
-        <div className="flex items-center gap-1 flex-shrink-0">
-          {card.fitScore != null ? (
-            <span
-              className={`inline-flex min-w-[2.5rem] justify-center rounded-lg px-2 py-1 text-sm font-semibold ${fitScoreTone(card.fitScore)}`}
-            >
-              {Math.round(card.fitScore)}
-            </span>
-          ) : null}
-
-          {onAddNote || onSendMessage ? (
-          <div
-            className="relative"
-            data-pipeline-card-menu="true"
-            onPointerDown={(e) => {
-              // Don't let card click / board click-away close.
-              e.stopPropagation();
-            }}
-            onClick={(e) => {
-              // Prevent card selection when interacting with menu.
-              e.stopPropagation();
-            }}
-          >
-            <button
-              type="button"
-              className={`w-9 h-9 rounded-lg hover:bg-gray-100 text-gray-500 flex items-center justify-center transition-opacity ${
-                showActionsAlways ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-              }`}
-              aria-label={t('pipeline.inspector.menu.aria')}
-              data-pipeline-card-menu-button="true"
-              onPointerDown={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onToggleMenu?.();
-              }}
-              onClick={(e) => {
-                // Click event still bubbles even if pointerdown stopped.
-                e.preventDefault();
-                e.stopPropagation();
-              }}
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6h.01M12 12h.01M12 18h.01" />
-              </svg>
-            </button>
-
-            {menuOpen ? (
-              <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-lg border border-gray-200 py-1 z-50">
-                <button
-                  type="button"
-                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                  onPointerDown={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    onCloseMenu?.();
-                    onAddNote?.();
-                  }}
-                >
-                  <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
-                  {t('pipeline.inspector.menu.addNote')}
-                </button>
-                <button
-                  type="button"
-                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                  onPointerDown={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    onCloseMenu?.();
-                    onSendMessage?.();
-                  }}
-                >
-                  <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.77 9.77 0 01-4-.84L3 20l1.2-3.6A7.3 7.3 0 013 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                    />
-                  </svg>
-                  {t('pipeline.inspector.menu.sendMessage')}
-                </button>
-              </div>
-            ) : null}
-          </div>
-          ) : null}
-        </div>
-      </div>
-
       <div className="mt-3 flex items-center flex-wrap gap-2">
         {chips.map((c) => (
           <Chip key={c.label} label={c.label} variant={c.variant} />
@@ -242,6 +236,13 @@ export function PipelineCardView({
       </div>
 
       <div className="mt-3 text-xs text-gray-500">{formatDate(card.createdAt, locale)}</div>
+      {card.candidatePhone ? (
+        <PhoneDisplay
+          phone={card.candidatePhone}
+          fallback=""
+          className="mt-1 whitespace-nowrap text-xs font-normal text-gray-500"
+        />
+      ) : null}
     </div>
   );
 }
