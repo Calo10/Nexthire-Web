@@ -2,6 +2,7 @@ import StatCard from '../StatCard';
 import StatCardSkeleton from '../StatCardSkeleton';
 import TableSkeleton from '../TableSkeleton';
 import LanguageSwitcher from '../LanguageSwitcher';
+import UserAccountMenu from '../UserAccountMenu';
 import ErrorMessage from '../ErrorMessage';
 import BarChart from '../BarChart';
 import LineChart from '../LineChart';
@@ -40,7 +41,6 @@ export default function DashboardDesktopView({
   tasksError,
   allJobs,
   interviewStageCount,
-  handleLogout,
   getStageInfo,
   getJobStatusColor,
   getTaskStatusColor,
@@ -114,27 +114,7 @@ export default function DashboardDesktopView({
               </svg>
             </button>
             
-            {showUserMenu && (
-              <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
-                <div className="px-4 py-2 border-b border-gray-200">
-                  <p className="text-sm font-medium text-dark-text break-words">
-                    {user?.name || user?.email || 'User'}
-                  </p>
-                  {user?.email && user?.name && (
-                    <p className="text-xs text-gray-500 mt-1 break-words">{user.email}</p>
-                  )}
-                </div>
-                <button
-                  onClick={handleLogout}
-                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-                >
-                  <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                  </svg>
-                  {t('dashboard.signOut')}
-                </button>
-              </div>
-            )}
+            {showUserMenu && <UserAccountMenu onClose={() => setShowUserMenu(false)} />}
           </div>
         </div>
       </div>

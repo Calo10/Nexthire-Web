@@ -1,10 +1,19 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { authApi, setUnauthorizedHandler, setLastLoginTime } from '../lib/api';
 import {
+  activateStoredAccount,
+  captureActiveAccount,
+  clearAddingAccount,
   clearStoredAuthSession,
+  dropAccount,
+  findStoredAccount,
   getAuthCallbackUrl,
   isJwtExpired,
   normalizeOrganization,
+  otherAccountSummaries,
+  rememberActiveSession,
+  stashActiveSession,
+  type AccountSummary,
   type StoredOrganization,
 } from '../lib/authSession';
 import { dedupeMagicLinkConsume } from '../lib/magicLinkToken';
@@ -38,6 +47,8 @@ interface AuthContextType {
   completeMagicLink: (token: string) => Promise<{ requiresOrgSetup: boolean }>;
   refreshSessionFromStorage: () => void;
   logout: () => void;
+  otherAccounts: AccountSummary[];
+  switchAccount: (email: string) => void;
 }
 
 function persistAuthResponse(response: {
@@ -75,6 +86,7 @@ function persistAuthResponse(response: {
   const nexaTokenToStore =
     nextHireToken === candidateTokenA ? response.nexa?.accessToken : candidateTokenA;
 
+  stashActiveSession();
   localStorage.setItem('nhAccessToken', nextHireToken);
   if (response.nexa || nexaTokenToStore) {
     if (nexaTokenToStore) localStorage.setItem('nexaAccessToken', nexaTokenToStore);
@@ -110,7 +122,14 @@ function persistAuthResponse(response: {
     localStorage.removeItem('requires_org_setup');
   }
 
+  rememberActiveSession();
+  clearAddingAccount();
+
   return { nextHireToken, requiresOrgSetup: response.requiresOrgSetup };
+}
+
+function sessionHome(requiresOrgSetup: boolean): string {
+  return requiresOrgSetup ? '/onboarding/company' : '/app/dashboard';
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -122,26 +141,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [otherAccounts, setOtherAccounts] = useState<AccountSummary[]>([]);
 
   const logout = useCallback(async () => {
-    // Call backend logout endpoint (fire and forget)
+    const current = captureActiveAccount();
     try {
       await authApi.logout();
     } catch (error) {
       // Ignore errors - logout locally regardless
     }
 
+    const fallback = current ? dropAccount(current.email) : null;
+    if (fallback) {
+      activateStoredAccount(fallback);
+      window.location.assign(sessionHome(fallback.requiresOrgSetup));
+      return;
+    }
+
     clearStoredAuthSession();
-    
-    // Clear state
     setUser(null);
     setOrg(null);
     setSubscription(null);
     setToken(null);
+    setOtherAccounts([]);
     setIsAuthenticated(false);
-    
-    // Redirect to login
     window.location.href = '/login';
+  }, []);
+
+  const switchAccount = useCallback((email: string) => {
+    const target = findStoredAccount(email);
+    if (!target) return;
+    stashActiveSession();
+    activateStoredAccount(target);
+    rememberActiveSession();
+    window.location.assign(sessionHome(target.requiresOrgSetup));
   }, []);
 
   // Setup 401 handler - only after auth is initialized
@@ -174,17 +207,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (storedToken && storedUser) {
       if (isJwtExpired(storedToken)) {
-        clearStoredAuthSession();
+        let expiredEmail = '';
+        try {
+          expiredEmail = (JSON.parse(storedUser) as { email?: string }).email || '';
+        } catch {
+          expiredEmail = '';
+        }
+        const fallback = expiredEmail ? dropAccount(expiredEmail) : null;
+        if (fallback) {
+          activateStoredAccount(fallback);
+          setToken(fallback.nhAccessToken);
+          setUser(JSON.parse(fallback.userJson));
+          setOrg(fallback.orgJson ? JSON.parse(fallback.orgJson) : null);
+          setSubscription(fallback.subscriptionJson ? JSON.parse(fallback.subscriptionJson) : null);
+          setOtherAccounts(otherAccountSummaries(fallback.email));
+          setIsAuthenticated(true);
+        } else {
+          clearStoredAuthSession();
+        }
       } else {
         try {
+          const parsedUser = JSON.parse(storedUser) as User;
+          rememberActiveSession();
           setToken(storedToken);
-          setUser(JSON.parse(storedUser));
+          setUser(parsedUser);
           if (storedOrg) {
             setOrg(JSON.parse(storedOrg));
           }
           if (storedSubscription) {
             setSubscription(JSON.parse(storedSubscription));
           }
+          setOtherAccounts(otherAccountSummaries(parsedUser.email));
           setIsAuthenticated(true);
         } catch (error) {
           clearStoredAuthSession();
@@ -217,9 +270,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (storedToken && storedUser) {
       setToken(storedToken);
-      setUser(JSON.parse(storedUser));
+      const parsedUser = JSON.parse(storedUser) as User;
+      setUser(parsedUser);
       setOrg(storedOrg ? JSON.parse(storedOrg) : null);
       setSubscription(storedSubscription ? JSON.parse(storedSubscription) : null);
+      setOtherAccounts(otherAccountSummaries(parsedUser.email));
       setIsAuthenticated(true);
     }
   }, []);
@@ -239,6 +294,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const storedOrg = localStorage.getItem('nh_org');
     if (storedUser) setUser(JSON.parse(storedUser));
     if (storedOrg) setOrg(JSON.parse(storedOrg));
+    setOtherAccounts(otherAccountSummaries(JSON.parse(storedUser || '{}').email));
     setIsAuthenticated(true);
     setLastLoginTime();
 
@@ -259,6 +315,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const storedOrg = localStorage.getItem('nh_org');
       if (storedUser) setUser(JSON.parse(storedUser));
       if (storedOrg) setOrg(JSON.parse(storedOrg));
+      setOtherAccounts(otherAccountSummaries(JSON.parse(storedUser || '{}').email));
       setIsAuthenticated(true);
       setLastLoginTime();
       return { requiresOrgSetup };
@@ -280,6 +337,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         completeMagicLink,
         refreshSessionFromStorage,
         logout,
+        otherAccounts,
+        switchAccount,
       }}
     >
       {children}

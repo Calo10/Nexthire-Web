@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { extractMagicLinkToken } from '../lib/magicLinkToken';
@@ -8,7 +8,6 @@ import type { ApiError } from '../lib/api';
 export function useMagicLinkVerify() {
   const { t } = useTranslation();
   const location = useLocation();
-  const navigate = useNavigate();
   const { completeMagicLink } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -28,7 +27,7 @@ export function useMagicLinkVerify() {
       try {
         const result = await completeMagicLink(token);
         if (cancelled) return;
-        navigate(result.requiresOrgSetup ? '/onboarding/company' : '/app/dashboard', { replace: true });
+        window.location.assign(result.requiresOrgSetup ? '/onboarding/company' : '/app/dashboard');
       } catch (err) {
         if (cancelled) return;
         const apiErr = err as ApiError;
@@ -49,7 +48,7 @@ export function useMagicLinkVerify() {
     return () => {
       cancelled = true;
     };
-  }, [location.search, location.hash, navigate, completeMagicLink, t]);
+  }, [location.search, location.hash, completeMagicLink, t]);
 
   return { loading, error };
 }

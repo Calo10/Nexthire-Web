@@ -1,7 +1,8 @@
 import { useState, FormEvent, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
+import { clearAddingAccount, markAddingAccount } from '../lib/authSession';
 import Logo from '../components/Logo';
 import Button from '../components/Button';
 import Card from '../components/Card';
@@ -12,7 +13,9 @@ type LoginMethod = 'magic-link' | 'password';
 export default function Login() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { loginWithMagicLink, loginWithPassword, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { loginWithMagicLink, loginWithPassword, isAuthenticated, isLoading: authLoading, user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const addingAccount = searchParams.get('addAccount') === '1';
   const [loginMethod, setLoginMethod] = useState<LoginMethod>('password');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -20,12 +23,17 @@ export default function Login() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Redirect if already authenticated
   useEffect(() => {
-    if (!authLoading && isAuthenticated) {
+    if (addingAccount) markAddingAccount();
+    else clearAddingAccount();
+  }, [addingAccount]);
+
+  // Redirect if already authenticated, unless this visit is to add a second account.
+  useEffect(() => {
+    if (!addingAccount && !authLoading && isAuthenticated) {
       navigate('/app/dashboard', { replace: true });
     }
-  }, [isAuthenticated, authLoading, navigate]);
+  }, [addingAccount, isAuthenticated, authLoading, navigate]);
 
   if (authLoading) {
     return (
@@ -35,7 +43,7 @@ export default function Login() {
     );
   }
 
-  if (isAuthenticated) {
+  if (isAuthenticated && !addingAccount) {
     return null;
   }
 
@@ -52,13 +60,12 @@ export default function Login() {
       } else {
         // Password login
         const result = await loginWithPassword(email, password);
-        
-        // Navigate based on requiresOrgSetup
-        if (result.requiresOrgSetup) {
-          navigate('/onboarding/company', { replace: true });
-        } else {
-          navigate('/app/dashboard', { replace: true });
+        const nextPath = result.requiresOrgSetup ? '/onboarding/company' : '/app/dashboard';
+        if (addingAccount) {
+          window.location.assign(nextPath);
+          return;
         }
+        navigate(nextPath, { replace: true });
       }
     } catch (err) {
       const errorMessage =
@@ -111,8 +118,13 @@ export default function Login() {
         
         <Card className="p-8">
           <h1 className="text-2xl font-semibold text-dark-text text-center mb-6">
-            Log in to NextHire
+            {addingAccount ? t('login.addingAccountTitle') : t('login.title')}
           </h1>
+          {addingAccount && user?.email && (
+            <p className="text-sm text-gray-600 text-center mb-6">
+              {t('login.addingAccountHint', { email: user.email })}
+            </p>
+          )}
           
           {/* Login Method Toggle */}
           <div className="mb-6">

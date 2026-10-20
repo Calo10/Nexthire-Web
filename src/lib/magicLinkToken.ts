@@ -1,3 +1,5 @@
+import { isAddingAccount } from './authSession';
+
 /**
  * Parse magic-link token from URL. Handles encoding and '+' → space mangling in query strings.
  */
@@ -43,9 +45,10 @@ export function dedupeMagicLinkConsume(
     return Promise.reject({ message: 'Missing token', status: 400 });
   }
 
-  // Tab already has a session (e.g. first consume succeeded, UI errored on navigation)
+  // Tab already has a session (e.g. first consume succeeded, UI errored on navigation).
+  // While adding a second account the existing token is the other session, so consume anyway.
   const existingAccess = localStorage.getItem('nhAccessToken');
-  if (existingAccess) {
+  if (existingAccess && !isAddingAccount()) {
     return Promise.resolve({
       requiresOrgSetup: localStorage.getItem('requires_org_setup') === 'true',
     });
