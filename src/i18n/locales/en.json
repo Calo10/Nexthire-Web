@@ -42,7 +42,9 @@
     "magicLinkDescription": "We'll send you a magic link to log in. No password needed.",
     "noAccount": "Don't have an account?",
     "checkEmail": "Check your email",
-    "emailSent": "We've sent a magic link to {{email}}. Click the link in the email to log in."
+    "emailSent": "We've sent a magic link to {{email}}. Click the link in the email to log in.",
+    "addingAccountTitle": "Add another account",
+    "addingAccountHint": "Sign in with the other account. {{email}} stays signed in."
   },
   "register": {
     "title": "Start your free trial",
@@ -317,6 +319,8 @@
     "loading": "Loading...",
     "allJobs": "All Jobs",
     "signOut": "Sign out",
+    "addAccount": "Add account",
+    "switchAccount": "Switch to this account",
     "applicationsByStage": "Applications by Stage",
     "activityTrend": "Activity Trend",
     "myJobs": "Open Jobs",
