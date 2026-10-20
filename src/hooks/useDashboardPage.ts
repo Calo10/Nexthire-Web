@@ -12,7 +12,7 @@ import type { Job, Task } from '../types/dashboard';
 
 export function useDashboardPage() {
   const { t } = useTranslation();
-  const { user, logout, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const [dateRange, setDateRange] = useState('7d');
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showDateFilter, setShowDateFilter] = useState(false);
@@ -75,10 +75,6 @@ export function useDashboardPage() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  const handleLogout = () => {
-    logout();
-  };
 
   const getStageInfo = (stageName: string) => {
     const normalized = stageName.toLowerCase();
@@ -190,7 +186,6 @@ export function useDashboardPage() {
     tasksError,
     allJobs,
     interviewStageCount,
-    handleLogout,
     getStageInfo,
     getJobStatusColor,
     getTaskStatusColor,

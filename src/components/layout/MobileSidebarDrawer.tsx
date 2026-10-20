@@ -1,11 +1,11 @@
 import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { appNavItems } from '../../config/appNavItems';
-import { useAuth } from '../../contexts/AuthContext';
 import LanguageSwitcher from '../LanguageSwitcher';
 import { useBackdropDismiss } from '../../hooks/useBackdropDismiss';
 import { useWhatsAppUnreadConversationCount } from '../../hooks/useWhatsAppUnreadConversationCount';
 import OrgSidebarMark from '../OrgSidebarMark';
+import UserAccountMenu from '../UserAccountMenu';
 import { useCurrentDisplayName } from '../../hooks/useCurrentDisplayName';
 
 interface MobileSidebarDrawerProps {
@@ -15,7 +15,6 @@ interface MobileSidebarDrawerProps {
 
 export default function MobileSidebarDrawer({ isOpen, onClose }: MobileSidebarDrawerProps) {
   const { t } = useTranslation();
-  const { logout } = useAuth();
   const displayName = useCurrentDisplayName();
   const unreadWhatsAppConversations = useWhatsAppUnreadConversationCount();
   const backdropDismiss = useBackdropDismiss(onClose);
@@ -85,19 +84,7 @@ export default function MobileSidebarDrawer({ isOpen, onClose }: MobileSidebarDr
               {displayName}
             </p>
           </div>
-          <button
-            type="button"
-            onClick={() => {
-              onClose();
-              logout();
-            }}
-            className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg flex items-center gap-2"
-          >
-            <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-            {t('dashboard.signOut')}
-          </button>
+          <UserAccountMenu variant="inline" onClose={onClose} />
         </div>
       </aside>
     </>

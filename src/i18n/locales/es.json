@@ -42,7 +42,9 @@
     "magicLinkDescription": "Te enviaremos un enlace mágico para iniciar sesión. No se necesita contraseña.",
     "noAccount": "¿No tienes una cuenta?",
     "checkEmail": "Revisa tu correo",
-    "emailSent": "Hemos enviado un enlace mágico a {{email}}. Haz clic en el enlace del correo para iniciar sesión."
+    "emailSent": "Hemos enviado un enlace mágico a {{email}}. Haz clic en el enlace del correo para iniciar sesión.",
+    "addingAccountTitle": "Agregar otra cuenta",
+    "addingAccountHint": "Entra con la otra cuenta. {{email}} sigue con la sesión abierta."
   },
   "register": {
     "title": "Empieza tu prueba gratis",
@@ -317,6 +319,8 @@
     "loading": "Cargando...",
     "allJobs": "Todos los Trabajos",
     "signOut": "Cerrar sesión",
+    "addAccount": "Agregar cuenta",
+    "switchAccount": "Cambiar a esta cuenta",
     "applicationsByStage": "Aplicaciones por Etapa",
     "activityTrend": "Tendencia de Actividad",
     "myJobs": "Puestos abiertos",
