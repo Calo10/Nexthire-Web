@@ -5,7 +5,9 @@ import TextField from '../TextField';
 import CandidatesMobileList from './CandidatesMobileList';
 import CandidatesPagination from './CandidatesPagination';
 import TagFilterSelect from './TagFilterSelect';
+import PublicCandidateLinkButton from './PublicCandidateLinkButton';
 import type { CandidatesPageState } from '../../hooks/useCandidatesPage';
+import { useAccess } from '../../contexts/AccessContext';
 
 export default function CandidatesMobileView({
   t,
@@ -34,7 +36,13 @@ export default function CandidatesMobileView({
   isExporting,
   exportError,
   exportToExcel,
+  hasActiveFilter,
+  publicLinkBusy,
+  publicLinkError,
+  publicLinkCopied,
+  createPublicLink,
 }: CandidatesPageState) {
+  const { readOnly } = useAccess();
   const showEmpty = !isLoading && !error && candidates.length === 0;
 
   return (
@@ -44,12 +52,21 @@ export default function CandidatesMobileView({
         <p className="text-xs text-gray-600 mt-1 mb-4">{t('candidates.subtitle')}</p>
 
         <div className="flex flex-col gap-2 mb-4">
+          <PublicCandidateLinkButton
+            className="w-full"
+            hasActiveFilter={hasActiveFilter}
+            publicLinkBusy={publicLinkBusy}
+            publicLinkError={publicLinkError}
+            publicLinkCopied={publicLinkCopied}
+            createPublicLink={createPublicLink}
+          />
           <ExportExcelButton
             className="w-full justify-center"
             onClick={() => void exportToExcel()}
             busy={isExporting}
             disabled={isLoading || total === 0}
           />
+          {readOnly ? null : (
           <Button
             variant="primary"
             size="md"
@@ -63,6 +80,7 @@ export default function CandidatesMobileView({
             <span>{t('candidates.newCandidate')}</span>
           </div>
           </Button>
+          )}
         </div>
 
         {exportError ? (
@@ -136,9 +154,11 @@ export default function CandidatesMobileView({
           <div className="text-center py-12 px-4 bg-white rounded-xl border border-gray-200">
             <h3 className="text-base font-semibold text-dark-text mb-2">{t('candidates.empty.title')}</h3>
             <p className="text-sm text-gray-600 mb-4">{t('candidates.empty.subtitle')}</p>
+            {readOnly ? null : (
             <Button variant="primary" onClick={() => setIsNewModalOpen(true)}>
               {t('candidates.empty.cta')}
             </Button>
+            )}
           </div>
         ) : (
           <>

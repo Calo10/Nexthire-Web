@@ -3,6 +3,7 @@ import ErrorMessage from '../ErrorMessage';
 import ExportExcelButton from '../ExportExcelButton';
 import JobsMobileList from './JobsMobileList';
 import type { JobsPageState } from '../../hooks/useJobsPage';
+import { useAccess } from '../../contexts/AccessContext';
 
 export default function JobsMobileView({
   t,
@@ -22,6 +23,7 @@ export default function JobsMobileView({
   openJobDrawer,
   exportToExcel,
 }: JobsPageState) {
+  const { readOnly } = useAccess();
   return (
     <div className="min-h-screen bg-gray-50 pb-6">
       <div className="p-4">
@@ -33,6 +35,7 @@ export default function JobsMobileView({
             onClick={exportToExcel}
             disabled={jobsLoading || filteredJobs.length === 0}
           />
+          {readOnly ? null : (
           <Button variant="primary" size="md" className="w-full justify-center" onClick={() => setIsNewJobModalOpen(true)}>
             <div className="flex items-center gap-2">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -41,6 +44,7 @@ export default function JobsMobileView({
               <span>{t('jobs.newJob')}</span>
             </div>
           </Button>
+          )}
           <Button
             variant="outline"
             size="md"

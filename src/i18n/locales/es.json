@@ -44,7 +44,11 @@
     "checkEmail": "Revisa tu correo",
     "emailSent": "Hemos enviado un enlace mágico a {{email}}. Haz clic en el enlace del correo para iniciar sesión.",
     "addingAccountTitle": "Agregar otra cuenta",
-    "addingAccountHint": "Entra con la otra cuenta. {{email}} sigue con la sesión abierta."
+    "addingAccountHint": "Entra con la otra cuenta. {{email}} sigue con la sesión abierta.",
+    "accountSuspended": "Esta cuenta está suspendida. Comunícate con tu administrador.",
+    "chooseOrganization": "Elige una organización",
+    "chooseOrganizationHint": "Este usuario pertenece a más de una organización.",
+    "organizationSuspended": "Suspendida"
   },
   "register": {
     "title": "Empieza tu prueba gratis",
@@ -321,6 +325,8 @@
     "signOut": "Cerrar sesión",
     "addAccount": "Agregar cuenta",
     "switchAccount": "Cambiar a esta cuenta",
+    "currentOrganization": "Actual",
+    "organizationSuspended": "Suspendida",
     "applicationsByStage": "Aplicaciones por Etapa",
     "activityTrend": "Tendencia de Actividad",
     "myJobs": "Puestos abiertos",
@@ -810,7 +816,7 @@
       "phoneNumberPlaceholder": "p. ej., 89667186",
       "appRole": "Rol en la app",
       "appRoleDefault": "Rol predeterminado",
-      "appRoleHint": "En la org es member. Elige recruiter, supervisor, etc. — no account admin.",
+      "appRoleHint": "En la org es member. Elige recruiter, supervisor, sales, etc. Sales solo puede ver dashboard, jobs, candidates y pipeline.",
       "sendLoginLink": "Enviar enlace de acceso por correo",
       "submit": "Invitar usuario",
       "sending": "Invitando…",
@@ -1230,6 +1236,40 @@
       "delete": "No se pudo eliminar la plantilla."
     }
   },
+  "publicCandidates": {
+    "anonymous": "Candidato",
+    "hero": {
+      "title": "Candidatos",
+      "subtitle": "Una selección compartida. El correo, el teléfono y el nombre completo no se muestran."
+    },
+    "list": {
+      "title": "Candidatos",
+      "count": "{{count}} candidatos"
+    },
+    "card": {
+      "viewAnalysis": "Ver detalles"
+    },
+    "empty": {
+      "title": "No hay candidatos",
+      "subtitle": "Esta selección no tiene candidatos por ahora."
+    },
+    "pagination": {
+      "prev": "Anterior",
+      "next": "Siguiente"
+    },
+    "detail": {
+      "back": "Volver a la lista",
+      "analysisTitle": "Análisis de IA",
+      "summary": "Resumen",
+      "keyPoints": "Puntos clave",
+      "warnings": "Advertencias",
+      "noAnalysis": "Este candidato no tiene un análisis de CV disponible.",
+      "notFound": "No se encontró este candidato."
+    },
+    "errors": {
+      "load": "No se pudo cargar la lista."
+    }
+  },
   "publicJobs": {
     "title": "Posiciones abiertas",
     "subtitle": "Explora roles disponibles y aplica en minutos.",
@@ -1273,6 +1313,10 @@
       "subtitle": "Intenta ajustar tu búsqueda o filtros."
     },
     "error": "No se pudieron cargar las posiciones.",
+    "suspended": {
+      "title": "Cuenta suspendida",
+      "message": "Esta cuenta está suspendida. Comunícate con tu administrador."
+    },
     "details": {
       "back": "Volver a posiciones abiertas",
       "apply": "Aplicar",
@@ -1511,6 +1555,31 @@
     "newCandidate": "Nuevo candidato",
     "candidate": "Candidato",
     "unknown": "Desconocido",
+    "publicLink": {
+      "button": "Crear link público",
+      "creating": "Creando enlace...",
+      "copied": "Enlace copiado",
+      "admin": "Admin public links",
+      "createTitle": "Crear link público",
+      "create": "Crear",
+      "cancel": "Cancelar",
+      "nameLabel": "Nombre del filtro",
+      "namePlaceholder": "Ej. Backend + frontend",
+      "nameRequired": "El nombre es requerido",
+      "error": "No se pudo crear el enlace público",
+      "adminTitle": "Links públicos",
+      "empty": "Todavía no hay links públicos.",
+      "copy": "Copiar",
+      "delete": "Eliminar",
+      "confirmDelete": "¿Eliminar el link \"{{name}}\"? Dejará de estar disponible.",
+      "loadError": "No se pudieron cargar los links públicos",
+      "deleteError": "No se pudo eliminar el link",
+      "columns": {
+        "name": "Nombre",
+        "created": "Creado",
+        "actions": "Acciones"
+      }
+    },
     "filters": {
       "source": "Fuente",
       "sourceAll": "Todas",

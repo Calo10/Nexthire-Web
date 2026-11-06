@@ -85,6 +85,46 @@ function buildQuery(params?: GetCandidatesParams): string {
 }
 
 export const candidatesApi = {
+  createPublicLink: async (
+    params: Pick<GetCandidatesParams, 'search' | 'source' | 'from' | 'to' | 'tagIds'> & { name: string }
+  ): Promise<{ id: string; name: string }> => {
+    const raw = await apiClient.post<unknown>(
+      '/candidates/public-links',
+      {
+        name: params.name,
+        search: params.search ?? null,
+        source: params.source ?? null,
+        from: params.from ?? null,
+        to: params.to ?? null,
+        tagIds: params.tagIds ?? [],
+      },
+      true
+    );
+    const record = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {};
+    const id = String(record.id ?? record.Id ?? '').trim();
+    if (!id) throw new Error('Public link id missing');
+    return { id, name: String(record.name ?? record.Name ?? params.name) };
+  },
+
+  listPublicLinks: async (): Promise<Array<{ id: string; name: string; createdAt: string }>> => {
+    const raw = await apiClient.get<unknown>('/candidates/public-links', true);
+    if (!Array.isArray(raw)) return [];
+    return raw
+      .map((item) => {
+        const record = item && typeof item === 'object' ? (item as Record<string, unknown>) : {};
+        return {
+          id: String(record.id ?? record.Id ?? '').trim(),
+          name: String(record.name ?? record.Name ?? '').trim(),
+          createdAt: String(record.createdAt ?? record.CreatedAt ?? ''),
+        };
+      })
+      .filter((item) => item.id);
+  },
+
+  deletePublicLink: async (id: string): Promise<void> => {
+    await apiClient.delete(`/candidates/public-links/${encodeURIComponent(id)}`, true);
+  },
+
   list: async (params?: GetCandidatesParams): Promise<CandidatesListResponse | Candidate[]> => {
     // Skip unauthorized handler so API issues don't force logout/navigation
     return apiClient.get(`/candidates${buildQuery(params)}`, true);

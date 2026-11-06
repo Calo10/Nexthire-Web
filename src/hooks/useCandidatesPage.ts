@@ -15,7 +15,7 @@ const CANDIDATES_PAGE_SIZE = 25;
 
 export function useCandidatesPage() {
   const { t, i18n } = useTranslation();
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, org } = useAuth();
   const shouldFetch = isAuthenticated && !authLoading;
 
   const [searchQuery, setSearchQueryState] = useState('');
@@ -67,6 +67,10 @@ export function useCandidatesPage() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
+  const [publicLinkBusy, setPublicLinkBusy] = useState(false);
+  const [publicLinkError, setPublicLinkError] = useState<string | null>(null);
+  const [publicLinkCopied, setPublicLinkCopied] = useState(false);
+  const [publicLink, setPublicLink] = useState<{ signature: string; url: string } | null>(null);
 
   const params = useMemo(
     () => ({
@@ -142,6 +146,43 @@ export function useCandidatesPage() {
     }
   }, [from, i18n.language, searchQuery, source, t, tagIds, to]);
 
+  const filterSignature = `${searchQuery.trim()}\n${source}\n${from}\n${to}\n${tagIds.join(',')}`;
+  const hasActiveFilter = Boolean(searchQuery.trim() || source || from || to || tagIds.length > 0);
+  const publicLinkUrl = publicLink?.signature === filterSignature ? publicLink.url : null;
+
+  const createPublicLink = useCallback(async (name: string) => {
+    const trimmedName = name.trim();
+    if (!hasActiveFilter || !org?.id || !trimmedName) return false;
+    setPublicLinkBusy(true);
+    setPublicLinkError(null);
+    setPublicLinkCopied(false);
+    try {
+      const created = await candidatesApi.createPublicLink({
+        name: trimmedName,
+        search: searchQuery.trim() || undefined,
+        source: source || undefined,
+        from: from || undefined,
+        to: to || undefined,
+        tagIds: tagIds.length > 0 ? tagIds : undefined,
+      });
+      const url = `${window.location.origin}/org/${encodeURIComponent(org.id)}/candidates/${encodeURIComponent(created.id)}`;
+      setPublicLink({ signature: filterSignature, url });
+      try {
+        await navigator.clipboard.writeText(url);
+        setPublicLinkCopied(true);
+      } catch {
+        setPublicLinkCopied(false);
+      }
+      return true;
+    } catch (e) {
+      const message = e && typeof e === 'object' && 'message' in e ? String((e as { message?: unknown }).message || '') : '';
+      setPublicLinkError(message || t('candidates.publicLink.error'));
+      return false;
+    } finally {
+      setPublicLinkBusy(false);
+    }
+  }, [filterSignature, from, hasActiveFilter, org?.id, searchQuery, source, t, tagIds, to]);
+
   return {
     t,
     searchQuery,
@@ -178,6 +219,12 @@ export function useCandidatesPage() {
     isExporting,
     exportError,
     exportToExcel,
+    hasActiveFilter,
+    publicLinkBusy,
+    publicLinkError,
+    publicLinkCopied,
+    publicLinkUrl,
+    createPublicLink,
   };
 }
 

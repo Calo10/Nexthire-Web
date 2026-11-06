@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router-dom';
 import Button from '../../components/Button';
 import ErrorMessage from '../../components/ErrorMessage';
+import AccountSuspendedNotice, { isAccountSuspended } from '../../components/public/AccountSuspendedNotice';
 import ApplyJobModal from '../../components/public/ApplyJobModal';
 import { looksLikeHtml, markdownToSafeHtml } from '../../lib/markdown';
 import { sanitizeHtml } from '../../lib/sanitizeHtml';
@@ -33,6 +34,17 @@ export default function PublicJobDetailsPage() {
   const [applyOpen, setApplyOpen] = useState(false);
 
   const alreadyApplied = !!job?.alreadyApplied;
+  const accountSuspended = isAccountSuspended(error);
+
+  if (accountSuspended) {
+    return (
+      <div className="min-h-full">
+        <div className="max-w-xl mx-auto px-4 py-24">
+          <AccountSuspendedNotice />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-full">

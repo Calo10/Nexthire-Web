@@ -16,6 +16,7 @@ import SourcePill from './SourcePill';
 import CandidateTags from './CandidateTags';
 import CandidateNotes from './CandidateNotes';
 import { useBackdropDismiss } from '../../hooks/useBackdropDismiss';
+import { useAccess } from '../../contexts/AccessContext';
 import { displayCandidateEmail, isPlaceholderCandidateEmail } from '../../lib/candidateEmail';
 import { formatDynamicAnswerDisplayValue, parseDynamicAnswersJson } from '../sourcing/sourcingUtils';
 import ViewResumeDocumentButton, { isResumeAnswer, isResumeDocumentId } from '../ViewResumeDocumentButton';
@@ -70,6 +71,7 @@ export default function CandidateDetailDrawer({
   onDeleted,
 }: CandidateDetailDrawerProps) {
   const { t, i18n } = useTranslation();
+  const { readOnly } = useAccess();
   const backdropDismiss = useBackdropDismiss(onClose);
   const shouldFetch = isOpen && !!candidateId;
   const { data: fetched, error, refetch } = useCandidate(shouldFetch, candidateId);
@@ -372,6 +374,7 @@ export default function CandidateDetailDrawer({
             >
               {t('candidates.drawer.details')}
             </button>
+            {readOnly ? null : (
             <button
               type="button"
               onClick={() => setDrawerTab('whatsapp')}
@@ -405,21 +408,22 @@ export default function CandidateDetailDrawer({
                 />
               ) : null}
             </button>
+            )}
           </div>
         </div>
 
         {candidateId ? (
-          <div className={drawerTab === 'whatsapp' ? 'flex flex-1 min-h-0 flex-col' : 'hidden'}>
+          <div className={drawerTab === 'whatsapp' && !readOnly ? 'flex flex-1 min-h-0 flex-col' : 'hidden'}>
             <CandidateWhatsAppThread
               candidateId={candidateId}
               phone={data?.phone}
-              active={isOpen && drawerTab === 'whatsapp'}
+              active={isOpen && drawerTab === 'whatsapp' && !readOnly}
               onNeedsHumanChange={handleNeedsHuman}
               onUnreadCountChange={handleUnreadCount}
             />
           </div>
         ) : null}
-        {drawerTab === 'whatsapp' ? null : (
+        {drawerTab === 'whatsapp' && !readOnly ? null : (
         <>
         {/* Body */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
@@ -431,9 +435,11 @@ export default function CandidateDetailDrawer({
             <>
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">{t('candidates.drawer.details')}</h3>
+                {readOnly ? null : (
                 <Button variant="outline" size="sm" onClick={() => setIsEditing((v) => !v)} disabled={isSaving}>
                   {isEditing ? t('common.actions.cancel') : t('common.actions.edit')}
                 </Button>
+                )}
               </div>
 
               <div className="space-y-5">
@@ -535,7 +541,7 @@ export default function CandidateDetailDrawer({
                         <span>{t('candidates.drawer.resume.view')}</span>
                       </div>
                     </Button>
-                    {showResumeUpload ? null : (
+                    {showResumeUpload || readOnly ? null : (
                     <Button
                       variant="primary"
                       size="sm"
@@ -561,7 +567,7 @@ export default function CandidateDetailDrawer({
                     </Button>
                     )}
                   </div>
-                  {showResumeUpload ? (
+                  {showResumeUpload && !readOnly ? (
                     <div className="mt-3 w-full">
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         {t('candidates.drawer.resume.uploadLabel')}
@@ -677,16 +683,20 @@ export default function CandidateDetailDrawer({
 
         {/* Footer */}
         <div className="p-6 border-t border-gray-200 flex items-center justify-between gap-3">
+          {readOnly ? <span /> : (
           <Button variant="secondary" onClick={handleDelete} disabled={!candidateId || isSaving}>
             {t('common.actions.delete')}
           </Button>
+          )}
           <div className="flex items-center gap-3">
             <Button variant="secondary" onClick={onClose} disabled={isSaving}>
               {t('common.actions.close')}
             </Button>
+            {readOnly ? null : (
             <Button variant="primary" onClick={handleSave} disabled={!candidateId || !isEditing || !canSave}>
               {isSaving ? t('common.actions.saving') : t('common.actions.saveChanges')}
             </Button>
+            )}
           </div>
         </div>
         </>

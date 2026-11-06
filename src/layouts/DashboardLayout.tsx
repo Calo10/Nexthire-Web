@@ -1,5 +1,7 @@
 import { ReactNode } from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { isSalesPath, useAccess } from '../contexts/AccessContext';
 import Sidebar from '../components/Sidebar';
 import Logo from '../components/Logo';
 import MobileSidebarDrawer from '../components/layout/MobileSidebarDrawer';
@@ -13,6 +15,12 @@ interface DashboardLayoutProps {
 function DashboardLayoutContent({ children }: DashboardLayoutProps) {
   const { t } = useTranslation();
   const { openMenu, setOpenMenu } = useMobileNav();
+  const { ready, readOnly } = useAccess();
+  const location = useLocation();
+
+  if (ready && readOnly && !isSalesPath(location.pathname)) {
+    return <Navigate to="/app/dashboard" replace />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

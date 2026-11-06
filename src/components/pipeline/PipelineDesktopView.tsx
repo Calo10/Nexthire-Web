@@ -6,6 +6,7 @@ import PipelineBoard from './PipelineBoard';
 import ApplicationInspectorPanel from './ApplicationInspectorPanel';
 import ExportExcelButton from '../ExportExcelButton';
 import type { PipelinePageState } from '../../hooks/usePipelinePage';
+import { useAccess } from '../../contexts/AccessContext';
 
 export default function PipelineDesktopView({
   t,
@@ -45,6 +46,7 @@ export default function PipelineDesktopView({
   historyRefreshKey,
   exportToExcel,
 }: PipelinePageState) {
+  const { readOnly } = useAccess();
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50">
       <TopBar />
@@ -100,6 +102,7 @@ export default function PipelineDesktopView({
               onClick={exportToExcel}
               disabled={boardLoading || columns.every((column) => column.items.length === 0)}
             />
+            {readOnly ? null : (
             <Button variant="primary" size="md" onClick={() => setIsCreateOpen(true)} disabled={jobsLoading}>
               <div className="flex items-center gap-2">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -108,6 +111,7 @@ export default function PipelineDesktopView({
                 <span>{t('pipeline.addApplication')}</span>
               </div>
             </Button>
+            )}
           </div>
         </div>
 
@@ -138,9 +142,11 @@ export default function PipelineDesktopView({
               <div className="p-12 text-center">
                 <h3 className="text-xl font-semibold text-dark-text mb-2">{t('pipeline.empty.title')}</h3>
                 <p className="text-sm text-gray-600 mb-6">{t('pipeline.empty.subtitle')}</p>
+                {readOnly ? null : (
                 <Button variant="primary" onClick={() => setIsCreateOpen(true)}>
                   {t('pipeline.addApplication')}
                 </Button>
+                )}
               </div>
             ) : (
               <PipelineBoard

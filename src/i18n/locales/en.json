@@ -44,7 +44,11 @@
     "checkEmail": "Check your email",
     "emailSent": "We've sent a magic link to {{email}}. Click the link in the email to log in.",
     "addingAccountTitle": "Add another account",
-    "addingAccountHint": "Sign in with the other account. {{email}} stays signed in."
+    "addingAccountHint": "Sign in with the other account. {{email}} stays signed in.",
+    "accountSuspended": "This account is suspended. Please contact your administrator.",
+    "chooseOrganization": "Choose an organization",
+    "chooseOrganizationHint": "This user belongs to more than one organization.",
+    "organizationSuspended": "Suspended"
   },
   "register": {
     "title": "Start your free trial",
@@ -321,6 +325,8 @@
     "signOut": "Sign out",
     "addAccount": "Add account",
     "switchAccount": "Switch to this account",
+    "currentOrganization": "Current",
+    "organizationSuspended": "Suspended",
     "applicationsByStage": "Applications by Stage",
     "activityTrend": "Activity Trend",
     "myJobs": "Open Jobs",
@@ -810,7 +816,7 @@
       "phoneNumberPlaceholder": "e.g., 89667186",
       "appRole": "App role",
       "appRoleDefault": "Default role",
-      "appRoleHint": "Org access is member. Pick recruiter, supervisor, etc. — not account admin.",
+      "appRoleHint": "Org access is member. Pick recruiter, supervisor, sales, etc. Sales can only view dashboard, jobs, candidates, and pipeline.",
       "sendLoginLink": "Send a login link by email",
       "submit": "Invite user",
       "sending": "Inviting…",
@@ -1230,6 +1236,40 @@
       "delete": "Failed to delete template."
     }
   },
+  "publicCandidates": {
+    "anonymous": "Candidate",
+    "hero": {
+      "title": "Candidates",
+      "subtitle": "A shared selection. Email, phone, and the full name stay hidden."
+    },
+    "list": {
+      "title": "Candidates",
+      "count": "{{count}} candidates"
+    },
+    "card": {
+      "viewAnalysis": "View details"
+    },
+    "empty": {
+      "title": "No candidates",
+      "subtitle": "This selection has no candidates right now."
+    },
+    "pagination": {
+      "prev": "Previous",
+      "next": "Next"
+    },
+    "detail": {
+      "back": "Back to the list",
+      "analysisTitle": "AI analysis",
+      "summary": "Summary",
+      "keyPoints": "Key points",
+      "warnings": "Warnings",
+      "noAnalysis": "This candidate does not have a resume analysis yet.",
+      "notFound": "This candidate could not be found."
+    },
+    "errors": {
+      "load": "The list could not be loaded."
+    }
+  },
   "publicJobs": {
     "title": "Open Positions",
     "subtitle": "Explore open roles and apply in minutes.",
@@ -1273,6 +1313,10 @@
       "subtitle": "Try adjusting your search or filters."
     },
     "error": "Failed to load open positions.",
+    "suspended": {
+      "title": "Account suspended",
+      "message": "This account is suspended. Please contact your administrator."
+    },
     "details": {
       "back": "Back to open positions",
       "apply": "Apply Now",
@@ -1511,6 +1555,31 @@
     "newCandidate": "New Candidate",
     "candidate": "Candidate",
     "unknown": "Unknown",
+    "publicLink": {
+      "button": "Create public link",
+      "creating": "Creating link...",
+      "copied": "Link copied",
+      "admin": "Admin public links",
+      "createTitle": "Create public link",
+      "create": "Create",
+      "cancel": "Cancel",
+      "nameLabel": "Filter name",
+      "namePlaceholder": "e.g. Backend + frontend",
+      "nameRequired": "Name is required",
+      "error": "Could not create the public link",
+      "adminTitle": "Public links",
+      "empty": "There are no public links yet.",
+      "copy": "Copy",
+      "delete": "Delete",
+      "confirmDelete": "Delete the link \"{{name}}\"? It will no longer be available.",
+      "loadError": "Public links could not be loaded",
+      "deleteError": "The link could not be deleted",
+      "columns": {
+        "name": "Name",
+        "created": "Created",
+        "actions": "Actions"
+      }
+    },
     "filters": {
       "source": "Source",
       "sourceAll": "All",

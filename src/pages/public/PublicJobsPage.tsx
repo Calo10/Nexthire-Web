@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router-dom';
 import Button from '../../components/Button';
 import ErrorMessage from '../../components/ErrorMessage';
+import AccountSuspendedNotice, { isAccountSuspended } from '../../components/public/AccountSuspendedNotice';
 import type { JobPublicDTO } from '../../types/publicJobs';
 import { useDebouncedValue } from '../../hooks/public/useDebouncedValue';
 import { usePublicJobs } from '../../hooks/public/usePublicJobs';
@@ -136,8 +137,16 @@ export default function PublicJobsPage() {
     });
   }, [allJobs, debouncedSearch, location]);
 
+  const accountSuspended = isAccountSuspended(error);
+
   return (
     <div className="min-h-full">
+      {accountSuspended ? (
+        <div className="max-w-xl mx-auto px-4 py-24">
+          <AccountSuspendedNotice />
+        </div>
+      ) : (
+      <>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
         <div className="text-center">
           <h1 className="text-4xl sm:text-5xl font-bold brand-heading">{t('publicJobs.hero.title')}</h1>
@@ -230,6 +239,8 @@ export default function PublicJobsPage() {
           </div>
         </div>
       </div>
+      </>
+      )}
     </div>
   );
 }

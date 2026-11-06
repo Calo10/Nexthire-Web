@@ -15,6 +15,7 @@ import { useBackdropDismiss } from '../../hooks/useBackdropDismiss';
 import HoverTooltip from '../HoverTooltip';
 import PhoneDisplay from '../PhoneDisplay';
 import { displayCandidateEmail } from '../../lib/candidateEmail';
+import { useAccess } from '../../contexts/AccessContext';
 
 type TabKey = 'history' | 'notes' | 'tasks';
 type PanelTabKey = 'activity' | 'whatsapp';
@@ -157,6 +158,7 @@ export default function ApplicationInspectorPanel(props: ApplicationInspectorPan
     onUnauthorized,
   } = props;
   const { t } = useTranslation();
+  const { readOnly } = useAccess();
   const backdropDismiss = useBackdropDismiss(onClose);
   // Default to Notes to avoid extra calls on open
   const [tab, setTab] = useState<TabKey>('notes');
@@ -996,6 +998,7 @@ export default function ApplicationInspectorPanel(props: ApplicationInspectorPan
                 </div>
               </Button>
 
+              {readOnly ? null : (
               <Button
                 variant="primary"
                 size="sm"
@@ -1019,6 +1022,7 @@ export default function ApplicationInspectorPanel(props: ApplicationInspectorPan
                   <span>{t('pipeline.inspector.resume.analyze')}</span>
                 </div>
               </Button>
+              )}
             </div>
 
             {aiResult ? (
@@ -1047,6 +1051,7 @@ export default function ApplicationInspectorPanel(props: ApplicationInspectorPan
                 >
                   {t('pipeline.inspector.tabs.activity')}
                 </button>
+                {readOnly ? null : (
                 <HoverTooltip
                   show={showWhatsappTabTooltip}
                   content={whatsappTabTooltip}
@@ -1088,6 +1093,7 @@ export default function ApplicationInspectorPanel(props: ApplicationInspectorPan
                     ) : null}
                   </button>
                 </HoverTooltip>
+                )}
               </div>
             </div>
 
@@ -1223,6 +1229,7 @@ export default function ApplicationInspectorPanel(props: ApplicationInspectorPan
                                     <p className="text-sm font-semibold text-dark-text truncate">{author}</p>
                                     <p className="text-xs text-gray-500 mt-1">{formatDateTime(n.createdAt, locale)}</p>
                                   </div>
+                                  {readOnly ? null : (
                                   <button
                                     type="button"
                                     onClick={() => handleDeleteNote(n.id)}
@@ -1235,6 +1242,7 @@ export default function ApplicationInspectorPanel(props: ApplicationInspectorPan
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                     </svg>
                                   </button>
+                                  )}
                                 </div>
                                 <p className="text-sm text-gray-700 mt-2 whitespace-pre-wrap">{n.body}</p>
                               </div>
@@ -1242,6 +1250,7 @@ export default function ApplicationInspectorPanel(props: ApplicationInspectorPan
                           })}
                         </div>
                       )}
+                      {readOnly ? null : (
                       <form
                         className="mt-4 space-y-2"
                         onSubmit={(event) => {
@@ -1264,6 +1273,7 @@ export default function ApplicationInspectorPanel(props: ApplicationInspectorPan
                           </Button>
                         </div>
                       </form>
+                      )}
                     </div>
                   ) : (
                     <div>
@@ -1411,7 +1421,7 @@ export default function ApplicationInspectorPanel(props: ApplicationInspectorPan
             )}
           </div>
 
-          {/* Footer actions */}
+          {readOnly ? null : (
           <div className="p-6 border-t border-gray-200 flex flex-wrap items-center justify-between gap-3">
             <Button
               variant="outline"
@@ -1471,6 +1481,7 @@ export default function ApplicationInspectorPanel(props: ApplicationInspectorPan
               </Button>
             </div>
           </div>
+          )}
         </>
       )}
     </div>

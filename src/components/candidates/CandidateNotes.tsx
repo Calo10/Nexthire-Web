@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import Button from '../Button';
 import { candidatesApi } from '../../api/candidatesApi';
 import type { CandidateNote } from '../../types/candidates';
+import { useAccess } from '../../contexts/AccessContext';
 
 interface CandidateNotesProps {
   candidateId: string;
@@ -25,6 +26,7 @@ function formatNoteDate(value: string, locale: string) {
 
 export default function CandidateNotes({ candidateId, onError }: CandidateNotesProps) {
   const { t, i18n } = useTranslation();
+  const { readOnly } = useAccess();
   const [notes, setNotes] = useState<CandidateNote[]>([]);
   const [body, setBody] = useState('');
   const [loading, setLoading] = useState(true);
@@ -114,6 +116,7 @@ export default function CandidateNotes({ candidateId, onError }: CandidateNotesP
                     {author ? <p className="text-sm font-semibold text-dark-text truncate">{author}</p> : null}
                     <p className="text-xs text-gray-500 mt-0.5">{formatNoteDate(note.createdAt, i18n.language || 'en')}</p>
                   </div>
+                  {readOnly ? null : (
                   <button
                     type="button"
                     className="p-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 disabled:opacity-50"
@@ -125,6 +128,7 @@ export default function CandidateNotes({ candidateId, onError }: CandidateNotesP
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   </button>
+                  )}
                 </div>
                 <p className="text-sm text-gray-700 mt-2 whitespace-pre-wrap">{note.body}</p>
               </div>
@@ -133,6 +137,7 @@ export default function CandidateNotes({ candidateId, onError }: CandidateNotesP
         </div>
       )}
 
+      {readOnly ? null : (
       <form className="space-y-2" onSubmit={(event) => void add(event)}>
         <textarea
           value={body}
@@ -148,6 +153,7 @@ export default function CandidateNotes({ candidateId, onError }: CandidateNotesP
           </Button>
         </div>
       </form>
+      )}
     </div>
   );
 }

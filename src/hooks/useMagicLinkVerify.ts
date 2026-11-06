@@ -11,6 +11,11 @@ export function useMagicLinkVerify() {
   const { completeMagicLink } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [accountSuspended, setAccountSuspended] = useState(false);
+  const [orgSelection, setOrgSelection] = useState<{
+    organizations: { id: string; name: string; status: string }[];
+    selectionToken: string;
+  } | null>(null);
 
   useEffect(() => {
     const token = extractMagicLinkToken(location.search, location.hash);
@@ -27,18 +32,29 @@ export function useMagicLinkVerify() {
       try {
         const result = await completeMagicLink(token);
         if (cancelled) return;
+        if (result.requiresOrgSelection && result.selectionToken && result.organizations) {
+          setOrgSelection({
+            organizations: result.organizations,
+            selectionToken: result.selectionToken,
+          });
+          setLoading(false);
+          return;
+        }
         window.location.assign(result.requiresOrgSetup ? '/onboarding/company' : '/app/dashboard');
       } catch (err) {
         if (cancelled) return;
         const apiErr = err as ApiError;
-        const message =
-          apiErr?.message ||
-          (err && typeof err === 'object' && 'message' in err ? String((err as { message: string }).message) : '') ||
-          t('verify.linkExpired');
+        const suspended = apiErr?.code === 'account_suspended';
+        const message = suspended
+          ? t('login.accountSuspended')
+          : apiErr?.message ||
+            (err && typeof err === 'object' && 'message' in err ? String((err as { message: string }).message) : '') ||
+            t('verify.linkExpired');
         if (import.meta.env.DEV) {
           console.error('[magic-link consume]', apiErr);
         }
         setError(message);
+        setAccountSuspended(suspended);
         setLoading(false);
       }
     };
@@ -50,5 +66,5 @@ export function useMagicLinkVerify() {
     };
   }, [location.search, location.hash, completeMagicLink, t]);
 
-  return { loading, error };
+  return { loading, error, accountSuspended, orgSelection };
 }
