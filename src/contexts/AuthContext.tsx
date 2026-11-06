@@ -39,20 +39,60 @@ export type LoginCompletion = {
   selectionToken?: string;
 };
 
+function responseRecord(response: object): Record<string, unknown> {
+  return response as Record<string, unknown>;
+}
+
+function loginOrganizations(response: object): LoginOrganizationChoice[] {
+  const raw = responseRecord(response).organizations ?? responseRecord(response).Organizations;
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((item) => {
+      if (!item || typeof item !== 'object') return null;
+      const org = item as Record<string, unknown>;
+      const id = org.id ?? org.Id ?? org.organizationId ?? org.OrganizationId;
+      if (id == null || id === '') return null;
+      return {
+        id: String(id),
+        name: typeof (org.name ?? org.Name) === 'string' ? String(org.name ?? org.Name) : String(id),
+        status: String(org.status ?? org.Status ?? ''),
+      };
+    })
+    .filter((org): org is LoginOrganizationChoice => org != null);
+}
+
+function allOrganizationsSuspended(organizations: LoginOrganizationChoice[]) {
+  return organizations.length > 0 && organizations.every((org) => org.status.trim().toLowerCase() === 'suspended');
+}
+
 function loginSelection(response: {
   requiresOrgSelection?: boolean;
   selectionToken?: string;
   organizations?: LoginOrganizationChoice[];
 }): LoginCompletion | null {
-  if (!response.requiresOrgSelection || !response.selectionToken || !response.organizations || response.organizations.length < 2) {
+  const raw = responseRecord(response);
+  const requiresOrgSelection = Boolean(raw.requiresOrgSelection ?? raw.RequiresOrgSelection);
+  const selectionToken = String(raw.selectionToken ?? raw.SelectionToken ?? '').trim();
+  const organizations = loginOrganizations(response);
+  if (!requiresOrgSelection || !selectionToken || organizations.length < 2) {
     return null;
   }
   return {
     requiresOrgSetup: false,
     requiresOrgSelection: true,
-    organizations: response.organizations,
-    selectionToken: response.selectionToken,
+    organizations,
+    selectionToken,
   };
+}
+
+function missingTokenError(response: object): Error {
+  if (allOrganizationsSuspended(loginOrganizations(response))) {
+    const error = new Error('This account is suspended. Please contact your administrator.') as Error & { code?: string; status?: number };
+    error.code = 'account_suspended';
+    error.status = 403;
+    return error;
+  }
+  return new Error('No access token received from server');
 }
 
 interface Subscription {
@@ -316,7 +356,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (pending) return pending;
 
     if (!response.accessToken) {
-      throw new Error('No access token received from server');
+      throw missingTokenError(response);
     }
 
     const { nextHireToken, requiresOrgSetup } = persistAuthResponse(response);
@@ -335,7 +375,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const selectOrganization = async (selectionToken: string, organizationId: string): Promise<LoginCompletion> => {
     const response = await authApi.selectOrganization(selectionToken, organizationId);
     if (!response.accessToken) {
-      throw new Error('No access token received from server');
+      throw missingTokenError(response);
     }
 
     const { nextHireToken, requiresOrgSetup } = persistAuthResponse(response);
