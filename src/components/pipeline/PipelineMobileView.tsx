@@ -4,6 +4,7 @@ import PipelineMobileBoard from './PipelineMobileBoard';
 import ApplicationInspectorPanel from './ApplicationInspectorPanel';
 import ExportExcelButton from '../ExportExcelButton';
 import type { PipelinePageState } from '../../hooks/usePipelinePage';
+import { useAccess } from '../../contexts/AccessContext';
 
 export default function PipelineMobileView({
   t,
@@ -41,6 +42,7 @@ export default function PipelineMobileView({
   historyRefreshKey,
   exportToExcel,
 }: PipelinePageState) {
+  const { readOnly } = useAccess();
   return (
     <div className="min-h-screen bg-gray-50 pb-6">
       <div className="p-4">
@@ -92,6 +94,7 @@ export default function PipelineMobileView({
             onClick={exportToExcel}
             disabled={boardLoading || columns.every((column) => column.items.length === 0)}
           />
+          {readOnly ? null : (
           <Button
             variant="primary"
             size="md"
@@ -106,6 +109,7 @@ export default function PipelineMobileView({
             <span>{t('pipeline.addApplication')}</span>
           </div>
           </Button>
+          )}
         </div>
 
         {toastError ? (
@@ -130,9 +134,11 @@ export default function PipelineMobileView({
           <div className="text-center py-12 px-4 bg-white rounded-xl border border-gray-200">
             <h3 className="text-base font-semibold text-dark-text mb-2">{t('pipeline.empty.title')}</h3>
             <p className="text-sm text-gray-600 mb-4">{t('pipeline.empty.subtitle')}</p>
+            {readOnly ? null : (
             <Button variant="primary" onClick={() => setIsCreateOpen(true)}>
               {t('pipeline.addApplication')}
             </Button>
+            )}
           </div>
         ) : data?.stages?.length ? (
           <PipelineMobileBoard

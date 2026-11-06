@@ -5,6 +5,7 @@ import JobsTable from '../JobsTable';
 import ErrorMessage from '../ErrorMessage';
 import ExportExcelButton from '../ExportExcelButton';
 import type { JobsPageState } from '../../hooks/useJobsPage';
+import { useAccess } from '../../contexts/AccessContext';
 
 export default function JobsDesktopView({
   t,
@@ -35,6 +36,7 @@ export default function JobsDesktopView({
   openJobDrawer,
   exportToExcel,
 }: JobsPageState) {
+  const { readOnly } = useAccess();
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50">
       <TopBar />
@@ -70,6 +72,7 @@ export default function JobsDesktopView({
               onClick={exportToExcel}
               disabled={jobsLoading || filteredJobs.length === 0}
             />
+            {readOnly ? null : (
             <Button variant="primary" size="md" onClick={() => setIsNewJobModalOpen(true)}>
               <div className="flex items-center gap-2">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -78,6 +81,7 @@ export default function JobsDesktopView({
                 <span>{t('jobs.newJob')}</span>
               </div>
             </Button>
+            )}
           </div>
         </div>
 

@@ -257,6 +257,7 @@ export default function PipelineCard({
   onToggleMenu,
   onCloseMenu,
   isSelected = false,
+  dragDisabled = false,
 }: {
   card: KanbanApplicationCard;
   locale: string;
@@ -267,8 +268,9 @@ export default function PipelineCard({
   onToggleMenu?: () => void;
   onCloseMenu?: () => void;
   isSelected?: boolean;
+  dragDisabled?: boolean;
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: card.id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: card.id, disabled: dragDisabled });
   const style = { transform: CSS.Transform.toString(transform), transition } as React.CSSProperties;
   return (
     <PipelineCardView

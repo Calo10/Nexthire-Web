@@ -5,6 +5,7 @@ import TagPill from './TagPill';
 import { formatTagLabel } from '../../lib/candidateTagStyle';
 import { candidatesApi } from '../../api/candidatesApi';
 import type { CandidateTag } from '../../types/candidates';
+import { useAccess } from '../../contexts/AccessContext';
 
 interface CandidateTagsProps {
   candidateId: string;
@@ -15,6 +16,7 @@ interface CandidateTagsProps {
 
 export default function CandidateTags({ candidateId, tags, onChanged, onError }: CandidateTagsProps) {
   const { t } = useTranslation();
+  const { readOnly } = useAccess();
   const [name, setName] = useState('');
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -99,7 +101,7 @@ export default function CandidateTags({ candidateId, tags, onChanged, onError }:
       name={tag.name}
       className="px-2.5 py-1 text-xs"
       removeLabel={t('candidates.tags.remove', { name: formatTagLabel(tag.name) })}
-      onRemove={saving ? undefined : remove.bind(null, tag)}
+      onRemove={readOnly || saving ? undefined : remove.bind(null, tag)}
     />
   ));
 
@@ -113,6 +115,7 @@ export default function CandidateTags({ candidateId, tags, onChanged, onError }:
           tagPills
         )}
       </div>
+      {readOnly ? null : (
       <div className="relative" ref={rootRef}>
         <form
           className="flex overflow-hidden rounded-lg border border-gray-300 bg-white focus-within:ring-2 focus-within:ring-primary"
@@ -162,6 +165,7 @@ export default function CandidateTags({ candidateId, tags, onChanged, onError }:
           </div>
         ) : null}
       </div>
+      )}
     </div>
   );
 }

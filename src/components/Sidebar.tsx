@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { appNavItems } from '../config/appNavItems';
+import { isSalesNavKey, useAccess } from '../contexts/AccessContext';
 import { useWhatsAppUnreadConversationCount } from '../hooks/useWhatsAppUnreadConversationCount';
 import Logo from './Logo';
 import OrgSidebarMark from './OrgSidebarMark';
@@ -10,6 +11,12 @@ export default function Sidebar() {
   const { t } = useTranslation();
   const displayName = useCurrentDisplayName();
   const unreadWhatsAppConversations = useWhatsAppUnreadConversationCount();
+  const { ready, readOnly } = useAccess();
+  const navItems = !ready
+    ? []
+    : readOnly
+      ? appNavItems.filter((item) => isSalesNavKey(item.translationKey))
+      : appNavItems;
 
   return (
     <aside className="hidden lg:flex fixed left-0 top-0 h-full w-64 bg-white border-r border-gray-200 flex-col">
@@ -22,7 +29,7 @@ export default function Sidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 px-4 py-6 space-y-1">
-        {appNavItems.map((item) => (
+        {navItems.map((item) => (
           <NavLink
             key={item.path}
             to={item.path}

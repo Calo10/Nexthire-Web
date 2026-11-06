@@ -1,15 +1,36 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useMagicLinkVerify } from '../hooks/useMagicLinkVerify';
+import { useAuth } from '../contexts/AuthContext';
 import Logo from '../components/Logo';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import LanguageSwitcher from '../components/LanguageSwitcher';
+import OrganizationSelectStep from '../components/auth/OrganizationSelectStep';
+import type { ApiError } from '../lib/api';
 
 export default function AuthVerify() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { loading, error } = useMagicLinkVerify();
+  const { selectOrganization } = useAuth();
+  const { loading, error, accountSuspended, orgSelection } = useMagicLinkVerify();
+  const [selecting, setSelecting] = useState(false);
+  const [selectError, setSelectError] = useState<string | null>(null);
+
+  const handleSelectOrganization = async (organizationId: string) => {
+    if (!orgSelection) return;
+    setSelectError(null);
+    setSelecting(true);
+    try {
+      const result = await selectOrganization(orgSelection.selectionToken, organizationId);
+      window.location.assign(result.requiresOrgSetup ? '/onboarding/company' : '/app/dashboard');
+    } catch (err) {
+      const apiErr = err as ApiError;
+      setSelectError(apiErr?.code === 'account_suspended' ? t('login.accountSuspended') : apiErr?.message || t('login.accountSuspended'));
+      setSelecting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-purple-50 flex items-center justify-center px-4 relative overflow-hidden">
@@ -40,6 +61,13 @@ export default function AuthVerify() {
               <h2 className="text-xl font-semibold text-dark-text mb-2">{t('verify.verifying')}</h2>
               <p className="text-gray-600">{t('verify.signingIn')}</p>
             </div>
+          ) : orgSelection ? (
+            <OrganizationSelectStep
+              organizations={orgSelection.organizations}
+              isLoading={selecting}
+              error={selectError}
+              onSelect={handleSelectOrganization}
+            />
           ) : error ? (
             <div className="text-center space-y-4">
               <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto">
@@ -47,8 +75,16 @@ export default function AuthVerify() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </div>
-              <h2 className="text-xl font-semibold text-dark-text mb-2">{t('verify.linkExpired')}</h2>
+              <h2 className="text-xl font-semibold text-dark-text mb-2">
+                {accountSuspended ? t('publicJobs.suspended.title') : t('verify.linkExpired')}
+              </h2>
               <p className="text-gray-600 mb-6 text-sm break-words">{error}</p>
+              {accountSuspended ? (
+                <Button onClick={() => navigate('/login')} className="w-full">
+                  {t('common.login')}
+                </Button>
+              ) : (
+                <>
               <Button onClick={() => navigate('/register')} className="w-full">
                 {t('verify.sendNewLink')}
               </Button>
@@ -59,6 +95,8 @@ export default function AuthVerify() {
               >
                 {t('common.login')}
               </button>
+                </>
+              )}
             </div>
           ) : null}
         </Card>

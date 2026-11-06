@@ -3,17 +3,20 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { clearAddingAccount, markAddingAccount } from '../lib/authSession';
+import type { ApiError } from '../lib/api';
 import Logo from '../components/Logo';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import ErrorMessage from '../components/ErrorMessage';
+import OrganizationSelectStep from '../components/auth/OrganizationSelectStep';
+import type { LoginOrganizationChoice } from '../contexts/AuthContext';
 
 type LoginMethod = 'magic-link' | 'password';
 
 export default function Login() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { loginWithMagicLink, loginWithPassword, isAuthenticated, isLoading: authLoading, user } = useAuth();
+  const { loginWithMagicLink, loginWithPassword, selectOrganization, isAuthenticated, isLoading: authLoading, user } = useAuth();
   const [searchParams] = useSearchParams();
   const addingAccount = searchParams.get('addAccount') === '1';
   const [loginMethod, setLoginMethod] = useState<LoginMethod>('password');
@@ -22,6 +25,8 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [orgChoices, setOrgChoices] = useState<LoginOrganizationChoice[] | null>(null);
+  const [selectionToken, setSelectionToken] = useState<string | null>(null);
 
   useEffect(() => {
     if (addingAccount) markAddingAccount();
@@ -60,6 +65,11 @@ export default function Login() {
       } else {
         // Password login
         const result = await loginWithPassword(email, password);
+        if (result.requiresOrgSelection && result.selectionToken && result.organizations) {
+          setOrgChoices(result.organizations);
+          setSelectionToken(result.selectionToken);
+          return;
+        }
         const nextPath = result.requiresOrgSetup ? '/onboarding/company' : '/app/dashboard';
         if (addingAccount) {
           window.location.assign(nextPath);
@@ -68,13 +78,40 @@ export default function Login() {
         navigate(nextPath, { replace: true });
       }
     } catch (err) {
-      const errorMessage =
-        err && typeof err === 'object' && 'message' in err
+      const apiErr = err as ApiError;
+      const suspended = apiErr?.code === 'account_suspended';
+      const errorMessage = suspended
+        ? t('login.accountSuspended')
+        : err && typeof err === 'object' && 'message' in err
           ? (err.message as string)
           : loginMethod === 'magic-link'
-          ? 'Could not send magic link. Please try again.'
-          : 'Invalid credentials. Please try again.';
+            ? 'Could not send magic link. Please try again.'
+            : 'Invalid credentials. Please try again.';
       setError(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSelectOrganization = async (organizationId: string) => {
+    if (!selectionToken) return;
+    setError(null);
+    setIsLoading(true);
+    try {
+      const result = await selectOrganization(selectionToken, organizationId);
+      const nextPath = result.requiresOrgSetup ? '/onboarding/company' : '/app/dashboard';
+      if (addingAccount) {
+        window.location.assign(nextPath);
+        return;
+      }
+      navigate(nextPath, { replace: true });
+    } catch (err) {
+      const apiErr = err as ApiError;
+      setError(
+        apiErr?.code === 'account_suspended'
+          ? t('login.accountSuspended')
+          : apiErr?.message || t('login.accountSuspended')
+      );
     } finally {
       setIsLoading(false);
     }
@@ -125,7 +162,16 @@ export default function Login() {
               {t('login.addingAccountHint', { email: user.email })}
             </p>
           )}
-          
+
+          {orgChoices && selectionToken ? (
+            <OrganizationSelectStep
+              organizations={orgChoices}
+              isLoading={isLoading}
+              error={error}
+              onSelect={handleSelectOrganization}
+            />
+          ) : (
+          <>
           {/* Login Method Toggle */}
           <div className="mb-6">
             <div className="flex bg-gray-100 rounded-lg p-1">
@@ -270,6 +316,8 @@ export default function Login() {
                 {t('login.emailSent', { email })}
               </p>
             </div>
+          )}
+          </>
           )}
           
           <div className="mt-6 text-center">

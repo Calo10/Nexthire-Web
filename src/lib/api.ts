@@ -27,6 +27,7 @@ import type { ProvisionTrialRequest, ProvisionTrialResponse } from '../types/onb
 export interface ApiError {
   message: string;
   status?: number;
+  code?: string;
   /** Raw API error body (preserves Meta fields like metaErrorUserMsg). */
   details?: Record<string, unknown>;
 }
@@ -428,6 +429,9 @@ export const authApi = {
       name: string;
     } | null;
     features: Record<string, any> | null;
+    requiresOrgSelection?: boolean;
+    selectionToken?: string;
+    organizations?: { id: string; name: string; status: string }[];
   }> => {
     // Use direct fetch to avoid triggering onUnauthorized on 401
     // This is part of the login flow and 401 (invalid/expired token) shouldn't cause logout/redirect
@@ -443,9 +447,12 @@ export const authApi = {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+      const code = typeof errorData.code === 'string' ? errorData.code : undefined;
       throw {
         message: errorData.message || errorData.error || 'This link expired or was already used.',
         status: response.status,
+        code,
+        details: errorData,
       } as ApiError;
     }
 
@@ -470,6 +477,9 @@ export const authApi = {
       name: string;
     } | null;
     features: Record<string, any> | null;
+    requiresOrgSelection?: boolean;
+    selectionToken?: string;
+    organizations?: { id: string; name: string; status: string }[];
   }> => {
     // Use direct fetch for login to avoid triggering onUnauthorized on 401
     // 401 is expected for invalid credentials and shouldn't cause logout/redirect
@@ -485,11 +495,14 @@ export const authApi = {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+      const code = typeof errorData.code === 'string' ? errorData.code : undefined;
       
       // Provide user-friendly error messages
       let errorMessage = 'Invalid credentials. Please try again.';
       
-      if (response.status === 401) {
+      if (code === 'account_suspended') {
+        errorMessage = errorData.message || errorData.error || errorMessage;
+      } else if (response.status === 401) {
         errorMessage = 'Invalid email or password';
       } else if (response.status === 400) {
         errorMessage = errorData.message || errorData.error || 'Please check your input and try again.';
@@ -504,10 +517,70 @@ export const authApi = {
       throw {
         message: errorMessage,
         status: response.status,
+        code,
+        details: errorData,
       } as ApiError;
     }
 
     return await response.json();
+  },
+
+  selectOrganization: async (
+    selectionToken: string,
+    organizationId: string
+  ): Promise<{
+    accessToken: string;
+    nexa: {
+      accessToken: string;
+      refreshToken: string;
+      expiresAt: string;
+    };
+    requiresOrgSetup: boolean;
+    user: {
+      id: string;
+      email: string;
+      name?: string;
+    };
+    organization: {
+      id: string;
+      name: string;
+    } | null;
+    features: Record<string, any> | null;
+  }> => {
+    const url = `${API_BASE_URL}/auth/select-organization`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ selectionToken, organizationId }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      const code = typeof errorData.code === 'string' ? errorData.code : undefined;
+      throw {
+        message: errorData.message || errorData.error || 'Unable to use that organization',
+        status: response.status,
+        code,
+        details: errorData,
+      } as ApiError;
+    }
+
+    return await response.json();
+  },
+
+  listOrganizations: async (): Promise<{ id: string; name: string; status: string }[]> => {
+    return apiClient.get('/auth/organizations');
+  },
+
+  switchOrganization: async (organizationId: string): Promise<{
+    accessToken: string;
+    nexa?: { accessToken?: string; refreshToken?: string; expiresAt?: string };
+    requiresOrgSetup: boolean;
+    user: { id?: string; userId?: string; email: string; name?: string; fullName?: string };
+    organization?: unknown;
+    features?: Record<string, unknown> | null;
+  }> => {
+    return apiClient.post('/auth/switch-organization', { organizationId }, true);
   },
 
   requestPasswordReset: async (email: string): Promise<void> => {

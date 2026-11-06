@@ -78,11 +78,12 @@ function normalizeOrgUsersResponse(result: unknown): OrgUser[] {
 }
 
 export const orgUsersApi = {
-  getMe: async (): Promise<{ displayName: string | null }> => {
+  getMe: async (): Promise<{ displayName: string | null; roles: OrgUserRole[] }> => {
     const result = await apiClient.get<unknown>('/org/users/me', true);
     const raw = result && typeof result === 'object' ? (result as Record<string, unknown>) : {};
     const displayName = String(raw.displayName ?? raw.DisplayName ?? '').trim();
-    return { displayName: displayName || null };
+    const user = normalizeOrgUser(result);
+    return { displayName: displayName || null, roles: user?.roles ?? [] };
   },
 
   list: async (): Promise<OrgUser[]> => {
