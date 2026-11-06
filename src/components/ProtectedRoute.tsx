@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
+import { AccessProvider, useAccess } from '../contexts/AccessContext';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -24,6 +25,28 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
+  }
+
+  return (
+    <AccessProvider>
+      <AccessGate>{children}</AccessGate>
+    </AccessProvider>
+  );
+}
+
+function AccessGate({ children }: { children: ReactNode }) {
+  const { t } = useTranslation();
+  const { ready, organizationsReady } = useAccess();
+
+  if (!ready || !organizationsReady) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <p className="mt-4 text-gray-600">{t('common.loading')}</p>
+        </div>
+      </div>
+    );
   }
 
   return <>{children}</>;

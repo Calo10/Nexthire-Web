@@ -12,6 +12,7 @@ import { jobsApi, type ApiError } from '../../lib/api';
 import JobBotQuestionsModal from './JobBotQuestionsModal';
 import JobAdDesignModal from './JobAdDesignModal';
 import { useBackdropDismiss } from '../../hooks/useBackdropDismiss';
+import { useAccess } from '../../contexts/AccessContext';
 
 function formatDate(dateString: string | undefined, locale: string) {
   if (!dateString) return '-';
@@ -38,6 +39,7 @@ interface JobDetailDrawerProps {
 
 export default function JobDetailDrawer({ isOpen, job, onClose, onUpdated, onDeleted }: JobDetailDrawerProps) {
   const { t, i18n } = useTranslation();
+  const { readOnly } = useAccess();
   const backdropDismiss = useBackdropDismiss(onClose);
   const locale = i18n.language || 'en';
 
@@ -222,9 +224,11 @@ export default function JobDetailDrawer({ isOpen, job, onClose, onUpdated, onDel
 
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">{t('jobs.drawer.details')}</h3>
+            {readOnly ? null : (
             <Button variant="outline" size="sm" onClick={() => setIsEditing((v) => !v)} disabled={isSaving || !job}>
               {isEditing ? t('common.actions.cancel') : t('common.actions.edit')}
             </Button>
+            )}
           </div>
 
           {isEditing ? (
@@ -279,6 +283,7 @@ export default function JobDetailDrawer({ isOpen, job, onClose, onUpdated, onDel
             </div>
           )}
 
+          {readOnly ? null : (
           <div className="pt-4 border-t border-gray-200">
             <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">{t('jobs.drawer.actions')}</h3>
             <div className="flex flex-wrap gap-2">
@@ -320,6 +325,7 @@ export default function JobDetailDrawer({ isOpen, job, onClose, onUpdated, onDel
               </Button>
             </div>
           </div>
+          )}
 
           <div className="pt-4 border-t border-gray-200">
             <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">{t('jobs.drawer.metadata')}</h3>
@@ -332,6 +338,7 @@ export default function JobDetailDrawer({ isOpen, job, onClose, onUpdated, onDel
               <p className="text-xs font-semibold text-gray-500 uppercase mb-1">{t('jobs.drawer.updatedAt')}</p>
               <div className="flex items-center gap-1.5">
                 <p className="text-sm text-dark-text">{formatDate(job?.updatedAt, locale)}</p>
+                {readOnly ? null : (
                 <button
                   type="button"
                   onClick={handleRefreshUpdated}
@@ -352,6 +359,7 @@ export default function JobDetailDrawer({ isOpen, job, onClose, onUpdated, onDel
                     <path strokeLinecap="round" strokeLinejoin="round" d="M20 4v5h-5" />
                   </svg>
                 </button>
+                )}
               </div>
             </div>
             </div>
@@ -359,6 +367,7 @@ export default function JobDetailDrawer({ isOpen, job, onClose, onUpdated, onDel
         </div>
 
         <div className="p-6 border-t border-gray-200 flex items-center justify-between gap-3">
+          {readOnly ? <span /> : (
           <Button
             variant="primary"
             className="bg-red-600 hover:bg-red-700 from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 focus:ring-red-600"
@@ -367,13 +376,16 @@ export default function JobDetailDrawer({ isOpen, job, onClose, onUpdated, onDel
           >
             {t('common.actions.delete')}
           </Button>
+          )}
           <div className="flex items-center gap-3">
             <Button variant="secondary" onClick={onClose} disabled={isSaving}>
               {t('common.actions.close')}
             </Button>
+            {readOnly ? null : (
             <Button variant="primary" onClick={handleSave} disabled={!job || !canSave || isSaving}>
               {isSaving ? t('common.actions.saving') : t('common.actions.saveChanges')}
             </Button>
+            )}
           </div>
         </div>
       </div>

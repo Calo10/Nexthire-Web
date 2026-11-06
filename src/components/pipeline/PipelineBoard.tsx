@@ -13,6 +13,7 @@ import {
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import type { KanbanColumn } from '../../types/applications';
 import PipelineCard, { PipelineCardView } from './PipelineCard';
+import { useAccess } from '../../contexts/AccessContext';
 
 function ColumnShell({
   stageId,
@@ -67,7 +68,8 @@ export default function PipelineBoard({
   onCardSendMessage?: (applicationId: string) => void;
   onStageTabSelect?: (stageId: string) => void;
 }) {
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
+  const { readOnly } = useAccess();
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: readOnly ? 99999 : 6 } }));
   const [activeId, setActiveId] = useState<string | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
@@ -128,7 +130,7 @@ export default function PipelineBoard({
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     setActiveId(null);
-    if (!over) return;
+    if (readOnly || !over) return;
     const activeId = String(active.id);
     const overId = String(over.id);
     const fromStage = appToStage.get(activeId);
@@ -179,15 +181,16 @@ export default function PipelineBoard({
                       menuOpen={openMenuId === card.id}
                       onToggleMenu={() => setOpenMenuId((prev) => (prev === card.id ? null : card.id))}
                       onCloseMenu={() => setOpenMenuId(null)}
+                      dragDisabled={readOnly}
                       onClick={() => {
                         setOpenMenuId(null);
                         onSelectCard(card.id);
                       }}
-                      onAddNote={() => {
+                      onAddNote={readOnly ? undefined : () => {
                         setOpenMenuId(null);
                         onCardAddNote?.(card.id);
                       }}
-                      onSendMessage={() => {
+                      onSendMessage={readOnly ? undefined : () => {
                         setOpenMenuId(null);
                         onCardSendMessage?.(card.id);
                       }}

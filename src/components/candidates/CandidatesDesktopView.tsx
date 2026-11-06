@@ -7,7 +7,9 @@ import TextField from '../TextField';
 import CandidatesTable from './CandidatesTable';
 import ExportExcelButton from '../ExportExcelButton';
 import TagFilterSelect from './TagFilterSelect';
+import PublicCandidateLinkButton from './PublicCandidateLinkButton';
 import { FILTER_CONTROL_CLASS, type CandidatesPageState } from '../../hooks/useCandidatesPage';
+import { useAccess } from '../../contexts/AccessContext';
 
 export default function CandidatesDesktopView({
   t,
@@ -36,14 +38,20 @@ export default function CandidatesDesktopView({
   isExporting,
   exportError,
   exportToExcel,
+  hasActiveFilter,
+  publicLinkBusy,
+  publicLinkError,
+  publicLinkCopied,
+  createPublicLink,
 }: CandidatesPageState) {
+  const { readOnly } = useAccess();
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50">
       <TopBar />
 
       <div className="p-8">
         {/* Header Section */}
-        <div className="flex items-start justify-between gap-6 mb-6">
+        <div className="flex items-start justify-between gap-6 mb-10">
           <div>
             <h1 className="text-3xl font-bold text-dark-text">{t('candidates.title')}</h1>
             <p className="text-sm text-gray-600 mt-1">{t('candidates.subtitle')}</p>
@@ -68,11 +76,19 @@ export default function CandidatesDesktopView({
               />
             </div>
 
+            <PublicCandidateLinkButton
+              hasActiveFilter={hasActiveFilter}
+              publicLinkBusy={publicLinkBusy}
+              publicLinkError={publicLinkError}
+              publicLinkCopied={publicLinkCopied}
+              createPublicLink={createPublicLink}
+            />
             <ExportExcelButton
               onClick={() => void exportToExcel()}
               busy={isExporting}
               disabled={isLoading || total === 0}
             />
+            {readOnly ? null : (
             <Button variant="primary" size="md" onClick={() => setIsNewModalOpen(true)}>
               <div className="flex items-center gap-2">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -81,6 +97,7 @@ export default function CandidatesDesktopView({
                 <span>{t('candidates.newCandidate')}</span>
               </div>
             </Button>
+            )}
           </div>
         </div>
 
@@ -131,9 +148,11 @@ export default function CandidatesDesktopView({
             <div className="text-center py-16 px-6">
               <h3 className="text-lg font-semibold text-dark-text mb-2">{t('candidates.empty.title')}</h3>
               <p className="text-sm text-gray-600 mb-6">{t('candidates.empty.subtitle')}</p>
+              {readOnly ? null : (
               <Button variant="primary" onClick={() => setIsNewModalOpen(true)}>
                 {t('candidates.empty.cta')}
               </Button>
+              )}
             </div>
           ) : (
             <CandidatesTable

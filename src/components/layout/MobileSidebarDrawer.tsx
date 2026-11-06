@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { appNavItems } from '../../config/appNavItems';
+import { isSalesNavKey, useAccess } from '../../contexts/AccessContext';
 import LanguageSwitcher from '../LanguageSwitcher';
 import { useBackdropDismiss } from '../../hooks/useBackdropDismiss';
 import { useWhatsAppUnreadConversationCount } from '../../hooks/useWhatsAppUnreadConversationCount';
@@ -17,6 +18,12 @@ export default function MobileSidebarDrawer({ isOpen, onClose }: MobileSidebarDr
   const { t } = useTranslation();
   const displayName = useCurrentDisplayName();
   const unreadWhatsAppConversations = useWhatsAppUnreadConversationCount();
+  const { ready, readOnly } = useAccess();
+  const navItems = !ready
+    ? []
+    : readOnly
+      ? appNavItems.filter((item) => isSalesNavKey(item.translationKey))
+      : appNavItems;
   const backdropDismiss = useBackdropDismiss(onClose);
 
   return (
@@ -49,7 +56,7 @@ export default function MobileSidebarDrawer({ isOpen, onClose }: MobileSidebarDr
         </div>
 
         <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
-          {appNavItems.map((item) => (
+          {navItems.map((item) => (
             <NavLink
               key={item.path}
               to={item.path}

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { KanbanColumn, KanbanStage } from '../../types/applications';
 import PipelineStageTabs from './PipelineStageTabs';
 import { PipelineCardView } from './PipelineCard';
+import { useAccess } from '../../contexts/AccessContext';
 
 export default function PipelineMobileBoard({
   stages,
@@ -24,6 +25,7 @@ export default function PipelineMobileBoard({
   onCardSendMessage?: (applicationId: string) => void;
 }) {
   const { t } = useTranslation();
+  const { readOnly } = useAccess();
   const [selectedStageId, setSelectedStageId] = useState<string | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [moveOpenForId, setMoveOpenForId] = useState<string | null>(null);
@@ -90,17 +92,17 @@ export default function PipelineMobileBoard({
                   setOpenMenuId(null);
                   onSelectCard(card.id);
                 }}
-                onAddNote={() => {
+                onAddNote={readOnly ? undefined : () => {
                   setOpenMenuId(null);
                   onCardAddNote?.(card.id);
                 }}
-                onSendMessage={() => {
+                onSendMessage={readOnly ? undefined : () => {
                   setOpenMenuId(null);
                   onCardSendMessage?.(card.id);
                 }}
               />
 
-              {otherStages.length > 0 ? (
+              {!readOnly && otherStages.length > 0 ? (
                 <div>
                   <button
                     type="button"

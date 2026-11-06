@@ -27,6 +27,8 @@ import MeetingsPage from './pages/MeetingsPage';
 import WhatsAppInboxPage from './pages/WhatsAppInboxPage';
 import PublicJobsPage from './pages/public/PublicJobsPage';
 import PublicJobDetailsPage from './pages/public/PublicJobDetailsPage';
+import PublicCandidatesPage from './pages/public/PublicCandidatesPage';
+import PublicCandidateDetailsPage from './pages/public/PublicCandidateDetailsPage';
 import OrganizationSetupPage from './pages/onboarding/OrganizationSetupPage';
 import SettingsPage from './pages/settings/SettingsPage';
 import ProfileSettingsPage from './pages/settings/ProfileSettingsPage';
@@ -100,6 +102,22 @@ function App() {
             element={
               <PublicJobsLayout>
                 <PublicJobDetailsPage />
+              </PublicJobsLayout>
+            }
+          />
+          <Route
+            path="/org/:orgId/candidates/:linkId"
+            element={
+              <PublicJobsLayout>
+                <PublicCandidatesPage />
+              </PublicJobsLayout>
+            }
+          />
+          <Route
+            path="/org/:orgId/candidates/:linkId/:candidateId"
+            element={
+              <PublicJobsLayout>
+                <PublicCandidateDetailsPage />
               </PublicJobsLayout>
             }
           />

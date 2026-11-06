@@ -1,6 +1,9 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
+import { useAccess } from '../contexts/AccessContext';
+import { type ApiError } from '../lib/api';
 import { markAddingAccount } from '../lib/authSession';
 
 function initial(name?: string, email?: string): string {
@@ -14,8 +17,11 @@ interface UserAccountMenuProps {
 
 export default function UserAccountMenu({ onClose, variant = 'dropdown' }: UserAccountMenuProps) {
   const { t } = useTranslation();
-  const { user, otherAccounts, switchAccount, logout } = useAuth();
+  const { user, org, otherAccounts, switchAccount, switchOrganization, logout } = useAuth();
+  const { organizations, organizationsReady } = useAccess();
   const other = otherAccounts[0];
+  const [switchingId, setSwitchingId] = useState<string | null>(null);
+  const [switchError, setSwitchError] = useState<string | null>(null);
 
   const handleLogout = () => {
     onClose?.();
@@ -28,6 +34,24 @@ export default function UserAccountMenu({ onClose, variant = 'dropdown' }: UserA
     switchAccount(other.email);
   };
 
+  const handleSwitchOrganization = async (organizationId: string) => {
+    if (organizationId === org?.id || switchingId) return;
+    setSwitchError(null);
+    setSwitchingId(organizationId);
+    try {
+      await switchOrganization(organizationId);
+    } catch (err) {
+      const apiErr = err as ApiError;
+      const code = apiErr?.code || (typeof apiErr?.details?.code === 'string' ? apiErr.details.code : '');
+      setSwitchError(code === 'account_suspended' ? t('login.accountSuspended') : apiErr?.message || t('login.accountSuspended'));
+      setSwitchingId(null);
+    }
+  };
+
+  const showOrganizations = organizations.length >= 2;
+
+  if (!organizationsReady) return null;
+
   const body = (
     <>
       <div className={variant === 'dropdown' ? 'px-4 py-2 border-b border-gray-200' : 'px-2'}>
@@ -38,6 +62,34 @@ export default function UserAccountMenu({ onClose, variant = 'dropdown' }: UserA
           <p className="text-xs text-gray-500 mt-1 break-all">{user.email}</p>
         )}
       </div>
+
+      {showOrganizations ? (
+        <div className="border-b border-gray-200 py-1">
+          {organizations.map((organization) => {
+            const current = organization.id === org?.id;
+            const suspended = organization.status.toLowerCase() === 'suspended';
+            return (
+              <button
+                key={organization.id}
+                type="button"
+                disabled={current || switchingId !== null}
+                onClick={() => handleSwitchOrganization(organization.id)}
+                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 disabled:hover:bg-transparent ${current ? 'text-primary' : 'text-gray-700'}`}
+              >
+                <span className="flex items-center justify-between gap-3">
+                  <span className="min-w-0 truncate font-medium">{organization.name}</span>
+                  {current ? (
+                    <span className="text-xs shrink-0">{t('dashboard.currentOrganization')}</span>
+                  ) : suspended ? (
+                    <span className="text-xs text-amber-700 shrink-0">{t('dashboard.organizationSuspended')}</span>
+                  ) : null}
+                </span>
+              </button>
+            );
+          })}
+          {switchError ? <p className="px-4 pb-2 text-xs text-red-600">{switchError}</p> : null}
+        </div>
+      ) : null}
 
       {other ? (
         <button

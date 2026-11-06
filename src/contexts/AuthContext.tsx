@@ -26,6 +26,35 @@ interface User {
 
 type Org = StoredOrganization;
 
+export type LoginOrganizationChoice = {
+  id: string;
+  name: string;
+  status: string;
+};
+
+export type LoginCompletion = {
+  requiresOrgSetup: boolean;
+  requiresOrgSelection?: boolean;
+  organizations?: LoginOrganizationChoice[];
+  selectionToken?: string;
+};
+
+function loginSelection(response: {
+  requiresOrgSelection?: boolean;
+  selectionToken?: string;
+  organizations?: LoginOrganizationChoice[];
+}): LoginCompletion | null {
+  if (!response.requiresOrgSelection || !response.selectionToken || !response.organizations || response.organizations.length < 2) {
+    return null;
+  }
+  return {
+    requiresOrgSetup: false,
+    requiresOrgSelection: true,
+    organizations: response.organizations,
+    selectionToken: response.selectionToken,
+  };
+}
+
 interface Subscription {
   planKey: string;
   status: string;
@@ -43,8 +72,10 @@ interface AuthContextType {
     email: string,
     options?: { forSignup?: boolean }
   ) => Promise<{ devToken?: string }>;
-  loginWithPassword: (email: string, password: string) => Promise<{ requiresOrgSetup: boolean }>;
-  completeMagicLink: (token: string) => Promise<{ requiresOrgSetup: boolean }>;
+  loginWithPassword: (email: string, password: string) => Promise<LoginCompletion>;
+  completeMagicLink: (token: string) => Promise<LoginCompletion>;
+  selectOrganization: (selectionToken: string, organizationId: string) => Promise<LoginCompletion>;
+  switchOrganization: (organizationId: string) => Promise<void>;
   refreshSessionFromStorage: () => void;
   logout: () => void;
   otherAccounts: AccountSummary[];
@@ -279,10 +310,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const loginWithPassword = async (email: string, password: string): Promise<{
-    requiresOrgSetup: boolean;
-  }> => {
+  const loginWithPassword = async (email: string, password: string): Promise<LoginCompletion> => {
     const response = await authApi.loginWithPassword(email, password);
+    const pending = loginSelection(response);
+    if (pending) return pending;
 
     if (!response.accessToken) {
       throw new Error('No access token received from server');
@@ -301,11 +332,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { requiresOrgSetup };
   };
 
-  const completeMagicLink = async (token: string): Promise<{
-    requiresOrgSetup: boolean;
-  }> => {
+  const selectOrganization = async (selectionToken: string, organizationId: string): Promise<LoginCompletion> => {
+    const response = await authApi.selectOrganization(selectionToken, organizationId);
+    if (!response.accessToken) {
+      throw new Error('No access token received from server');
+    }
+
+    const { nextHireToken, requiresOrgSetup } = persistAuthResponse(response);
+    setToken(nextHireToken);
+    const storedUser = localStorage.getItem('nh_user');
+    const storedOrg = localStorage.getItem('nh_org');
+    if (storedUser) setUser(JSON.parse(storedUser));
+    if (storedOrg) setOrg(JSON.parse(storedOrg));
+    setOtherAccounts(otherAccountSummaries(JSON.parse(storedUser || '{}').email));
+    setIsAuthenticated(true);
+    setLastLoginTime();
+
+    return { requiresOrgSetup };
+  };
+
+  const switchOrganization = async (organizationId: string): Promise<void> => {
+    const response = await authApi.switchOrganization(organizationId);
+    if (!response.accessToken) {
+      throw new Error('No access token received from server');
+    }
+    persistAuthResponse(response);
+    window.location.assign('/app/dashboard');
+  };
+
+  const completeMagicLink = async (token: string): Promise<LoginCompletion> => {
     return dedupeMagicLinkConsume(token, async (normalizedToken) => {
       const response = await authApi.exchangeToken(normalizedToken);
+      const pending = loginSelection(response);
+      if (pending) return pending;
       if (!response?.accessToken) {
         throw { message: 'Invalid sign-in response from server.', status: 502 };
       }
@@ -335,6 +394,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         requestMagicLink,
         loginWithPassword,
         completeMagicLink,
+        selectOrganization,
+        switchOrganization,
         refreshSessionFromStorage,
         logout,
         otherAccounts,

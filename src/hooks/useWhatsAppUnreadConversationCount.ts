@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useSyncExternalStore } from 'react';
 import { whatsappApi } from '../api/whatsappApi';
 import { useAuth } from '../contexts/AuthContext';
+import { useAccess } from '../contexts/AccessContext';
 import { resolveTenantId } from '../lib/resolveTenantId';
 
 type UnreadSnapshot = {
@@ -90,9 +91,10 @@ function getSnapshot() {
 
 export function useWhatsAppUnread() {
   const { org, isAuthenticated, isLoading } = useAuth();
+  const { readOnly } = useAccess();
   const tenantId = useMemo(
-    () => (isAuthenticated && !isLoading ? resolveTenantId(org).trim() : ''),
-    [isAuthenticated, isLoading, org]
+    () => (isAuthenticated && !isLoading && !readOnly ? resolveTenantId(org).trim() : ''),
+    [isAuthenticated, isLoading, org, readOnly]
   );
   const data = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 
