@@ -2,7 +2,9 @@ import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { appNavItems } from '../../config/appNavItems';
 import { isSalesNavKey, useAccess } from '../../contexts/AccessContext';
+import AiAgentsNavLink from '../AiAgentsNavLink';
 import LanguageSwitcher from '../LanguageSwitcher';
+import Logo from '../Logo';
 import { useBackdropDismiss } from '../../hooks/useBackdropDismiss';
 import { useWhatsAppUnreadConversationCount } from '../../hooks/useWhatsAppUnreadConversationCount';
 import OrgSidebarMark from '../OrgSidebarMark';
@@ -41,12 +43,12 @@ export default function MobileSidebarDrawer({ isOpen, onClose }: MobileSidebarDr
         }`}
         aria-hidden={!isOpen}
       >
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <span className="text-lg font-semibold text-dark-text">NextHire</span>
+        <div className="flex items-center justify-between gap-3 px-4 py-4 border-b border-gray-200">
+          <Logo size="lg" className="max-w-[180px]" />
           <button
             type="button"
             onClick={onClose}
-            className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-dark-text"
+            className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-dark-text shrink-0"
             aria-label={t('dashboard.mobile.menu')}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -56,31 +58,35 @@ export default function MobileSidebarDrawer({ isOpen, onClose }: MobileSidebarDr
         </div>
 
         <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              onClick={onClose}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                  isActive
-                    ? 'bg-primary/10 text-primary font-medium'
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-dark-text'
-                }`
-              }
-            >
-              {item.icon}
-              <span className="flex-1">{t(`navigation.${item.translationKey}`)}</span>
-              {item.translationKey === 'whatsapp' && unreadWhatsAppConversations > 0 ? (
-                <span
-                  className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[11px] font-semibold text-white"
-                  title={t('whatsappInbox.unread', { count: unreadWhatsAppConversations })}
-                >
-                  {unreadWhatsAppConversations > 99 ? '99+' : unreadWhatsAppConversations}
-                </span>
-              ) : null}
-            </NavLink>
-          ))}
+          {navItems.map((item) =>
+            item.translationKey === 'aiAgents' ? (
+              <AiAgentsNavLink key={item.path} onNavigate={onClose} />
+            ) : (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                onClick={onClose}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                    isActive
+                      ? 'bg-primary/10 text-primary font-medium'
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-dark-text'
+                  }`
+                }
+              >
+                {item.icon}
+                <span className="flex-1">{t(`navigation.${item.translationKey}`)}</span>
+                {item.translationKey === 'whatsapp' && unreadWhatsAppConversations > 0 ? (
+                  <span
+                    className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[11px] font-semibold text-white"
+                    title={t('whatsappInbox.unread', { count: unreadWhatsAppConversations })}
+                  >
+                    {unreadWhatsAppConversations > 99 ? '99+' : unreadWhatsAppConversations}
+                  </span>
+                ) : null}
+              </NavLink>
+            ),
+          )}
         </nav>
 
         <div className="p-4 border-t border-gray-200 space-y-3">

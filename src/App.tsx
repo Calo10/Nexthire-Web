@@ -20,7 +20,13 @@ import CandidatesPage from './pages/CandidatesPage';
 import TasksPage from './pages/TasksPage';
 import PipelinePage from './pages/PipelinePage.tsx';
 import TemplatesPage from './pages/TemplatesPage';
-import AiAgentsPage from './pages/AiAgentsPage';
+import AiAgentsHomePage from './features/ai-agents/pages/AiAgentsHomePage';
+import AiAgentsCatalogPage from './features/ai-agents/pages/AiAgentsCatalogPage';
+import AiAgentsDetailPage from './features/ai-agents/pages/AiAgentsDetailPage';
+import WorkflowDefinitionsPage from './features/workflow-automation/pages/WorkflowDefinitionsPage';
+import WorkflowDesignerPage from './features/workflow-automation/pages/WorkflowDesignerPage';
+import WorkflowExecutionsPage from './features/workflow-automation/pages/WorkflowExecutionsPage';
+import WorkflowExecutionDetailPage from './features/workflow-automation/pages/WorkflowExecutionDetailPage';
 import TeamsPage from './pages/TeamsPage';
 import SourcingPage from './pages/SourcingPage';
 import MeetingsPage from './pages/MeetingsPage';
@@ -227,7 +233,68 @@ function App() {
             element={
               <ProtectedRoute>
                 <DashboardLayout>
-                  <AiAgentsPage />
+                  <AiAgentsHomePage />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/app/ai-agents/catalog"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <AiAgentsCatalogPage />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/app/ai-agents/:agentId"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <AiAgentsDetailPage />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/app/workflow-automation"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <WorkflowDefinitionsPage />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/app/workflow-automation/:id"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <WorkflowDesignerPage />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/app/workflow-executions"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <WorkflowExecutionsPage />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/app/workflow-executions/:id"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <WorkflowExecutionDetailPage />
                 </DashboardLayout>
               </ProtectedRoute>
             }
@@ -338,7 +405,7 @@ function App() {
             element={
               <ProtectedRoute>
                 <DashboardLayout>
-                  <AiAgentsPage />
+                  <AiAgentsHomePage />
                 </DashboardLayout>
               </ProtectedRoute>
             }

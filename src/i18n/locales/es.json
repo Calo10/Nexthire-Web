@@ -17,6 +17,8 @@
     "actions": {
       "cancel": "Cancelar",
       "close": "Cerrar",
+      "ok": "OK",
+      "confirm": "Confirmar",
       "delete": "Eliminar",
       "edit": "Editar",
       "creating": "Creando...",
@@ -357,6 +359,8 @@
     "sourcing": "Sourcing",
     "templates": "Plantillas",
     "aiAgents": "Agentes AI",
+    "workflowAutomation": "Automatización de flujos",
+    "workflowExecutions": "Ejecuciones de flujos",
     "team": "Equipos",
     "settings": "Configuración",
     "meetings": "Reuniones"
@@ -384,32 +388,11 @@
     "windowClosedNoCandidate": "Pasaron 24 horas. Un texto libre ya no llega y esta conversación no tiene un candidato para enviar la plantilla."
   },
   "aiAgents": {
-    "title": "Agentes AI",
-    "subtitle": "Automatiza campañas y etapas del pipeline por empleo. Configura cada etapa y guarda. (Se guarda en el navegador hasta conectar el backend.)",
-    "underConstruction": {
-      "badge": "En construcción",
-      "subtitle": "Agentes de automatización para tu pipeline de contratación.",
-      "title": "Próximamente",
-      "message": "Estamos desarrollando Agentes AI para automatizar sourcing, screening, entrevistas y ofertas. Esta sección estará disponible en una próxima versión."
-    },
-    "selectJob": "Empleo",
-    "jobPlaceholder": "Selecciona un empleo",
-    "loadingJobs": "Cargando empleos…",
-    "hintSelectJob": "Elige un empleo para configurar la automatización de ese rol.",
-    "templatesLoading": "Cargando plantillas…",
-    "selectTemplate": "Selecciona una plantilla",
-    "save": "Guardar configuración",
-    "saved": "Configuración guardada.",
-    "tabs": {
-      "sourcing": "Sourcing",
-      "screening": "Screening",
-      "interview": "Entrevista",
-      "offer": "Oferta"
-    },
     "cadence": {
       "hourly": "Cada hora",
       "daily": "Diaria",
-      "weekly": "Semanal"
+      "weekly": "Semanal",
+      "manual": "Manual (solo Run now)"
     },
     "channel": {
       "email": "Correo",
@@ -419,17 +402,38 @@
       "description": "Manejo automático de leads de sourcing para este empleo.",
       "autoConversionPercent": "Porcentaje de conversión automática (%)",
       "maxProcessed": "Cantidad máxima de procesados por ejecución",
-      "executionCadence": "Cadencia de ejecución"
+      "executionCadence": "Cadencia de ejecución",
+      "runHint": "Run Now puntúa leads sin score y convierte el porcentaje top en candidatos."
     },
     "screening": {
-      "description": "Envío y seguimiento en screening. Los mensajes usan tus plantillas."
+      "description": "Envío y seguimiento en screening. Los mensajes usan tus plantillas.",
+      "runHint": "Run Now envía mensajes de screening (primer contacto o follow-up) a candidatos en la etapa elegida. Email usa tus Templates; WhatsApp usa los content SIDs de Twilio.",
+      "stage": "Etapa del pipeline",
+      "stageDefault": "Screening (por defecto)",
+      "template": "Plantilla de email",
+      "templatePick": "Elige una plantilla…",
+      "maxProcessed": "Máx. candidatos / corrida",
+      "whatsappHint": "WhatsApp usa los content SIDs de introducción y follow-up de Twilio de tu org — no hace falta plantilla de email."
     },
     "interview": {
-      "description": "Calendarizar entrevistas por correo o WhatsApp con una plantilla."
+      "description": "Calendarizar entrevistas por correo o WhatsApp con una plantilla.",
+      "runHint": "Run Now envía invitaciones o recordatorios de entrevista a candidatos en la etapa Interview. Email usa tus Templates; WhatsApp usa content SIDs de Twilio.",
+      "stage": "Etapa del pipeline",
+      "stageDefault": "Interview (por defecto)",
+      "template": "Plantilla de email",
+      "templatePick": "Elige una plantilla…",
+      "maxProcessed": "Máx. candidatos / corrida",
+      "whatsappHint": "WhatsApp usa los content SIDs de introducción y follow-up de Twilio de tu org — no hace falta plantilla de email."
     },
     "offer": {
       "description": "Enviar y dar seguimiento a ofertas con el mismo patrón que Entrevista.",
-      "maxOffersToSend": "Máximo de ofertas a enviar (por ejecución)"
+      "maxOffersToSend": "Máximo de ofertas a enviar (por corrida)",
+      "runHint": "Run Now envía ofertas o follow-ups a candidatos en la etapa Offer, con tope por corrida. Email usa tus Templates; WhatsApp usa content SIDs de Twilio.",
+      "stage": "Etapa del pipeline",
+      "stageDefault": "Offer (por defecto)",
+      "template": "Plantilla de email",
+      "templatePick": "Elige una plantilla…",
+      "whatsappHint": "WhatsApp usa los content SIDs de introducción y follow-up de Twilio de tu org — no hace falta plantilla de email."
     },
     "messaging": {
       "channel": "Enviar vía",
@@ -473,8 +477,700 @@
       "volumeTitle": "Volumen por etapa",
       "volumeSubtitle": "Distribución ilustrativa antes de contratación."
     },
-    "newAgent": "Agregar nuevo agente",
-    "modalTitle": "Configuración de agente"
+    "title": "Agentes AI",
+    "hireAgent": "Contratar agente",
+    "correlation": {
+      "button": "Reuniones de agentes",
+      "title": "Reuniones de agentes",
+      "subtitle": "Mesa redonda de tus agentes contratados — pasa el cursor por un asiento o enlace para ver cómo colaboran.",
+      "empty": "Contrata al menos un agente para ver cómo se conectan en tu flujo.",
+      "flowHint": "Pasa el cursor por un agente o un enlace azul para ver tooltips. Las fechas bajo cada asiento son de contratación.",
+      "noEdges": "Tus agentes contratados aún no están conectados entre sí. Contrata roles vecinos para desbloquear handoffs.",
+      "tableLabel": "Tu equipo",
+      "tableCount": "{{count}} contratados",
+      "relation": "Cómo se relacionan",
+      "hiredOn": "Contratado {{date}}",
+      "activeSince": "Handoff activo desde {{date}}",
+      "openAgent": "Abrir agente →",
+      "daily": {
+        "button": "Daily Status",
+        "back": "Volver a la mesa",
+        "modalSubtitle": "Daily meeting con tus agentes contratados — actividad de hoy más Q&A en vivo.",
+        "layoutHint": "Chatea con el equipo a la izquierda. La mesa redonda queda a la derecha como contexto.",
+        "title": "Daily Status",
+        "subtitle": "Preguntando a {{count}} agentes activos. El status abajo es solo de hoy.",
+        "started": "Daily Status abierto — {{count}} agentes contratados reportando la actividad de hoy.",
+        "loading": "Trayendo el status de hoy…",
+        "you": "Tú",
+        "typing": "escribiendo…",
+        "thinking": "{{name}} está revisando el trabajo de hoy…",
+        "placeholder": "Pregunta a todo el equipo — p. ej. ¿Quién necesita ayuda hoy?",
+        "send": "Preguntar a todos",
+        "sending": "Preguntando…",
+        "hint": "Solo responden los agentes cuyo carril coincide con tu pregunta. Enter para enviar.",
+        "noChatters": "No hay agentes activos con chat. Despausa o contrata a Aria, Vera, Kai, Lena o Mira.",
+        "noneRelevant": "Ningún agente contratado tuvo algo relevante que aportar a esa pregunta.",
+        "allFailed": "El equipo no pudo responder ahora — inténtalo en un momento.",
+        "replyError": "Sin respuesta",
+        "replyFailed": "{{name}}: no pudo unirse a esta ronda — {{reason}}",
+        "briefPaused": "{{name}} aquí — estoy en pausa, así que no tengo nada nuevo para hoy.",
+        "briefWithActivity": "{{name}} aquí — hoy:\n{{lines}}",
+        "briefLastRun": "{{name}} aquí — corrí a las {{when}}. Plan: {{plan}}",
+        "briefQuiet": "{{name}} aquí — aún no hay runs ni briefs hoy. En espera.",
+        "briefNoChat": "{{name}} aquí — estoy contratado pero el chat aún no está vivo para mi rol. Sin brief diario.",
+        "noPlan": "sin plan registrado"
+      },
+      "edges": {
+        "sourcingToAds": "Los leads que Aria sourcea alimentan las campañas Meta de Vera.",
+        "sourcedToScreen": "Los candidatos que Aria convierte quedan listos para el screening de Kai.",
+        "adsToScreen": "Los leads de las campañas de Vera entran al screening de Kai.",
+        "screenToInterview": "Después del screening de Kai, Lena agenda entrevistas y comparte Calendly.",
+        "interviewToOffer": "Los candidatos entrevistados pasan a Mira para preparar y dar seguimiento a ofertas.",
+        "sourcedToInterview": "Candidatos fuertes de sourcing pueden ir directo a Lena para agendar entrevista."
+      }
+    },
+    "home": {
+      "subtitle": "Administra tus agentes contratados, monitorea actividad y lanza nuevas automatizaciones.",
+      "loading": "Cargando agentes…",
+      "loadError": "No se pudieron cargar los agentes contratados.",
+      "removeError": "No se pudo quitar el agente.",
+      "pipelineLink": "Pipeline",
+      "vsPrior": "vs anterior",
+      "myAgents": "Mis agentes",
+      "myAgentsSubtitle": "Tus especialistas contratados y su estado actual.",
+      "manageAgents": "Administrar agentes →",
+      "emptyHired": "Todavía no hay agentes",
+      "hireMore": "Contratar más agentes",
+      "hireMoreHint": "Amplía tu equipo con agentes especializados en sourcing, campañas, screening, entrevistas y ofertas.",
+      "browseCatalog": "Ver catálogo",
+      "open": "Abrir",
+      "viewActivity": "Actividad",
+      "runs": "Runs",
+      "tokens": "Tokens",
+      "tokenUsage": "Uso de tokens",
+      "tokensUnit": "tokens",
+      "tokenUsagePeriod": {
+        "7d": "Últimos 7 días",
+        "30d": "Últimos 30 días",
+        "90d": "Últimos 90 días"
+      },
+      "tokenUsageEmpty": "Todavía no hay uso de tokens. Ejecuta un agente para ver el gráfico.",
+      "tokenUsageEmptyPeriod": "Sin uso en este período. Acumulado: {total}.",
+      "tokenUsageLifetime": "Acumulado {total}",
+      "agentStatus": "Estado de agentes",
+      "agentsCount": "agentes",
+      "recentActivity": "Actividad reciente",
+      "emptyActivity": "No hay actividad reciente de tus agentes contratados.",
+      "status": {
+        "active": "Activo",
+        "paused": "Pausado",
+        "busy": "Ocupado",
+        "inactive": "Inactivo"
+      },
+      "kpis": {
+        "total": "Agentes totales",
+        "active": "Agentes activos",
+        "runs": "Runs del período",
+        "tokens": "Tokens del período",
+        "workflows": "Workflows disparados",
+        "meetings": "Reuniones agendadas"
+      },
+      "activity": {
+        "run": "{name} completó una ejecución",
+        "runSummary": "{name} terminó un run de sourcing"
+      },
+      "agentsMeetings": "Reuniones de agentes"
+    },
+    "catalog": {
+      "title": "Catálogo de agentes",
+      "subtitle": "Un asiento por tipo de agente. Contrata los especialistas que necesitas.",
+      "back": "Volver a agentes",
+      "hire": "Contratar",
+      "hiring": "Contratando…",
+      "open": "Abrir",
+      "loadError": "No se pudo cargar el catálogo.",
+      "hireError": "No se pudo contratar este agente.",
+      "blurb": {
+        "sourcing": "Procesa leads de sourcing y convierte los mejores matches en candidatos.",
+        "screening": "Hace outreach y follow-up de screening por correo o WhatsApp.",
+        "interview": "Mantiene el loop de entrevistas con mensajes a tiempo.",
+        "offer": "Envía y da seguimiento a ofertas con volumen controlado.",
+        "campaign": "Lanza y sincroniza campañas pagadas de hiring para que los leads sigan entrando al pipeline."
+      },
+      "backHome": "← Volver a agentes",
+      "panel": {
+        "whatTheyDo": "Qué hacen",
+        "bestFor": "Ideal para"
+      },
+      "bestFor": {
+        "sourcing": "Equipos que necesitan un flujo constante de candidatos calificados desde leads de sourcing.",
+        "screening": "Roles de alto volumen donde el primer outreach y follow-up deben mantenerse consistentes.",
+        "interview": "Loops de entrevista que se estancan sin recordatorios a tiempo.",
+        "offer": "Etapas de oferta que necesitan volumen controlado y seguimiento claro.",
+        "campaign": "Equipos con ads en Meta o LinkedIn que necesitan crear, pausar y sincronizar campañas con empleos."
+      },
+      "availableTools": "Herramientas disponibles",
+      "produces": "Qué produce",
+      "hireTitle": "Contratar {{name}}",
+      "hiredTitle": "{{name}} ya está contratado",
+      "hiredHint": "Solo puedes contratar un agente de este tipo. Ábrelo desde Mis agentes para ejecutarlo o configurarlo.",
+      "futureHint": "Este agente todavía no está disponible para contratar.",
+      "capabilities": {
+        "sourcing": {
+          "processed": "Leads procesados por run",
+          "scored": "Fit scores aplicados",
+          "converted": "Candidatos convertidos"
+        },
+        "campaign": {
+          "created": "Campañas creadas",
+          "active": "Campañas activas",
+          "leads": "Leads de campaña"
+        },
+        "screening": {
+          "outreach": "Outreach de screening",
+          "followups": "Follow-ups enviados",
+          "replies": "Respuestas de candidatos"
+        },
+        "interview": {
+          "scheduled": "Entrevistas agendadas",
+          "reminders": "Recordatorios enviados",
+          "advanced": "Avances de etapa"
+        },
+        "offer": {
+          "sent": "Ofertas enviadas",
+          "tracked": "Ofertas con seguimiento",
+          "accepted": "Ofertas aceptadas"
+        }
+      }
+    },
+    "detail": {
+      "back": "Volver a agentes",
+      "unknown": "Agente desconocido.",
+      "loadError": "No se pudo cargar este agente.",
+      "saveError": "No se pudo guardar la configuración.",
+      "statusError": "No se pudo actualizar el estado del agente.",
+      "runError": "No se pudo ejecutar el agente.",
+      "contextTitle": "Configuración",
+      "job": "Empleo",
+      "jobAll": "Todos los empleos",
+      "cadence": "Cadencia",
+      "channel": "Canal",
+      "notes": "Notas",
+      "save": "Guardar",
+      "saving": "Guardando…",
+      "pause": "Pausar",
+      "resume": "Reanudar",
+      "runNow": "Ejecutar ahora",
+      "running": "Ejecutando…",
+      "lastRun": "Última ejecución",
+      "lastRunAt": "Ejecutado",
+      "nextRunAt": "Próxima ejecución",
+      "lastPlan": "Plan",
+      "loading": "Cargando agente…",
+      "pauseAgent": "Pausar agente",
+      "resumeAgent": "Reanudar agente",
+      "viewCatalog": "Ver en catálogo",
+      "recentActivity": "Actividad reciente",
+      "emptyActivity": "Todavía no hay actividad de este agente. Usa Run Now para generar los primeros eventos.",
+      "chatEmpty": "El chat con este agente llega pronto. Por ahora configura Context y usa Run Now.",
+      "activityTrend": "Tendencia de actividad",
+      "activityTrendHint": "Runs y resultados de los últimos 7 días.",
+      "legendRuns": "Runs",
+      "currentObjective": "Objetivo actual",
+      "edit": "Editar",
+      "focus": "Enfoque",
+      "destinations": "A dónde van los resultados",
+      "destinationPending": "elige uno en Context",
+      "resourceUsage": "Uso de recursos",
+      "tokensUsed": "Tokens usados",
+      "nextRunAtLabel": "Próximo run {{date}}",
+      "lastRunAtLabel": "Último run {{date}}",
+      "tabs": {
+        "overview": "Resumen",
+        "chat": "Chat",
+        "activity": "Actividad",
+        "context": "Contexto",
+        "knowledge": "Conocimiento",
+        "usage": "Uso"
+      },
+      "kpis": {
+        "runs": "Runs del período",
+        "runsEmpty": "0 completados",
+        "tokens": "Tokens usados",
+        "workflows": "Workflows disparados",
+        "results": {
+          "default": "Resultados",
+          "sourcing": "Candidatos convertidos",
+          "campaign": "Campañas gestionadas",
+          "screening": "Outreach enviado",
+          "interview": "Invites y recordatorios",
+          "offer": "Ofertas enviadas"
+        },
+        "resultsEmpty": "+0 últimos 7d"
+      },
+      "tags": {
+        "conversion": "{{percent}}% conversión",
+        "maxProcessed": "{{count}} máx / run",
+        "budget": "${{amount}}/día",
+        "waitHours": "{{hours}}h de espera"
+      },
+      "emptyContext": {
+        "default": "Todavía no hay brief. Agrega notas en Context para que el agente sepa qué priorizar.",
+        "sourcing": "Todavía no hay brief. Agrega un empleo y settings de conversión en Context para que Aria sepa a quién convertir.",
+        "campaign": "Todavía no hay brief. Elige un empleo, presupuesto y URL de destino en Context para que Vera sepa qué lanzar.",
+        "screening": "Todavía no hay brief. Elige etapa, canal y plantilla de email (si aplica) en Context para que Kai sepa a quién escribir.",
+        "interview": "Todavía no hay brief. Elige etapa, canal y plantilla de email (si aplica) en Context para que Lena sepa a quién invitar.",
+        "offer": "Todavía no hay brief. Elige etapa, canal, plantilla (si email) y tope de ofertas en Context para que Mira sepa a quién contactar."
+      },
+      "usageSlices": {
+        "scoring": "Fit scoring",
+        "convert": "Conversiones",
+        "chat": "Chat",
+        "create": "Crear campaña",
+        "sync": "Sincronizar campaña",
+        "outreach": "Primer contacto",
+        "followups": "Seguimientos",
+        "invites": "Invitaciones a entrevista",
+        "reminders": "Recordatorios",
+        "offers": "Ofertas enviadas"
+      },
+      "destinationNames": {
+        "shared": {
+          "pipeline": "Pipeline",
+          "candidates": "Candidatos",
+          "templates": "Templates",
+          "whatsapp": "WhatsApp",
+          "jobs": "Empleos",
+          "sourcing": "Sourcing"
+        },
+        "sourcing": {
+          "sourcing": "Inbox de sourcing",
+          "candidates": "Candidatos",
+          "pipeline": "Pipeline",
+          "job": "Filtro de empleo"
+        },
+        "campaign": {
+          "campaigns": "Campañas",
+          "sourcing": "Inbox de sourcing",
+          "jobs": "Empleos"
+        },
+        "screening": {
+          "pipeline": "Pipeline",
+          "candidates": "Candidatos",
+          "templates": "Templates",
+          "whatsapp": "WhatsApp"
+        },
+        "interview": {
+          "pipeline": "Pipeline",
+          "candidates": "Candidatos",
+          "templates": "Templates",
+          "whatsapp": "WhatsApp"
+        },
+        "offer": {
+          "pipeline": "Pipeline",
+          "candidates": "Candidatos",
+          "templates": "Templates",
+          "whatsapp": "WhatsApp"
+        }
+      },
+      "agents": {
+        "sourcing": {
+          "tagline": "Puntúa leads de sourcing y convierte matches fuertes en candidatos del pipeline.",
+          "objective": "Procesar el inbox de sourcing, puntuar fit cuando falte y convertir el porcentaje top en candidatos."
+        },
+        "campaign": {
+          "tagline": "Crea y gestiona campañas pagadas de hiring ligadas a vacantes abiertas.",
+          "objective": "Crear y sincronizar campañas de hiring para que los leads sigan entrando a sourcing."
+        },
+        "screening": {
+          "tagline": "Hace outreach y follow-up de screening por correo o WhatsApp.",
+          "objective": "Enviar mensajes de screening y follow-ups para que los candidatos avancen."
+        },
+        "interview": {
+          "tagline": "Mantiene el loop de entrevistas con mensajes a tiempo.",
+          "objective": "Enviar invitaciones y recordatorios para que las entrevistas no se estanquen."
+        },
+        "offer": {
+          "tagline": "Envía y trackea ofertas con volumen controlado por run.",
+          "objective": "Enviar ofertas con volumen controlado y dar seguimiento."
+        }
+      },
+      "chatSoon": "El chat de este agente llega pronto.",
+      "chat": {
+        "send": "Enviar",
+        "ui": {
+          "emptyTitle": "Habla con {{name}}",
+          "online": "Activa",
+          "away": "Pausada",
+          "loading": "Cargando conversación…"
+        },
+        "sourcing": {
+          "hint": "Pregúntale a Aria por el último run, cambia la conversión o dile que puntúe y convierta ahora.",
+          "placeholder": "Dile a Aria qué procesar…",
+          "thinking": "Aria está pensando…",
+          "error": "Aria no pudo responder.",
+          "paused": "Reanuda a Aria para chatear.",
+          "suggestions": {
+            "whoConverted": "¿Quién se convirtió en el último run?",
+            "raiseConversion": "Sube la conversión a 20%",
+            "runNow": "Puntúa y convierte ahora"
+          }
+        },
+        "campaign": {
+          "hint": "Pregúntale a Vera qué lanzó, cambia presupuesto o destino, o dile que cree/sincronice ahora.",
+          "placeholder": "Dile a Vera qué campaña lanzar…",
+          "thinking": "Vera está pensando…",
+          "error": "Vera no pudo responder.",
+          "paused": "Reanuda a Vera para chatear.",
+          "suggestions": {
+            "whatLaunched": "¿Qué lanzaste la última vez?",
+            "raiseBudget": "Sube el presupuesto diario a $25",
+            "runNow": "Crea o sincroniza campañas ahora"
+          }
+        },
+        "screening": {
+          "hint": "Pregúntale a Kai a quién contactó, cambia horas de espera o canal, o dile que corra outreach ahora.",
+          "placeholder": "Dile a Kai a quién screeneár…",
+          "thinking": "Kai está pensando…",
+          "error": "Kai no pudo responder.",
+          "paused": "Reanuda a Kai para chatear.",
+          "suggestions": {
+            "whoContacted": "¿A quién contactaste la última vez?",
+            "raiseWait": "Espera 72 horas antes del follow-up",
+            "runNow": "Envía outreach de screening ahora"
+          }
+        },
+        "interview": {
+          "hint": "Pregúntale a Lena a quién invitó, cambia horas de espera o canal, o dile que envíe invitaciones ahora.",
+          "placeholder": "Dile a Lena a quién invitar…",
+          "thinking": "Lena está pensando…",
+          "error": "Lena no pudo responder.",
+          "paused": "Reanuda a Lena para chatear.",
+          "suggestions": {
+            "whoInvited": "¿A quién invitaste la última vez?",
+            "raiseWait": "Espera 72 horas antes del recordatorio",
+            "runNow": "Envía invitaciones de entrevista ahora"
+          }
+        },
+        "offer": {
+          "hint": "Pregúntale a Mira a quién envió ofertas, cambia el tope o canal, o dile que envíe ofertas ahora.",
+          "placeholder": "Dile a Mira qué ofertas enviar…",
+          "thinking": "Mira está pensando…",
+          "error": "Mira no pudo responder.",
+          "paused": "Reanuda a Mira para chatear.",
+          "suggestions": {
+            "whoOffered": "¿A quién enviaste ofertas la última vez?",
+            "raiseCap": "Sube el máximo de ofertas a 15",
+            "runNow": "Envía ofertas ahora"
+          }
+        }
+      }
+    },
+    "roles": {
+      "sourcing": "Sourcing",
+      "screening": "Screening",
+      "interview": "Entrevista",
+      "offer": "Oferta",
+      "campaign": "Campañas"
+    },
+    "status": {
+      "active": "Activo",
+      "paused": "Pausado",
+      "busy": "Ocupado",
+      "inactive": "Inactivo"
+    },
+    "agents": {
+      "sourcing": {
+        "name": "Especialista de sourcing",
+        "description": "Procesa leads de sourcing y convierte matches fuertes en candidatos.",
+        "summary": "Puntúa leads de sourcing y convierte los mejores matches en candidatos del pipeline.",
+        "context": "Filtro de empleo: vacante opcional.\nMáx. leads por run: configurable.\nAuto-conversión: top % de fit → candidatos.\nCadencia: manual, horaria, diaria o semanal.",
+        "launchHint": "Contrata a Aria para procesar tu inbox de sourcing y convertir los mejores matches.",
+        "tools": {
+          "inbox": "Inbox de sourcing",
+          "jobs": "Empleos",
+          "pipeline": "Pipeline",
+          "fit": "Fit scoring"
+        },
+        "outputs": {
+          "candidates": "Nuevos candidatos",
+          "applications": "Aplicaciones al pipeline",
+          "summary": "Resumen del run"
+        },
+        "knowledge": {
+          "job": "Qué empleo priorizar al convertir leads",
+          "conversion": "Porcentaje de auto-conversión y máximo de leads por run",
+          "fit": "Umbral de fit score y preferencias de scoring"
+        },
+        "preview": {
+          "headline": "Puntúa leads de sourcing y convierte los mejores matches en candidatos del pipeline.",
+          "script": "Hola, soy {{firstName}}, la especialista de sourcing. Trabajo tu inbox de sourcing, aplico fit scores cuando faltan y convierto los mejores matches en candidatos y aplicaciones para que el pipeline se mantenga lleno.",
+          "capabilities": [
+            {
+              "title": "Procesar el inbox de sourcing",
+              "detail": "Toma leads new/qualified de un empleo (o de todos) hasta el máximo por run."
+            },
+            {
+              "title": "Aplicar fit scores",
+              "detail": "Puntúa leads sin score contra el empleo para subir a los mejores matches."
+            },
+            {
+              "title": "Convertir el top percent",
+              "detail": "Convierte tu % de auto-conversión en candidatos y aplicaciones reales."
+            },
+            {
+              "title": "Dejar un resumen del run",
+              "detail": "Registra qué se escaneó, puntuó y convirtió en cada Run Now."
+            }
+          ]
+        }
+      },
+      "screening": {
+        "name": "Especialista de screening",
+        "description": "Hace outreach y follow-up de screening por correo o WhatsApp.",
+        "summary": "Envía outreach y follow-ups de screening para que los candidatos avancen.",
+        "context": "Canal: email o WhatsApp.\nPlantillas: tus templates de screening.\nEspera antes del follow-up.\nCadencia: manual o programada.",
+        "launchHint": "Contrata a Kai para hacer screening con tus templates.",
+        "tools": {
+          "email": "Email",
+          "whatsapp": "WhatsApp",
+          "templates": "Templates",
+          "pipeline": "Pipeline"
+        },
+        "outputs": {
+          "sequences": "Secuencias de screening",
+          "replies": "Respuestas",
+          "summary": "Resumen del run"
+        },
+        "knowledge": {
+          "templates": "Plantillas aprobadas de screening",
+          "cadence": "Cuándo hacer follow-up si no hay respuesta",
+          "channel": "Canal preferido por rol"
+        },
+        "preview": {
+          "headline": "Haz outreach y follow-ups de screening para que los candidatos avancen.",
+          "script": "Hola, soy {{firstName}}, el especialista de screening. Envío mensajes de screening por email o WhatsApp con tus templates, hago follow-up si no responden y mantengo el pipeline en movimiento.",
+          "capabilities": [
+            {
+              "title": "Primer contacto de screening",
+              "detail": "Contacta candidatos que aún necesitan el primer mensaje."
+            },
+            {
+              "title": "Cadencia de follow-up",
+              "detail": "Nudgea candidatos silenciosos después de tu ventana de espera."
+            },
+            {
+              "title": "Elección de canal",
+              "detail": "Usa email o WhatsApp según cómo configures el asiento."
+            },
+            {
+              "title": "Copy con templates",
+              "detail": "Se mantiene on-brand con las plantillas que ya aprobó tu equipo."
+            }
+          ]
+        }
+      },
+      "interview": {
+        "name": "Especialista de entrevistas",
+        "description": "Mantiene el loop de entrevistas con mensajes a tiempo.",
+        "summary": "Mueve loops de entrevista con invitaciones, recordatorios y avances de etapa.",
+        "context": "Canal: email o WhatsApp.\nCalendario: Calendly si está conectado.\nPlantillas: invitaciones y recordatorios.\nCadencia: manual o programada.",
+        "launchHint": "Contrata a Lena para que los loops de entrevista no se estanquen.",
+        "tools": {
+          "email": "Email",
+          "whatsapp": "WhatsApp",
+          "calendly": "Calendly",
+          "pipeline": "Pipeline"
+        },
+        "outputs": {
+          "invites": "Invitaciones",
+          "reminders": "Recordatorios",
+          "summary": "Resumen del run"
+        },
+        "knowledge": {
+          "templates": "Copy de invitaciones y recordatorios",
+          "calendar": "Link de booking y ventanas de entrevista",
+          "stages": "Qué etapas disparan outreach de entrevista"
+        },
+        "preview": {
+          "headline": "Mantén los loops de entrevista con invitaciones, recordatorios y avances de etapa.",
+          "script": "Hola, soy {{firstName}}, la especialista de entrevistas. Envío invitaciones y recordatorios, comparto links de booking si Calendly está conectado y ayudo a avanzar candidatos en la etapa de entrevista.",
+          "capabilities": [
+            {
+              "title": "Enviar invitaciones",
+              "detail": "Contacta candidatos listos para entrevista con tus templates."
+            },
+            {
+              "title": "Recordatorios",
+              "detail": "Hace follow-up para que las entrevistas no se estanquen."
+            },
+            {
+              "title": "Handoff a calendario",
+              "detail": "Comparte Calendly cuando está conectado para que agenden."
+            },
+            {
+              "title": "Outreach por etapa",
+              "detail": "Trabaja desde las etapas de entrevista que configures."
+            }
+          ]
+        }
+      },
+      "offer": {
+        "name": "Especialista de ofertas",
+        "description": "Envía y da seguimiento a ofertas con volumen controlado.",
+        "summary": "Envía ofertas con volumen controlado y da seguimiento.",
+        "context": "Máx. ofertas por run: configurable.\nPlantillas: ofertas y follow-ups.\nCanal: email.\nCadencia: manual o programada.",
+        "launchHint": "Contrata a Mira para enviar y trackear ofertas con volumen controlado.",
+        "tools": {
+          "email": "Email",
+          "templates": "Templates",
+          "pipeline": "Pipeline"
+        },
+        "outputs": {
+          "offers": "Ofertas enviadas",
+          "followups": "Follow-ups de oferta",
+          "summary": "Resumen del run"
+        },
+        "knowledge": {
+          "templates": "Plantillas de oferta y follow-up",
+          "volume": "Máximo de ofertas por run",
+          "stages": "Etapas listas para oferta"
+        },
+        "preview": {
+          "headline": "Envía y trackea ofertas con volumen controlado por run.",
+          "script": "Hola, soy {{firstName}}, la especialista de ofertas. Envío ofertas con el límite de volumen que definas, doy seguimiento y evito que se enfríen los candidatos en etapa de oferta.",
+          "capabilities": [
+            {
+              "title": "Volumen controlado",
+              "detail": "Respeta el máximo de ofertas por run."
+            },
+            {
+              "title": "Templates de oferta",
+              "detail": "Usa copy aprobado de oferta y follow-up."
+            },
+            {
+              "title": "Seguimiento",
+              "detail": "Nudgea candidatos que no respondieron a la oferta."
+            },
+            {
+              "title": "Target por etapa",
+              "detail": "Se enfoca en etapas listas para oferta."
+            }
+          ]
+        }
+      },
+      "campaign": {
+        "name": "Especialista de campañas",
+        "description": "Crea y gestiona campañas de hiring en Meta y LinkedIn ligadas a vacantes abiertas.",
+        "summary": "Lanza y sincroniza campañas pagadas de hiring para que los leads sigan entrando a sourcing.",
+        "context": "Plataformas: Meta, LinkedIn o ambas.\nPresupuesto diario: configurable.\nEmpleo: vacante opcional.\nCadencia: manual o sync programado.",
+        "launchHint": "Contrata a Vera para crear y gestionar campañas de hiring.",
+        "tools": {
+          "meta": "Meta Ads",
+          "jobs": "Empleos",
+          "pipeline": "Pipeline"
+        },
+        "outputs": {
+          "campaigns": "Campañas de hiring",
+          "sync": "Estado de sync",
+          "leads": "Leads de campaña"
+        },
+        "knowledge": {
+          "platforms": "En qué plataformas crear o gestionar campañas",
+          "budget": "Límite de gasto diario por campaña",
+          "jobs": "Empleos y ángulos creativos por campaña"
+        },
+        "preview": {
+          "headline": "Crea y sincroniza campañas pagadas de hiring para que los leads sigan entrando a sourcing.",
+          "script": "Hola, soy {{firstName}}, la especialista de campañas. Creo y gestiono campañas de hiring en Meta ligadas a tus vacantes, controlo presupuesto y sincronizo el estado para que los leads lleguen a sourcing.",
+          "capabilities": [
+            {
+              "title": "Crear desde un empleo",
+              "detail": "Arma campañas de hiring ligadas al rol que elijas."
+            },
+            {
+              "title": "Gestionar plataformas",
+              "detail": "Trabaja con Meta hoy, con espacio para LinkedIn después."
+            },
+            {
+              "title": "Respetar presupuesto",
+              "detail": "Usa tu presupuesto diario para mantener el gasto controlado."
+            },
+            {
+              "title": "Sincronizar estado",
+              "detail": "Mantiene el estado de campañas alineado para el equipo."
+            }
+          ]
+        }
+      }
+    },
+    "actions": {
+      "configure": "Configurar",
+      "remove": "Quitar",
+      "cancel": "Cancelar",
+      "hire": "Contratar",
+      "hiring": "Contratando…",
+      "preview": "Vista previa",
+      "comingSoon": "Próximamente",
+      "more": "Más"
+    },
+    "remove": {
+      "title": "¿Quitar a {name}?",
+      "description": "Esto quita el asiento de {role} de tu organización. Puedes contratarlo de nuevo después."
+    },
+    "badge": {
+      "hired": "Contratado",
+      "v1": "V1",
+      "future": "Futuro"
+    },
+    "campaign": {
+      "dailyBudget": "Presupuesto diario (USD)",
+      "platform": "Plataformas",
+      "platforms": {
+        "meta": "Meta (Facebook / Instagram)",
+        "linkedin": "LinkedIn",
+        "both": "Meta + LinkedIn"
+      },
+      "desiredStatus": "Estado deseado",
+      "destinationUrl": "URL de destino (link público del empleo)",
+      "countryCode": "Código de país",
+      "runHint": "Run Now crea o sincroniza campañas Meta de hiring para el empleo elegido. LinkedIn queda para después.",
+      "status": {
+        "active": "Activa",
+        "paused": "Pausada"
+      }
+    },
+    "tabs": {
+      "overview": "Resumen",
+      "context": "Contexto",
+      "knowledge": "Conocimiento",
+      "tools": "Herramientas",
+      "settings": "Ajustes"
+    },
+    "sections": {
+      "context": "Contexto e instrucciones del agente",
+      "tools": "Herramientas conectadas",
+      "outputs": "Salidas",
+      "knowledge": "Conocimiento",
+      "settings": "Ajustes"
+    },
+    "settings": {
+      "version": "Versión",
+      "availability": "Disponibilidad",
+      "status": "Estado",
+      "statusReady": "Listo para contratar",
+      "statusHired": "Contratado",
+      "statusFuture": "Próximamente"
+    },
+    "preview": {
+      "capabilities": "Qué puede hacer este agente",
+      "tools": "Herramientas que usa",
+      "outputs": "Qué produce",
+      "replayVoice": "Reproducir explicación",
+      "playingVoice": "Reproduciendo…",
+      "muteVoice": "Silenciar voz",
+      "unmuteVoice": "Activar voz"
+    }
   },
   "metaCampaign": {
     "title": "Crear campaña en Meta",
@@ -1673,7 +2369,7 @@
       "saveChanges": "No se pudieron guardar los cambios.",
       "deleteCandidate": "No se pudo eliminar el candidato."
     },
-      "drawer": {
+    "drawer": {
       "details": "Detalles",
       "applicationAnswers": "Respuestas de aplicación",
       "metadata": "Metadatos",

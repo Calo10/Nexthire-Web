@@ -15,10 +15,10 @@ export default function Logo({ className = '', size = 'md' }: LogoProps) {
 
   return (
     <div className={`flex items-center gap-3 ${className}`}>
-      <img 
-        src={logoImage} 
-        alt="NextHire" 
-        className={`${sizes[size]} w-auto`}
+      <img
+        src={logoImage}
+        alt="NextHire"
+        className={`${sizes[size]} w-auto max-w-full object-contain object-left`}
       />
     </div>
   );

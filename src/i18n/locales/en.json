@@ -17,6 +17,8 @@
     "actions": {
       "cancel": "Cancel",
       "close": "Close",
+      "ok": "OK",
+      "confirm": "Confirm",
       "delete": "Delete",
       "edit": "Edit",
       "creating": "Creating...",
@@ -357,6 +359,8 @@
     "sourcing": "Sourcing",
     "templates": "Templates",
     "aiAgents": "AI Agents",
+    "workflowAutomation": "Workflow Automation",
+    "workflowExecutions": "Workflow Executions",
     "team": "Teams",
     "settings": "Settings",
     "meetings": "Meetings"
@@ -384,32 +388,11 @@
     "windowClosedNoCandidate": "24 hours have passed. A freeform text will not be delivered, and this conversation has no candidate to send the template."
   },
   "aiAgents": {
-    "title": "AI Agents",
-    "subtitle": "Automate campaign and pipeline steps per job. Configure each stage, then save. (Stored locally until backend sync is available.)",
-    "underConstruction": {
-      "badge": "Under Construction",
-      "subtitle": "Automation agents for your hiring pipeline.",
-      "title": "Coming soon",
-      "message": "We're building AI Agents to automate sourcing, screening, interviews, and offers. This section will be available in a future release."
-    },
-    "selectJob": "Job",
-    "jobPlaceholder": "Select a job",
-    "loadingJobs": "Loading jobs…",
-    "hintSelectJob": "Choose a job to configure automation for that role.",
-    "templatesLoading": "Loading templates…",
-    "selectTemplate": "Select a template",
-    "save": "Save configuration",
-    "saved": "Configuration saved.",
-    "tabs": {
-      "sourcing": "Sourcing",
-      "screening": "Screening",
-      "interview": "Interview",
-      "offer": "Offer"
-    },
     "cadence": {
       "hourly": "Every hour",
       "daily": "Daily",
-      "weekly": "Weekly"
+      "weekly": "Weekly",
+      "manual": "Manual (Run now only)"
     },
     "channel": {
       "email": "Email",
@@ -419,17 +402,38 @@
       "description": "Automatic handling of sourced leads for this job.",
       "autoConversionPercent": "Automatic conversion rate (%)",
       "maxProcessed": "Maximum processed per run",
-      "executionCadence": "Execution cadence"
+      "executionCadence": "Execution cadence",
+      "runHint": "Run Now scores unscored leads and converts the top match percentage into candidates."
     },
     "screening": {
-      "description": "Outreach and follow-up during screening. Messages use your Templates."
+      "description": "Outreach and follow-up during screening. Messages use your Templates.",
+      "runHint": "Run Now sends first-touch or follow-up screening messages to candidates in the selected pipeline stage. Email uses your Templates; WhatsApp uses Twilio intro/follow-up content.",
+      "stage": "Pipeline stage",
+      "stageDefault": "Screening (default)",
+      "template": "Email template",
+      "templatePick": "Select a template…",
+      "maxProcessed": "Max candidates / run",
+      "whatsappHint": "WhatsApp uses your org Twilio introduction and follow-up content SIDs — no email template needed."
     },
     "interview": {
-      "description": "Schedule interviews via email or WhatsApp using a template."
+      "description": "Schedule interviews via email or WhatsApp using a template.",
+      "runHint": "Run Now sends interview invites or reminders to candidates in the Interview stage. Email uses your Templates; WhatsApp uses Twilio intro/follow-up content.",
+      "stage": "Pipeline stage",
+      "stageDefault": "Interview (default)",
+      "template": "Email template",
+      "templatePick": "Select a template…",
+      "maxProcessed": "Max candidates / run",
+      "whatsappHint": "WhatsApp uses your org Twilio introduction and follow-up content SIDs — no email template needed."
     },
     "offer": {
       "description": "Send and track offers with the same automation pattern as Interview.",
-      "maxOffersToSend": "Maximum offers to send (per run)"
+      "maxOffersToSend": "Maximum offers to send (per run)",
+      "runHint": "Run Now sends offers or follow-ups to candidates in the Offer stage, capped by max offers per run. Email uses your Templates; WhatsApp uses Twilio intro/follow-up content.",
+      "stage": "Pipeline stage",
+      "stageDefault": "Offer (default)",
+      "template": "Email template",
+      "templatePick": "Select a template…",
+      "whatsappHint": "WhatsApp uses your org Twilio introduction and follow-up content SIDs — no email template needed."
     },
     "messaging": {
       "channel": "Send via",
@@ -473,8 +477,700 @@
       "volumeTitle": "Volume by stage",
       "volumeSubtitle": "Illustrative distribution before hire."
     },
-    "newAgent": "Add new agent",
-    "modalTitle": "Agent configuration"
+    "title": "AI Agents",
+    "hireAgent": "Hire Agent",
+    "correlation": {
+      "button": "Agents Meetings",
+      "title": "Agents Meetings",
+      "subtitle": "Round table of your hired agents — hover a seat or a link to see how they work together.",
+      "empty": "Hire at least one agent to see how they connect in your flow.",
+      "flowHint": "Hover an agent or a blue link for tooltips. Dates under each seat are hire dates.",
+      "noEdges": "Your hired agents are not yet connected to each other. Hire neighboring roles to unlock handoffs.",
+      "tableLabel": "Your team",
+      "tableCount": "{{count}} hired",
+      "relation": "How they relate",
+      "hiredOn": "Hired {{date}}",
+      "activeSince": "Handoff active since {{date}}",
+      "openAgent": "Open agent →",
+      "daily": {
+        "button": "Daily Status",
+        "back": "Back to table",
+        "modalSubtitle": "Daily meeting with your hired agents — today's activity plus live Q&A.",
+        "layoutHint": "Chat with the team on the left. The round table stays on the right for context.",
+        "title": "Daily Status",
+        "subtitle": "Asking {{count}} active agents. Status below is only from today.",
+        "started": "Daily Status opened — {{count}} hired agents reporting today's activity.",
+        "loading": "Pulling today's status…",
+        "you": "You",
+        "typing": "typing…",
+        "thinking": "{{name}} is checking today's work…",
+        "placeholder": "Ask the whole team — e.g. Who needs help today?",
+        "send": "Ask all",
+        "sending": "Asking…",
+        "hint": "Only agents whose lane matches your question will reply. Enter to send.",
+        "noChatters": "No active chat-capable agents. Unpause or hire Aria, Vera, Kai, Lena, or Mira.",
+        "noneRelevant": "No hired agent had something relevant to add for that question.",
+        "allFailed": "The team could not answer right now — try again in a moment.",
+        "replyError": "No reply",
+        "replyFailed": "{{name}}: could not join this round — {{reason}}",
+        "briefPaused": "{{name}} here — I'm paused, so I have nothing new for today.",
+        "briefWithActivity": "{{name}} here — today:\n{{lines}}",
+        "briefLastRun": "{{name}} here — I ran at {{when}}. Plan: {{plan}}",
+        "briefQuiet": "{{name}} here — no runs or briefs yet today. Standing by.",
+        "briefNoChat": "{{name}} here — I'm hired but chat isn't live for my role yet. No daily brief to share.",
+        "noPlan": "no plan recorded"
+      },
+      "edges": {
+        "sourcingToAds": "Aria’s sourced leads become audience fuel for Vera’s Meta campaigns.",
+        "sourcedToScreen": "Candidates Aria converts are ready for Kai’s screening outreach.",
+        "adsToScreen": "Leads from Vera’s campaigns flow into Kai for screening outreach.",
+        "screenToInterview": "After Kai screens, Lena can schedule interviews and share Calendly.",
+        "interviewToOffer": "Interviewed candidates move to Mira for offer prep and follow-up.",
+        "sourcedToInterview": "Strong sourced candidates can go straight to Lena for interview booking."
+      }
+    },
+    "home": {
+      "subtitle": "Manage your hired agents, monitor activity, and launch new automations.",
+      "loading": "Loading agents…",
+      "loadError": "Could not load hired agents.",
+      "removeError": "Could not remove the agent.",
+      "pipelineLink": "Pipeline",
+      "vsPrior": "vs prior",
+      "myAgents": "My Agents",
+      "myAgentsSubtitle": "Your hired specialists and their current status.",
+      "manageAgents": "Manage Agents →",
+      "emptyHired": "No agents yet",
+      "hireMore": "Hire More Agents",
+      "hireMoreHint": "Expand your team with specialized agents for sourcing, campaigns, screening, interviews, and offers.",
+      "browseCatalog": "Browse Catalog",
+      "open": "Open",
+      "viewActivity": "Activity",
+      "runs": "Runs",
+      "tokens": "Tokens",
+      "tokenUsage": "Token Usage",
+      "tokensUnit": "tokens",
+      "tokenUsagePeriod": {
+        "7d": "Last 7 days",
+        "30d": "Last 30 days",
+        "90d": "Last 90 days"
+      },
+      "tokenUsageEmpty": "No token usage yet. Run an agent to start the chart.",
+      "tokenUsageEmptyPeriod": "No usage in this period. Lifetime: {total}.",
+      "tokenUsageLifetime": "Lifetime {total}",
+      "agentStatus": "Agent Status",
+      "agentsCount": "agents",
+      "recentActivity": "Recent Activity",
+      "emptyActivity": "No recent activity from your hired agents.",
+      "status": {
+        "active": "Active",
+        "paused": "Paused",
+        "busy": "Busy",
+        "inactive": "Inactive"
+      },
+      "kpis": {
+        "total": "Total Agents",
+        "active": "Active Agents",
+        "runs": "Runs This Period",
+        "tokens": "Tokens Used This Period",
+        "workflows": "Workflows Triggered",
+        "meetings": "Meetings Booked"
+      },
+      "activity": {
+        "run": "{name} completed a run",
+        "runSummary": "{name} finished a sourcing run"
+      },
+      "agentsMeetings": "Agents Meetings"
+    },
+    "catalog": {
+      "title": "Agent catalog",
+      "subtitle": "One seat per agent type. Hire the specialists you need.",
+      "back": "Back to agents",
+      "hire": "Hire",
+      "hiring": "Hiring…",
+      "open": "Open",
+      "loadError": "Could not load the catalog.",
+      "hireError": "Could not hire this agent.",
+      "blurb": {
+        "sourcing": "Processes sourced leads and converts the best matches into candidates.",
+        "screening": "Runs screening outreach and follow-up by email or WhatsApp.",
+        "interview": "Keeps interview loops moving with timely messages.",
+        "offer": "Sends and tracks offers with controlled volume.",
+        "campaign": "Launches and syncs paid hiring campaigns so sourced leads keep flowing into your pipeline."
+      },
+      "backHome": "← Back to agents",
+      "panel": {
+        "whatTheyDo": "What they do",
+        "bestFor": "Best for"
+      },
+      "bestFor": {
+        "sourcing": "Teams that need a steady flow of qualified candidates from sourced leads.",
+        "screening": "High-volume roles where first-pass outreach and follow-up should stay consistent.",
+        "interview": "Interview loops that stall without timely candidate nudges.",
+        "offer": "Offer stages that need controlled send volume and clear follow-through.",
+        "campaign": "Teams running Meta or LinkedIn ads that need campaigns created, paused, and synced to jobs."
+      },
+      "availableTools": "Available tools",
+      "produces": "What it produces",
+      "hireTitle": "Hire {{name}}",
+      "hiredTitle": "{{name}} is already hired",
+      "hiredHint": "You can only hire one agent of this type. Open it from My Agents to run or configure it.",
+      "futureHint": "This agent is not available to hire yet.",
+      "capabilities": {
+        "sourcing": {
+          "processed": "Leads processed per run",
+          "scored": "Fit scores applied",
+          "converted": "Candidates converted"
+        },
+        "campaign": {
+          "created": "Campaigns created",
+          "active": "Active campaigns",
+          "leads": "Campaign leads"
+        },
+        "screening": {
+          "outreach": "Screening outreach",
+          "followups": "Follow-ups sent",
+          "replies": "Candidate replies"
+        },
+        "interview": {
+          "scheduled": "Interviews scheduled",
+          "reminders": "Reminders sent",
+          "advanced": "Stage advances"
+        },
+        "offer": {
+          "sent": "Offers sent",
+          "tracked": "Offers tracked",
+          "accepted": "Offers accepted"
+        }
+      }
+    },
+    "detail": {
+      "back": "Back to agents",
+      "unknown": "Unknown agent.",
+      "loadError": "Could not load this agent.",
+      "saveError": "Could not save the agent settings.",
+      "statusError": "Could not update the agent status.",
+      "runError": "Could not run the agent.",
+      "contextTitle": "Configuration",
+      "job": "Job",
+      "jobAll": "All jobs",
+      "cadence": "Cadence",
+      "channel": "Channel",
+      "notes": "Notes",
+      "save": "Save",
+      "saving": "Saving…",
+      "pause": "Pause",
+      "resume": "Resume",
+      "runNow": "Run Now",
+      "running": "Running…",
+      "lastRun": "Last run",
+      "lastRunAt": "Ran at",
+      "nextRunAt": "Next run",
+      "lastPlan": "Plan",
+      "loading": "Loading agent…",
+      "pauseAgent": "Pause Agent",
+      "resumeAgent": "Resume Agent",
+      "viewCatalog": "View in catalog",
+      "recentActivity": "Recent Activity",
+      "emptyActivity": "No recent activity from this agent yet. Run Now to generate the first events.",
+      "chatEmpty": "Chat with this agent is coming soon. Configure Context and use Run Now for now.",
+      "activityTrend": "Activity Trend",
+      "activityTrendHint": "Runs and results over the last 7 days.",
+      "legendRuns": "Runs",
+      "currentObjective": "Current Objective",
+      "edit": "Edit",
+      "focus": "Focus",
+      "destinations": "Where results go",
+      "destinationPending": "pick one in Context",
+      "resourceUsage": "Resource Usage",
+      "tokensUsed": "Tokens used",
+      "nextRunAtLabel": "Next run {{date}}",
+      "lastRunAtLabel": "Last run {{date}}",
+      "tabs": {
+        "overview": "Overview",
+        "chat": "Chat",
+        "activity": "Activity",
+        "context": "Context",
+        "knowledge": "Knowledge",
+        "usage": "Usage"
+      },
+      "kpis": {
+        "runs": "Runs This Period",
+        "runsEmpty": "0 completed",
+        "tokens": "Tokens Used",
+        "workflows": "Workflows Triggered",
+        "results": {
+          "default": "Results",
+          "sourcing": "Candidates Converted",
+          "campaign": "Campaigns Managed",
+          "screening": "Outreach Sent",
+          "interview": "Invites & Reminders",
+          "offer": "Offers Sent"
+        },
+        "resultsEmpty": "+0 last 7d"
+      },
+      "tags": {
+        "conversion": "{{percent}}% conversion",
+        "maxProcessed": "{{count}} max / run",
+        "budget": "${{amount}}/day",
+        "waitHours": "{{hours}}h wait"
+      },
+      "emptyContext": {
+        "default": "No brief yet. Add notes in Context so this agent knows what to prioritize.",
+        "sourcing": "No brief yet. Add a job and conversion settings in Context so Aria knows who to convert.",
+        "campaign": "No brief yet. Pick a job, budget, and destination URL in Context so Vera knows what to launch.",
+        "screening": "No brief yet. Pick a stage, channel, and email template (if email) in Context so Kai knows who to message.",
+        "interview": "No brief yet. Pick a stage, channel, and email template (if email) in Context so Lena knows who to invite.",
+        "offer": "No brief yet. Pick a stage, channel, template (if email), and max offers in Context so Mira knows who to contact."
+      },
+      "usageSlices": {
+        "scoring": "Fit scoring",
+        "convert": "Conversions",
+        "chat": "Chat",
+        "create": "Campaign create",
+        "sync": "Campaign sync",
+        "outreach": "First-touch outreach",
+        "followups": "Follow-ups",
+        "invites": "Interview invites",
+        "reminders": "Reminders",
+        "offers": "Offers sent"
+      },
+      "destinationNames": {
+        "shared": {
+          "pipeline": "Pipeline",
+          "candidates": "Candidates",
+          "templates": "Templates",
+          "whatsapp": "WhatsApp",
+          "jobs": "Jobs",
+          "sourcing": "Sourcing"
+        },
+        "sourcing": {
+          "sourcing": "Sourcing inbox",
+          "candidates": "Candidates",
+          "pipeline": "Pipeline",
+          "job": "Job filter"
+        },
+        "campaign": {
+          "campaigns": "Campaigns",
+          "sourcing": "Sourcing inbox",
+          "jobs": "Jobs"
+        },
+        "screening": {
+          "pipeline": "Pipeline",
+          "candidates": "Candidates",
+          "templates": "Templates",
+          "whatsapp": "WhatsApp"
+        },
+        "interview": {
+          "pipeline": "Pipeline",
+          "candidates": "Candidates",
+          "templates": "Templates",
+          "whatsapp": "WhatsApp"
+        },
+        "offer": {
+          "pipeline": "Pipeline",
+          "candidates": "Candidates",
+          "templates": "Templates",
+          "whatsapp": "WhatsApp"
+        }
+      },
+      "agents": {
+        "sourcing": {
+          "tagline": "Scores sourced leads and converts strong matches into pipeline candidates.",
+          "objective": "Process the sourcing inbox, score fit when missing, and convert the top match percentage into candidates."
+        },
+        "campaign": {
+          "tagline": "Creates and manages paid hiring campaigns tied to open roles.",
+          "objective": "Create and sync hiring campaigns so leads keep flowing into sourcing."
+        },
+        "screening": {
+          "tagline": "Runs screening outreach and follow-up across email or WhatsApp.",
+          "objective": "Send screening messages and follow-ups so candidates keep moving."
+        },
+        "interview": {
+          "tagline": "Keeps interview loops moving with timely candidate messages.",
+          "objective": "Send invites and reminders so interview loops do not stall."
+        },
+        "offer": {
+          "tagline": "Sends and tracks offers with controlled volume per run.",
+          "objective": "Send offers with controlled volume and track follow-through."
+        }
+      },
+      "chatSoon": "Chat for this agent is coming soon.",
+      "chat": {
+        "send": "Send",
+        "ui": {
+          "emptyTitle": "Talk to {{name}}",
+          "online": "Active",
+          "away": "Paused",
+          "loading": "Loading conversation…"
+        },
+        "sourcing": {
+          "hint": "Ask Aria about the last run, change conversion settings, or tell her to score and convert now.",
+          "placeholder": "Tell Aria what to process…",
+          "thinking": "Aria is thinking…",
+          "error": "Aria could not answer.",
+          "paused": "Unpause Aria to chat.",
+          "suggestions": {
+            "whoConverted": "Who converted last run?",
+            "raiseConversion": "Raise conversion to 20%",
+            "runNow": "Score and convert now"
+          }
+        },
+        "campaign": {
+          "hint": "Ask Vera what launched, change budget or destination, or tell her to create/sync now.",
+          "placeholder": "Tell Vera which campaign to launch…",
+          "thinking": "Vera is thinking…",
+          "error": "Vera could not answer.",
+          "paused": "Unpause Vera to chat.",
+          "suggestions": {
+            "whatLaunched": "What did you launch last?",
+            "raiseBudget": "Raise daily budget to $25",
+            "runNow": "Create or sync campaigns now"
+          }
+        },
+        "screening": {
+          "hint": "Ask Kai who was contacted, change wait hours or channel, or tell him to run outreach now.",
+          "placeholder": "Tell Kai who to screen…",
+          "thinking": "Kai is thinking…",
+          "error": "Kai could not answer.",
+          "paused": "Unpause Kai to chat.",
+          "suggestions": {
+            "whoContacted": "Who did you contact last?",
+            "raiseWait": "Wait 72 hours before follow-up",
+            "runNow": "Send screening outreach now"
+          }
+        },
+        "interview": {
+          "hint": "Ask Lena who was invited, change wait hours or channel, or tell her to send invites now.",
+          "placeholder": "Tell Lena who to invite…",
+          "thinking": "Lena is thinking…",
+          "error": "Lena could not answer.",
+          "paused": "Unpause Lena to chat.",
+          "suggestions": {
+            "whoInvited": "Who did you invite last?",
+            "raiseWait": "Wait 72 hours before reminder",
+            "runNow": "Send interview invites now"
+          }
+        },
+        "offer": {
+          "hint": "Ask Mira who received an offer, change the send cap or channel, or tell her to send offers now.",
+          "placeholder": "Tell Mira which offers to send…",
+          "thinking": "Mira is thinking…",
+          "error": "Mira could not answer.",
+          "paused": "Unpause Mira to chat.",
+          "suggestions": {
+            "whoOffered": "Who did you send offers to last?",
+            "raiseCap": "Raise max offers to 15",
+            "runNow": "Send offers now"
+          }
+        }
+      }
+    },
+    "roles": {
+      "sourcing": "Sourcing",
+      "screening": "Screening",
+      "interview": "Interview",
+      "offer": "Offer",
+      "campaign": "Campaigns"
+    },
+    "status": {
+      "active": "Active",
+      "paused": "Paused",
+      "busy": "Busy",
+      "inactive": "Inactive"
+    },
+    "agents": {
+      "sourcing": {
+        "name": "Sourcing Specialist",
+        "description": "Processes sourced leads and converts strong matches into candidates.",
+        "summary": "Scores sourced leads and converts the strongest matches into pipeline candidates.",
+        "context": "Job filter: optional open role.\nMax leads per run: configurable.\nAuto-conversion: top fit % → candidates.\nCadence: manual, hourly, daily, or weekly.",
+        "launchHint": "Hire Aria to process your sourcing inbox and convert top matches.",
+        "tools": {
+          "inbox": "Sourcing inbox",
+          "jobs": "Jobs",
+          "pipeline": "Pipeline",
+          "fit": "Fit scoring"
+        },
+        "outputs": {
+          "candidates": "New candidates",
+          "applications": "Pipeline applications",
+          "summary": "Run summary"
+        },
+        "knowledge": {
+          "job": "Which job Aria should prioritize when converting leads",
+          "conversion": "Auto-conversion percentage and max leads per run",
+          "fit": "Fit-score threshold and scoring preferences"
+        },
+        "preview": {
+          "headline": "Score sourced leads and convert the strongest matches into pipeline candidates.",
+          "script": "Hi, I'm {{firstName}}, the Sourcing Specialist. I work through your sourcing inbox, apply fit scores when they're missing, and convert the top matches into candidates and applications so your pipeline stays full.",
+          "capabilities": [
+            {
+              "title": "Process the sourcing inbox",
+              "detail": "Pulls new and qualified leads for a job (or across jobs) up to your max per run."
+            },
+            {
+              "title": "Apply fit scores",
+              "detail": "Scores unscored leads against the job so the best matches rise to the top."
+            },
+            {
+              "title": "Convert the top percent",
+              "detail": "Turns your auto-conversion % into real candidates and pipeline applications."
+            },
+            {
+              "title": "Leave a run summary",
+              "detail": "Records what was scanned, scored, and converted so you can review every Run Now."
+            }
+          ]
+        }
+      },
+      "screening": {
+        "name": "Screening Specialist",
+        "description": "Runs screening outreach and follow-up across email or WhatsApp.",
+        "summary": "Sends screening outreach and follow-ups so candidates keep moving.",
+        "context": "Channel: email or WhatsApp.\nTemplates: your screening templates.\nWait window before follow-up.\nCadence: manual or scheduled.",
+        "launchHint": "Hire Kai to run screening outreach with your templates.",
+        "tools": {
+          "email": "Email",
+          "whatsapp": "WhatsApp",
+          "templates": "Templates",
+          "pipeline": "Pipeline"
+        },
+        "outputs": {
+          "sequences": "Screening sequences",
+          "replies": "Candidate replies",
+          "summary": "Run summary"
+        },
+        "knowledge": {
+          "templates": "Approved screening message templates",
+          "cadence": "When to follow up if there is no reply",
+          "channel": "Preferred outreach channel per role"
+        },
+        "preview": {
+          "headline": "Run screening outreach and follow-ups so candidates keep moving.",
+          "script": "Hi, I'm {{firstName}}, the Screening Specialist. I send screening messages by email or WhatsApp using your templates, follow up when candidates go quiet, and keep the pipeline moving.",
+          "capabilities": [
+            {
+              "title": "First-touch screening",
+              "detail": "Reaches candidates who still need an initial screening message."
+            },
+            {
+              "title": "Follow-up cadence",
+              "detail": "Nudges silent candidates after your wait window."
+            },
+            {
+              "title": "Channel choice",
+              "detail": "Uses email or WhatsApp based on how you configure the seat."
+            },
+            {
+              "title": "Template-driven copy",
+              "detail": "Stays on-brand with the templates your team already approved."
+            }
+          ]
+        }
+      },
+      "interview": {
+        "name": "Interview Specialist",
+        "description": "Keeps interview loops moving with timely candidate messages.",
+        "summary": "Nudge interview loops with invites, reminders, and stage updates.",
+        "context": "Channel: email or WhatsApp.\nCalendar: Calendly when connected.\nTemplates: interview invites and reminders.\nCadence: manual or scheduled.",
+        "launchHint": "Hire Lena to keep interview loops from stalling.",
+        "tools": {
+          "email": "Email",
+          "whatsapp": "WhatsApp",
+          "calendly": "Calendly",
+          "pipeline": "Pipeline"
+        },
+        "outputs": {
+          "invites": "Interview invites",
+          "reminders": "Reminders",
+          "summary": "Run summary"
+        },
+        "knowledge": {
+          "templates": "Interview invite and reminder copy",
+          "calendar": "Booking link and interview windows",
+          "stages": "Which pipeline stages trigger interview outreach"
+        },
+        "preview": {
+          "headline": "Keep interview loops moving with invites, reminders, and stage updates.",
+          "script": "Hi, I'm {{firstName}}, the Interview Specialist. I send interview invites and reminders, share booking links when Calendly is connected, and help candidates advance through the interview stage.",
+          "capabilities": [
+            {
+              "title": "Send invites",
+              "detail": "Reaches candidates ready for interview with your invite templates."
+            },
+            {
+              "title": "Reminders",
+              "detail": "Follows up so interviews do not stall without a response."
+            },
+            {
+              "title": "Calendar handoff",
+              "detail": "Shares Calendly when connected so candidates can book a slot."
+            },
+            {
+              "title": "Stage-aware outreach",
+              "detail": "Works from the interview stages you configure."
+            }
+          ]
+        }
+      },
+      "offer": {
+        "name": "Offer Specialist",
+        "description": "Sends and tracks offers with controlled volume per run.",
+        "summary": "Sends offers with controlled volume and tracks follow-through.",
+        "context": "Max offers per run: configurable.\nTemplates: offer letters and follow-ups.\nChannel: email.\nCadence: manual or scheduled.",
+        "launchHint": "Hire Mira to send and track offers with controlled volume.",
+        "tools": {
+          "email": "Email",
+          "templates": "Templates",
+          "pipeline": "Pipeline"
+        },
+        "outputs": {
+          "offers": "Offers sent",
+          "followups": "Offer follow-ups",
+          "summary": "Run summary"
+        },
+        "knowledge": {
+          "templates": "Offer and follow-up templates",
+          "volume": "Maximum offers to send per run",
+          "stages": "Pipeline stages that are ready for an offer"
+        },
+        "preview": {
+          "headline": "Send and track offers with controlled volume per run.",
+          "script": "Hi, I'm {{firstName}}, the Offer Specialist. I send offers with the volume limit you set, track follow-through, and keep offer-stage candidates from going cold.",
+          "capabilities": [
+            {
+              "title": "Controlled send volume",
+              "detail": "Respects your max offers per run so outreach stays intentional."
+            },
+            {
+              "title": "Offer templates",
+              "detail": "Uses approved offer and follow-up copy."
+            },
+            {
+              "title": "Follow-through",
+              "detail": "Nudges candidates who have not responded to an offer."
+            },
+            {
+              "title": "Stage targeting",
+              "detail": "Focuses on pipeline stages that are ready for an offer."
+            }
+          ]
+        }
+      },
+      "campaign": {
+        "name": "Campaign Specialist",
+        "description": "Creates and manages Meta and LinkedIn hiring campaigns tied to open roles.",
+        "summary": "Launches and syncs paid hiring campaigns so leads keep flowing into sourcing.",
+        "context": "Platforms: Meta, LinkedIn, or both.\nDaily budget: configurable.\nJob: optional role to attach campaigns.\nCadence: manual or scheduled sync.",
+        "launchHint": "Hire Vera to create and manage hiring campaigns for your open roles.",
+        "tools": {
+          "meta": "Meta Ads",
+          "jobs": "Jobs",
+          "pipeline": "Pipeline"
+        },
+        "outputs": {
+          "campaigns": "Hiring campaigns",
+          "sync": "Campaign sync status",
+          "leads": "Campaign leads"
+        },
+        "knowledge": {
+          "platforms": "Which ad platforms to create or manage",
+          "budget": "Daily spend limits per campaign",
+          "jobs": "Jobs and creative angles tied to each campaign"
+        },
+        "preview": {
+          "headline": "Create and sync paid hiring campaigns so leads keep flowing into sourcing.",
+          "script": "Hi, I'm {{firstName}}, the Campaign Specialist. I create and manage Meta hiring campaigns tied to your open roles, keep budgets in check, and sync status so new leads land in sourcing.",
+          "capabilities": [
+            {
+              "title": "Create from a job",
+              "detail": "Builds hiring campaigns linked to the role you choose."
+            },
+            {
+              "title": "Manage platforms",
+              "detail": "Works with Meta today, with room for LinkedIn as you expand."
+            },
+            {
+              "title": "Respect budget",
+              "detail": "Uses your daily budget so spend stays controlled."
+            },
+            {
+              "title": "Sync campaign status",
+              "detail": "Keeps campaign state aligned so the team knows what is live."
+            }
+          ]
+        }
+      }
+    },
+    "actions": {
+      "configure": "Configure",
+      "remove": "Remove",
+      "cancel": "Cancel",
+      "hire": "Hire",
+      "hiring": "Hiring…",
+      "preview": "Preview",
+      "comingSoon": "Coming soon",
+      "more": "More"
+    },
+    "remove": {
+      "title": "Remove {name}?",
+      "description": "This removes the {role} seat from your organization. You can hire again later."
+    },
+    "badge": {
+      "hired": "Hired",
+      "v1": "V1",
+      "future": "Future"
+    },
+    "campaign": {
+      "dailyBudget": "Daily budget (USD)",
+      "platform": "Platforms",
+      "platforms": {
+        "meta": "Meta (Facebook / Instagram)",
+        "linkedin": "LinkedIn",
+        "both": "Meta + LinkedIn"
+      },
+      "desiredStatus": "Desired status",
+      "destinationUrl": "Destination URL (public job link)",
+      "countryCode": "Country code",
+      "runHint": "Run Now creates or syncs Meta hiring campaigns for the selected job. LinkedIn is queued for later.",
+      "status": {
+        "active": "Active",
+        "paused": "Paused"
+      }
+    },
+    "tabs": {
+      "overview": "Overview",
+      "context": "Context",
+      "knowledge": "Knowledge",
+      "tools": "Tools",
+      "settings": "Settings"
+    },
+    "sections": {
+      "context": "Agent Context & Instructions",
+      "tools": "Connected Tools",
+      "outputs": "Outputs",
+      "knowledge": "Knowledge",
+      "settings": "Settings"
+    },
+    "settings": {
+      "version": "Version",
+      "availability": "Availability",
+      "status": "Status",
+      "statusReady": "Ready to hire",
+      "statusHired": "Hired",
+      "statusFuture": "Coming later"
+    },
+    "preview": {
+      "capabilities": "What this agent can do",
+      "tools": "Tools it uses",
+      "outputs": "What it produces",
+      "replayVoice": "Play explanation",
+      "playingVoice": "Playing…",
+      "muteVoice": "Mute voice",
+      "unmuteVoice": "Unmute voice"
+    }
   },
   "metaCampaign": {
     "title": "Create Meta campaign",
@@ -1673,7 +2369,7 @@
       "saveChanges": "Failed to save changes.",
       "deleteCandidate": "Failed to delete candidate."
     },
-      "drawer": {
+    "drawer": {
       "details": "Details",
       "applicationAnswers": "Application answers",
       "metadata": "Metadata",

@@ -135,6 +135,18 @@ export function countryFlagEmoji(iso2: string): string | null {
   return String.fromCodePoint(...codePoints);
 }
 
+export function formatPhone(raw: string | null | undefined): string {
+  if (!raw) return '';
+  return formatPhoneForDisplay(String(raw)).text;
+}
+
+export function phoneTelHref(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+  const digits = onlyDigits(String(raw));
+  if (!digits) return null;
+  return `tel:+${digits}`;
+}
+
 export function formatPhoneForDisplay(raw: string): { text: string; countryIso2?: string; flag?: string } {
   const input = (raw || '').trim();
   if (!input) return { text: '' };
