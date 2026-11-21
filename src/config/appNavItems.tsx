@@ -109,6 +109,26 @@ export const appNavItems: AppNavItem[] = [
     ),
   },
   {
+    name: 'Workflow Automation',
+    translationKey: 'workflowAutomation',
+    path: '/app/workflow-automation',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zm7-1l3 2.5L18 14v6H11v-6z" />
+      </svg>
+    ),
+  },
+  {
+    name: 'Workflow Executions',
+    translationKey: 'workflowExecutions',
+    path: '/app/workflow-executions',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+    ),
+  },
+  {
     name: 'Team',
     translationKey: 'team',
     path: '/app/team',
