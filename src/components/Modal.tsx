@@ -11,7 +11,7 @@ interface ModalProps {
   titleIcon?: ReactNode;
   children: ReactNode;
   footer?: ReactNode;
-  width?: 'sm' | 'md' | 'lg' | 'xl';
+  width?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
 }
 
 export default function Modal({
@@ -54,6 +54,7 @@ export default function Modal({
     md: 'max-w-2xl',
     lg: 'max-w-4xl',
     xl: 'max-w-6xl',
+    '2xl': 'max-w-7xl',
   };
 
   return (
