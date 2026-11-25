@@ -1,15 +1,18 @@
 import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { appNavItems } from '../../config/appNavItems';
+import { coreHrNavItems, type CoreHrNavItem } from '../../config/coreHrNavItems';
 import { isSalesNavKey, useAccess } from '../../contexts/AccessContext';
 import AiAgentsNavLink from '../AiAgentsNavLink';
 import LanguageSwitcher from '../LanguageSwitcher';
 import Logo from '../Logo';
+import ModuleSwitcher from '../ModuleSwitcher';
 import { useBackdropDismiss } from '../../hooks/useBackdropDismiss';
 import { useWhatsAppUnreadConversationCount } from '../../hooks/useWhatsAppUnreadConversationCount';
 import OrgSidebarMark from '../OrgSidebarMark';
 import UserAccountMenu from '../UserAccountMenu';
 import { useCurrentDisplayName } from '../../hooks/useCurrentDisplayName';
+import { useModule } from '../../modules/ModuleContext';
 
 interface MobileSidebarDrawerProps {
   isOpen: boolean;
@@ -21,12 +24,18 @@ export default function MobileSidebarDrawer({ isOpen, onClose }: MobileSidebarDr
   const displayName = useCurrentDisplayName();
   const unreadWhatsAppConversations = useWhatsAppUnreadConversationCount();
   const { ready, readOnly } = useAccess();
+  const { activeModule } = useModule();
+  const isCoreHr = activeModule === 'core-hr';
+  const sourceItems = isCoreHr ? coreHrNavItems : appNavItems;
   const navItems = !ready
     ? []
-    : readOnly
-      ? appNavItems.filter((item) => isSalesNavKey(item.translationKey))
-      : appNavItems;
+    : !isCoreHr && readOnly
+      ? sourceItems.filter((item) => isSalesNavKey(item.translationKey))
+      : sourceItems;
   const backdropDismiss = useBackdropDismiss(onClose);
+
+  const labelFor = (translationKey: string) =>
+    isCoreHr ? t(`coreHrNav.${translationKey}`) : t(`navigation.${translationKey}`);
 
   return (
     <>
@@ -57,10 +66,29 @@ export default function MobileSidebarDrawer({ isOpen, onClose }: MobileSidebarDr
           </button>
         </div>
 
+        <div className="px-4 pt-4">
+          <ModuleSwitcher onSwitched={onClose} />
+        </div>
+
         <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
           {navItems.map((item) =>
-            item.translationKey === 'aiAgents' ? (
+            !isCoreHr && item.translationKey === 'aiAgents' ? (
               <AiAgentsNavLink key={item.path} onNavigate={onClose} />
+            ) : isCoreHr && (item as CoreHrNavItem).comingSoon ? (
+              <button
+                key={item.path}
+                type="button"
+                disabled
+                aria-disabled="true"
+                title={t('coreHrNav.soon')}
+                className="flex w-full cursor-not-allowed items-center gap-3 rounded-lg px-4 py-3 text-left text-gray-400"
+              >
+                {item.icon}
+                <span className="flex-1">{labelFor(item.translationKey)}</span>
+                <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gray-500">
+                  {t('coreHrNav.soon')}
+                </span>
+              </button>
             ) : (
               <NavLink
                 key={item.path}
@@ -69,14 +97,16 @@ export default function MobileSidebarDrawer({ isOpen, onClose }: MobileSidebarDr
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                     isActive
-                      ? 'bg-primary/10 text-primary font-medium'
+                      ? isCoreHr
+                        ? 'bg-teal-600/10 text-teal-800 font-medium'
+                        : 'bg-primary/10 text-primary font-medium'
                       : 'text-gray-600 hover:bg-gray-50 hover:text-dark-text'
                   }`
                 }
               >
                 {item.icon}
-                <span className="flex-1">{t(`navigation.${item.translationKey}`)}</span>
-                {item.translationKey === 'whatsapp' && unreadWhatsAppConversations > 0 ? (
+                <span className="flex-1">{labelFor(item.translationKey)}</span>
+                {!isCoreHr && item.translationKey === 'whatsapp' && unreadWhatsAppConversations > 0 ? (
                   <span
                     className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[11px] font-semibold text-white"
                     title={t('whatsappInbox.unread', { count: unreadWhatsAppConversations })}
@@ -93,9 +123,7 @@ export default function MobileSidebarDrawer({ isOpen, onClose }: MobileSidebarDr
           <LanguageSwitcher />
           <div className="flex items-center gap-3 px-2">
             <OrgSidebarMark className="w-9 h-9 text-sm" />
-            <p className="text-sm font-medium text-dark-text truncate flex-1">
-              {displayName}
-            </p>
+            <p className="text-sm font-medium text-dark-text truncate flex-1">{displayName}</p>
           </div>
           <UserAccountMenu variant="inline" onClose={onClose} />
         </div>

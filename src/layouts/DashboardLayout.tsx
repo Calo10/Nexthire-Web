@@ -7,6 +7,8 @@ import Logo from '../components/Logo';
 import MobileSidebarDrawer from '../components/layout/MobileSidebarDrawer';
 import MobileBottomNav from '../components/layout/MobileBottomNav';
 import { MobileNavProvider, useMobileNav } from '../contexts/MobileNavContext';
+import { ModuleProvider } from '../modules/ModuleContext';
+import { isCoreHrPath } from '../modules/types';
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -18,7 +20,12 @@ function DashboardLayoutContent({ children }: DashboardLayoutProps) {
   const { ready, readOnly } = useAccess();
   const location = useLocation();
 
-  if (ready && readOnly && !isSalesPath(location.pathname)) {
+  if (
+    ready &&
+    readOnly &&
+    !isCoreHrPath(location.pathname) &&
+    !isSalesPath(location.pathname)
+  ) {
     return <Navigate to="/app/dashboard" replace />;
   }
 
@@ -42,17 +49,17 @@ function DashboardLayoutContent({ children }: DashboardLayoutProps) {
         </button>
       </header>
 
-      <main className="lg:ml-64 pb-20 lg:pb-0">
-        {children}
-      </main>
+      <main className="lg:ml-64 pb-20 lg:pb-0">{children}</main>
     </div>
   );
 }
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
-    <MobileNavProvider>
-      <DashboardLayoutContent>{children}</DashboardLayoutContent>
-    </MobileNavProvider>
+    <ModuleProvider>
+      <MobileNavProvider>
+        <DashboardLayoutContent>{children}</DashboardLayoutContent>
+      </MobileNavProvider>
+    </ModuleProvider>
   );
 }
