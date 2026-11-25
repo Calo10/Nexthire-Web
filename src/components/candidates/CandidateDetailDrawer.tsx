@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import Button from '../Button';
 import TextField from '../TextField';
 import SelectField from '../SelectField';
@@ -21,6 +22,11 @@ import { displayCandidateEmail, isPlaceholderCandidateEmail } from '../../lib/ca
 import { formatDynamicAnswerDisplayValue, parseDynamicAnswersJson } from '../sourcing/sourcingUtils';
 import ViewResumeDocumentButton, { isResumeAnswer, isResumeDocumentId } from '../ViewResumeDocumentButton';
 import CandidateWhatsAppThread from '../whatsapp/CandidateWhatsAppThread';
+import ConfirmModal from '../ui/ConfirmModal';
+import { employeesApi } from '../../features/core-hr/api/employeesApi';
+import { HR_PERMISSIONS, useHrCapabilities } from '../../features/core-hr/hooks/useHrCapabilities';
+import { ONBOARDING_PERMISSIONS, useOnboardingCapabilities } from '../../features/core-hr/hooks/useOnboardingCapabilities';
+import { onboardingsApi } from '../../features/core-hr/api/onboardingsApi';
 
 function formatDate(dateString: string, locale: string) {
   try {
@@ -84,6 +90,17 @@ export default function CandidateDetailDrawer({
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [convertOpen, setConvertOpen] = useState(false);
+  const [converting, setConverting] = useState(false);
+  const [convertedEmployeeId, setConvertedEmployeeId] = useState<string | null>(null);
+  // Core HR: only users with Employees.Create (and not read-only) can convert a hired candidate.
+  const hrCaps = useHrCapabilities(isOpen && !readOnly);
+  const canConvert = !readOnly && hrCaps.can(HR_PERMISSIONS.Create);
+  // After a successful conversion we offer to start the employee's onboarding (needs Onboarding.Create).
+  const onboardingCaps = useOnboardingCapabilities(!!convertedEmployeeId);
+  const canStartOnboarding = !readOnly && onboardingCaps.can(ONBOARDING_PERMISSIONS.Create);
+  const [startingOnboarding, setStartingOnboarding] = useState(false);
+  const [startedOnboardingId, setStartedOnboardingId] = useState<string | null>(null);
 
   const [resumeUrl, setResumeUrl] = useState<string | null>(null);
   const [resumeFileKey, setResumeFileKey] = useState(0);
@@ -135,6 +152,9 @@ export default function CandidateDetailDrawer({
     setIsEditing(false);
     setSaveError(null);
     setSuccess(null);
+    setConvertOpen(false);
+    setConvertedEmployeeId(null);
+    setStartedOnboardingId(null);
     setResumeJustUploaded(false);
     setResumeUploadError(null);
     setDrawerTab('details');
@@ -266,6 +286,48 @@ export default function CandidateDetailDrawer({
       setSaveError(message);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleStartOnboarding = async () => {
+    if (!convertedEmployeeId) return;
+    setStartingOnboarding(true);
+    setSaveError(null);
+    try {
+      // Idempotent: returns the active onboarding when one already exists.
+      const onboarding = await onboardingsApi.startForEmployee(convertedEmployeeId);
+      setStartedOnboardingId(onboarding.id);
+      setSuccess(t('candidates.drawer.convert.onboardingStarted'));
+    } catch (err) {
+      const message =
+        err && typeof err === 'object' && 'message' in err && String((err as { message: string }).message).trim()
+          ? String((err as { message: string }).message)
+          : t('candidates.drawer.convert.onboardingError');
+      setSaveError(message);
+    } finally {
+      setStartingOnboarding(false);
+    }
+  };
+
+  const handleConvertToEmployee = async () => {
+    if (!candidateId) return;
+    setConverting(true);
+    setSaveError(null);
+    setSuccess(null);
+    try {
+      // The API is idempotent and keeps the candidate/application history intact.
+      const employee = await employeesApi.convertFromCandidate({ candidateId });
+      setConvertedEmployeeId(employee.id);
+      setSuccess(t('candidates.drawer.convert.success'));
+    } catch (err) {
+      const message =
+        err && typeof err === 'object' && 'message' in err
+          ? String((err as { message: string }).message)
+          : t('candidates.drawer.convert.error');
+      setSaveError(message);
+    } finally {
+      setConverting(false);
+      setConvertOpen(false);
     }
   };
 
@@ -430,6 +492,34 @@ export default function CandidateDetailDrawer({
           {error && <ErrorMessage message={error.message || t('candidates.errors.loadCandidate')} />}
           {saveError && <ErrorMessage message={saveError} />}
           {success && <SuccessMessage message={success} />}
+          {convertedEmployeeId ? (
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+              <Link
+                to={`/app/hr/employees/${convertedEmployeeId}`}
+                className="inline-flex text-sm font-semibold text-primary hover:underline"
+              >
+                {t('candidates.drawer.convert.viewEmployee')}
+              </Link>
+              {startedOnboardingId ? (
+                <Link
+                  to={`/app/hr/onboarding?open=${startedOnboardingId}`}
+                  className="inline-flex text-sm font-semibold text-primary hover:underline"
+                >
+                  {t('candidates.drawer.convert.viewOnboarding')}
+                </Link>
+              ) : canStartOnboarding ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={startingOnboarding}
+                  onClick={() => void handleStartOnboarding()}
+                >
+                  {startingOnboarding ? t('common.loading') : t('candidates.drawer.convert.startOnboarding')}
+                </Button>
+              ) : null}
+            </div>
+          ) : null}
 
           {data ? (
             <>
@@ -684,9 +774,20 @@ export default function CandidateDetailDrawer({
         {/* Footer */}
         <div className="p-6 border-t border-gray-200 flex items-center justify-between gap-3">
           {readOnly ? <span /> : (
-          <Button variant="secondary" onClick={handleDelete} disabled={!candidateId || isSaving}>
-            {t('common.actions.delete')}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="secondary" onClick={handleDelete} disabled={!candidateId || isSaving}>
+              {t('common.actions.delete')}
+            </Button>
+            {canConvert ? (
+              <Button
+                variant="outline"
+                onClick={() => setConvertOpen(true)}
+                disabled={!candidateId || isSaving || converting}
+              >
+                {t('candidates.drawer.convert.button')}
+              </Button>
+            ) : null}
+          </div>
           )}
           <div className="flex items-center gap-3">
             <Button variant="secondary" onClick={onClose} disabled={isSaving}>
@@ -703,6 +804,16 @@ export default function CandidateDetailDrawer({
         )}
       </div>
     </div>
+
+    <ConfirmModal
+      isOpen={convertOpen}
+      onClose={() => setConvertOpen(false)}
+      onConfirm={() => void handleConvertToEmployee()}
+      busy={converting}
+      title={t('candidates.drawer.convert.confirmTitle')}
+      description={t('candidates.drawer.convert.confirmDescription', { name: fullName })}
+      confirmLabel={t('candidates.drawer.convert.confirm')}
+    />
 
     {/* Resume preview modal */}
     <Modal

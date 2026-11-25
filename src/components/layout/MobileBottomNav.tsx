@@ -1,12 +1,16 @@
 import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getMobileBottomNavItems } from '../../config/appNavItems';
+import { getCoreHrMobileBottomNavItems } from '../../config/coreHrNavItems';
 import { useMobileNav } from '../../contexts/MobileNavContext';
+import { useModule } from '../../modules/ModuleContext';
 
 export default function MobileBottomNav() {
   const { t } = useTranslation();
   const { setOpenMenu } = useMobileNav();
-  const bottomNavItems = getMobileBottomNavItems();
+  const { activeModule } = useModule();
+  const isCoreHr = activeModule === 'core-hr';
+  const bottomNavItems = isCoreHr ? getCoreHrMobileBottomNavItems() : getMobileBottomNavItems();
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-30 lg:hidden">
@@ -17,12 +21,20 @@ export default function MobileBottomNav() {
             to={item.path}
             className={({ isActive }) =>
               `flex flex-1 flex-col items-center justify-center gap-0.5 py-2 px-1 text-xs transition-colors ${
-                isActive ? 'text-primary font-medium' : 'text-gray-500 hover:text-dark-text'
+                isActive
+                  ? isCoreHr
+                    ? 'text-teal-700 font-medium'
+                    : 'text-primary font-medium'
+                  : 'text-gray-500 hover:text-dark-text'
               }`
             }
           >
             {item.icon}
-            <span className="truncate max-w-full">{t(`navigation.${item.translationKey}`)}</span>
+            <span className="truncate max-w-full">
+              {isCoreHr
+                ? t(`coreHrNav.${item.translationKey}`)
+                : t(`navigation.${item.translationKey}`)}
+            </span>
           </NavLink>
         ))}
         <button

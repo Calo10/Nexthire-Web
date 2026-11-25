@@ -42,6 +42,20 @@ import SecuritySettingsPage from './pages/settings/SecuritySettingsPage';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import SetPasswordPage from './pages/security/SetPasswordPage';
+import CoreHrDashboardPage from './features/core-hr/pages/CoreHrDashboardPage';
+import CoreHrEmployeesPage from './features/core-hr/pages/CoreHrEmployeesPage';
+import CoreHrEmployeeProfilePage from './features/core-hr/pages/CoreHrEmployeeProfilePage';
+import CoreHrReportsPage from './features/core-hr/pages/CoreHrReportsPage';
+import CoreHrOnboardingPage from './features/core-hr/pages/CoreHrOnboardingPage';
+import CoreHrOnboardingTemplatesPage from './features/core-hr/pages/CoreHrOnboardingTemplatesPage';
+import CoreHrOnboardingAutomationsPage from './features/core-hr/pages/CoreHrOnboardingAutomationsPage';
+import CoreHrOffboardingPage from './features/core-hr/pages/CoreHrOffboardingPage';
+import CoreHrOffboardingTemplatesPage from './features/core-hr/pages/CoreHrOffboardingTemplatesPage';
+import CoreHrOffboardingAutomationsPage from './features/core-hr/pages/CoreHrOffboardingAutomationsPage';
+import CoreHrOrganizationPage from './features/core-hr/pages/CoreHrOrganizationPage';
+import CoreHrTimeOffPage from './features/core-hr/pages/CoreHrTimeOffPage';
+import CoreHrDocumentsPage from './features/core-hr/pages/CoreHrDocumentsPage';
+import CoreHrSettingsPage from './features/core-hr/pages/CoreHrSettingsPage';
 
 function App() {
   return (
@@ -129,6 +143,157 @@ function App() {
           />
           
           {/* Protected routes */}
+          <Route
+            path="/app/hr/dashboard"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <CoreHrDashboardPage />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/app/hr/employees"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <CoreHrEmployeesPage />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/app/hr/employees/:id"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <CoreHrEmployeeProfilePage />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/app/hr/onboarding"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <CoreHrOnboardingPage />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/app/hr/onboarding/templates"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <CoreHrOnboardingTemplatesPage />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/app/hr/onboarding/automations"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <CoreHrOnboardingAutomationsPage />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/app/hr/offboarding"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <CoreHrOffboardingPage />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/app/hr/offboarding/templates"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <CoreHrOffboardingTemplatesPage />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/app/hr/offboarding/automations"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <CoreHrOffboardingAutomationsPage />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/app/hr/reports"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <CoreHrReportsPage />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/app/hr/reports/:tab"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <CoreHrReportsPage />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/app/hr/organization"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <CoreHrOrganizationPage />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/app/hr/time-off"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <CoreHrTimeOffPage />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/app/hr/documents"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <CoreHrDocumentsPage />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/app/hr/settings"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <CoreHrSettingsPage />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+
           <Route
             path="/app/dashboard"
             element={
