@@ -56,6 +56,8 @@ import CoreHrOrganizationPage from './features/core-hr/pages/CoreHrOrganizationP
 import CoreHrTimeOffPage from './features/core-hr/pages/CoreHrTimeOffPage';
 import CoreHrDocumentsPage from './features/core-hr/pages/CoreHrDocumentsPage';
 import CoreHrSettingsPage from './features/core-hr/pages/CoreHrSettingsPage';
+import CoreHrAiAgentsHomePage from './features/core-hr/ai-agents/pages/CoreHrAiAgentsHomePage';
+import CoreHrAiAgentsCatalogPage from './features/core-hr/ai-agents/pages/CoreHrAiAgentsCatalogPage';
 
 function App() {
   return (
@@ -289,6 +291,26 @@ function App() {
               <ProtectedRoute>
                 <DashboardLayout>
                   <CoreHrSettingsPage />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/app/hr/ai-agents"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <CoreHrAiAgentsHomePage />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/app/hr/ai-agents/catalog"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <CoreHrAiAgentsCatalogPage />
                 </DashboardLayout>
               </ProtectedRoute>
             }

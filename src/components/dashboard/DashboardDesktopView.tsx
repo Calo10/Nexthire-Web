@@ -6,8 +6,11 @@ import UserAccountMenu from '../UserAccountMenu';
 import ErrorMessage from '../ErrorMessage';
 import BarChart from '../BarChart';
 import LineChart from '../LineChart';
+import { Link } from 'react-router-dom';
 import ChartCard from '../ChartCard';
 import Card from '../Card';
+import DashboardAiAgentsCard from './DashboardAiAgentsCard';
+import { ClaudeLogo, OpenAiLogo } from '../settings/AiAssistantLogos';
 import type { DashboardPageState } from '../../hooks/useDashboardPage';
 
 export default function DashboardDesktopView({
@@ -36,14 +39,9 @@ export default function DashboardDesktopView({
   myJobs,
   jobsLoading,
   jobsError,
-  tasks,
-  tasksLoading,
-  tasksError,
-  allJobs,
   interviewStageCount,
   getStageInfo,
   getJobStatusColor,
-  getTaskStatusColor,
   formatStatusLabel,
   formatDateShort,
   dateRangeOptions,
@@ -96,6 +94,22 @@ export default function DashboardDesktopView({
           </div>
 
           <LanguageSwitcher />
+          <Link
+            to="/app/settings?mcp=1"
+            className="inline-flex h-10 items-center gap-2 rounded-xl px-3 text-sm font-semibold text-white bg-[#D97757] hover:bg-[#C96A4B] transition-colors"
+            aria-label={t('dashboard.connectAi')}
+          >
+            <span className="inline-flex items-center -space-x-1.5" aria-hidden>
+              <span className="relative z-[1] inline-flex h-5 w-5 items-center justify-center rounded-full bg-white">
+                <ClaudeLogo size={13} />
+              </span>
+              <span className="relative z-0 inline-flex h-5 w-5 items-center justify-center rounded-full bg-white">
+                <OpenAiLogo size={13} />
+              </span>
+            </span>
+            <span className="hidden xl:inline">{t('dashboard.connectAi')}</span>
+            <span className="xl:hidden">{t('dashboard.connectAiShort')}</span>
+          </Link>
           <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-200">
             <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
@@ -309,51 +323,8 @@ export default function DashboardDesktopView({
           )}
         </div>
 
-        {/* Upcoming Tasks Table */}
-        <div className="lg:col-span-1">
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold text-dark-text mb-4">{t('dashboard.upcomingTasks')}</h3>
-            {tasksLoading ? (
-              <div className="space-y-3">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-16 bg-gray-200 rounded animate-pulse"></div>
-                ))}
-              </div>
-            ) : tasksError ? (
-              <ErrorMessage message={tasksError.message || 'Failed to load tasks'} />
-            ) : (tasks || []).length === 0 ? (
-              <div className="text-center py-8 text-gray-500 text-sm">
-                {t('dashboard.noUpcomingTasks')}
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {(tasks || []).slice(0, 5).map((task) => {
-                  // Find related job and candidate names if available
-                  const relatedJob = task.relatedJobId
-                    ? allJobs.find((j) => String(j.id) === String(task.relatedJobId))
-                    : null;
-                  const relatedCandidate = task.relatedCandidateId ? candidates.find(c => c.candidateId === task.relatedCandidateId) : null;
-                  
-                  return (
-                    <div key={task.taskId} className="border-b border-gray-200 pb-3 last:border-0 last:pb-0">
-                      <div className="flex items-start justify-between mb-1">
-                        <h4 className="text-sm font-medium text-dark-text">{task.title || 'Untitled Task'}</h4>
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getTaskStatusColor(task.status || 'open')}`}>
-                          {formatStatusLabel(task.status || 'open')}
-                        </span>
-                      </div>
-                      <div className="text-xs text-gray-600">
-                        {relatedCandidate && <span>{relatedCandidate.fullName}</span>}
-                        {relatedCandidate && relatedJob && <span> • </span>}
-                        {relatedJob && <span>{relatedJob.title}</span>}
-                        <span className="ml-2">{task.dueAt ? formatDateShort(task.dueAt) : '-'}</span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </Card>
+        <div className="lg:col-span-1 min-h-[320px]">
+          <DashboardAiAgentsCard />
         </div>
       </div>
     </div>

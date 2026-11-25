@@ -6,6 +6,7 @@ import { isSalesNavKey, useAccess } from '../contexts/AccessContext';
 import { useWhatsAppUnreadConversationCount } from '../hooks/useWhatsAppUnreadConversationCount';
 import { useModule } from '../modules/ModuleContext';
 import AiAgentsNavLink from './AiAgentsNavLink';
+import CoreHrAiAgentsNavLink from './CoreHrAiAgentsNavLink';
 import Logo from './Logo';
 import ModuleSwitcher from './ModuleSwitcher';
 import OrgSidebarMark from './OrgSidebarMark';
@@ -42,6 +43,8 @@ export default function Sidebar() {
         {navItems.map((item) =>
           !isCoreHr && item.translationKey === 'aiAgents' ? (
             <AiAgentsNavLink key={item.path} />
+          ) : isCoreHr && item.translationKey === 'aiAgents' ? (
+            <CoreHrAiAgentsNavLink key={item.path} />
           ) : isCoreHr && (item as CoreHrNavItem).comingSoon ? (
             <button
               key={item.path}
