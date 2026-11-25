@@ -4,6 +4,7 @@ import { appNavItems } from '../../config/appNavItems';
 import { coreHrNavItems, type CoreHrNavItem } from '../../config/coreHrNavItems';
 import { isSalesNavKey, useAccess } from '../../contexts/AccessContext';
 import AiAgentsNavLink from '../AiAgentsNavLink';
+import CoreHrAiAgentsNavLink from '../CoreHrAiAgentsNavLink';
 import LanguageSwitcher from '../LanguageSwitcher';
 import Logo from '../Logo';
 import ModuleSwitcher from '../ModuleSwitcher';
@@ -74,6 +75,8 @@ export default function MobileSidebarDrawer({ isOpen, onClose }: MobileSidebarDr
           {navItems.map((item) =>
             !isCoreHr && item.translationKey === 'aiAgents' ? (
               <AiAgentsNavLink key={item.path} onNavigate={onClose} />
+            ) : isCoreHr && item.translationKey === 'aiAgents' ? (
+              <CoreHrAiAgentsNavLink key={item.path} onNavigate={onClose} />
             ) : isCoreHr && (item as CoreHrNavItem).comingSoon ? (
               <button
                 key={item.path}

@@ -347,7 +347,23 @@
     "mobile": {
       "menu": "Menu",
       "more": "More"
-    }
+    },
+    "aiAgents": {
+      "title": "AI Agents",
+      "viewAll": "View all",
+      "summary": "{{hired}} hired · {{active}} active",
+      "chatSubtitle": "Chat with {{count}} of your agents",
+      "openChat": "Chat",
+      "backToAgents": "Agents",
+      "pickAgent": "Choose which agent to chat with",
+      "openAgent": "Open agent →",
+      "emptyTitle": "No agents hired yet",
+      "emptyHint": "Hire Aria or another specialist to keep sourcing, screening, and offers moving.",
+      "hire": "Hire an agent",
+      "more": "+{{count}} more"
+    },
+    "connectAi": "Connect Claude or GPT",
+    "connectAiShort": "Connect AI"
   },
   "navigation": {
     "dashboard": "Dashboard",
@@ -383,7 +399,8 @@
     "onboarding": "Onboarding",
     "offboarding": "Offboarding",
     "reports": "Reports",
-    "soon": "Soon"
+    "soon": "Soon",
+    "aiAgents": "AI Agents"
   },
   "coreHr": {
     "dashboard": {
@@ -441,6 +458,9 @@
         "orgChart": "Company org chart",
         "peopleReports": "People reports",
         "employeePortal": "Employee self-service portal"
+      },
+      "aiAgents": {
+        "emptyHint": "Hire Nora or another Core HR specialist to keep people ops running."
       }
     },
     "employees": {
@@ -4738,6 +4758,133 @@
       "passwordSavedSuccessfully": "Password saved successfully",
       "bothFieldsRequired": "Both password fields are required",
       "passwordsDoNotMatch": "Passwords do not match"
+    },
+    "aiConnectors": {
+      "cardEyebrow": "Assistants",
+      "cardTitle": "MCP Connector",
+      "cardDescription": "Connect ChatGPT, Claude, and Gemini to your NextHire org.",
+      "openButton": "Open setup guide",
+      "title": "MCP Connector",
+      "subtitle": "Use NextHire from ChatGPT, Claude, Gemini, or Cursor via MCP.",
+      "intro": "Copy your MCP URL and access token below, then follow the visual guide for your assistant.",
+      "mcpUrl": "MCP URL",
+      "accessToken": "Access token",
+      "noToken": "Sign in again to get a token",
+      "tokenHint": "Session token — expires. Copy a fresh one if the connector returns 401.",
+      "copy": "Copy",
+      "copyConfig": "Copy config",
+      "copied": "Copied",
+      "show": "Show",
+      "hide": "Hide",
+      "pickAssistant": "Choose where you want to connect",
+      "visualHeading": "Where to paste it",
+      "configSnippet": "Ready-to-paste config",
+      "tabs": {
+        "claude": "Claude",
+        "chatgpt": "ChatGPT",
+        "gemini": "Gemini",
+        "cursor": "Cursor"
+      },
+      "visual": {
+        "mockLabel": "Guide preview",
+        "settings": "Settings",
+        "general": "General",
+        "connectors": "Connectors",
+        "privacy": "Privacy",
+        "addCustom": "Add custom MCP connector",
+        "save": "Save connector",
+        "cursorCaption": "Paste into Cursor MCP settings or .cursor/mcp.json, then reload MCP.",
+        "claude": {
+          "menu": "Settings → Connectors → Add custom connector",
+          "caption": "Paste the MCP URL and Bearer token, then enable NextHire in the chat."
+        },
+        "chatgpt": {
+          "menu": "Settings → Apps & connectors → Create",
+          "caption": "Add a custom MCP with this URL and Authorization header."
+        },
+        "gemini": {
+          "menu": "Settings → Connected apps / MCP (when available)",
+          "caption": "Point Gemini at the remote MCP URL with your Bearer token."
+        }
+      },
+      "steps": {
+        "claude": {
+          "1": {
+            "title": "Copy credentials",
+            "body": "Copy the MCP URL and access token from the blue box above."
+          },
+          "2": {
+            "title": "Open Connectors",
+            "body": "In Claude go to Settings → Connectors (or Custom connectors)."
+          },
+          "3": {
+            "title": "Add NextHire",
+            "body": "Create a custom connector. Paste the URL and put Authorization: Bearer <token> in headers."
+          },
+          "4": {
+            "title": "Test it",
+            "body": "Start a chat and ask Claude to list your hired NextHire agents."
+          },
+          "heading": "Setup guide — Claude"
+        },
+        "chatgpt": {
+          "1": {
+            "title": "Copy credentials",
+            "body": "Copy the MCP URL and access token from the blue box above."
+          },
+          "2": {
+            "title": "Open connectors",
+            "body": "In ChatGPT open Settings → Apps & connectors (or Developer / MCP)."
+          },
+          "3": {
+            "title": "Create connector",
+            "body": "Add a custom MCP. Paste the URL and Authorization Bearer header."
+          },
+          "4": {
+            "title": "Test it",
+            "body": "Ask ChatGPT to show your NextHire pipeline leads or hired agents."
+          },
+          "heading": "Setup guide — ChatGPT"
+        },
+        "gemini": {
+          "1": {
+            "title": "Copy credentials",
+            "body": "Copy the MCP URL and access token from the blue box above."
+          },
+          "2": {
+            "title": "Open connected apps",
+            "body": "In Gemini open Settings → Connected apps / MCP when available on your plan."
+          },
+          "3": {
+            "title": "Add remote MCP",
+            "body": "Paste the NextHire MCP URL and send Authorization: Bearer <token>."
+          },
+          "4": {
+            "title": "Test it",
+            "body": "Ask Gemini to list integrations or run a hired agent."
+          },
+          "heading": "Setup guide — Gemini"
+        },
+        "cursor": {
+          "1": {
+            "title": "Copy credentials",
+            "body": "Copy the MCP URL and access token (or the JSON snippet below)."
+          },
+          "2": {
+            "title": "Open MCP settings",
+            "body": "In Cursor open Settings → MCP, or edit .cursor/mcp.json."
+          },
+          "3": {
+            "title": "Paste config",
+            "body": "Add the nexthire server with url + Authorization header, then save."
+          },
+          "4": {
+            "title": "Reload & test",
+            "body": "Reload MCP servers and ask the agent to list hired NextHire agents."
+          },
+          "heading": "Setup guide — Cursor"
+        }
+      }
     }
   },
   "verify": {
@@ -4803,6 +4950,173 @@
     "errors": {
       "load": "Could not load meetings.",
       "copy": "Could not copy the booking link."
+    }
+  },
+  "coreHrAiAgents": {
+    "title": "AI Agents",
+    "hireAgent": "Hire Agent",
+    "badge": {
+      "hired": "Hired",
+      "v1": "Available",
+      "future": "Coming soon"
+    },
+    "actions": {
+      "hire": "Hire",
+      "hiring": "Hiring…",
+      "comingSoon": "Coming soon",
+      "preview": "Preview",
+      "open": "Open",
+      "remove": "Remove",
+      "cancel": "Cancel",
+      "close": "Close"
+    },
+    "remove": {
+      "title": "Remove {{name}}?",
+      "description": "This will unhire the {{role}} agent from your Core HR team. You can hire them again anytime."
+    },
+    "home": {
+      "subtitle": "Manage your Core HR agents, monitor activity, and hire specialists for people operations.",
+      "myAgents": "My Agents",
+      "myAgentsSubtitle": "Your hired HR specialists and their current status.",
+      "manageAgents": "Manage Agents →",
+      "emptyHired": "No agents yet",
+      "hireMore": "Hire More Agents",
+      "hireMoreHint": "Expand your team with specialists for onboarding, employees, compliance, offboarding, and analytics.",
+      "browseCatalog": "Browse Catalog",
+      "runs": "Runs",
+      "tokens": "Tokens",
+      "status": {
+        "active": "Active",
+        "paused": "Paused",
+        "busy": "Busy",
+        "inactive": "Inactive"
+      },
+      "kpis": {
+        "total": "Total Agents",
+        "active": "Active Agents",
+        "runs": "Runs This Period",
+        "tokens": "Tokens Used"
+      }
+    },
+    "catalog": {
+      "title": "Agent catalog",
+      "subtitle": "One seat per specialist. Hire the Core HR agents you need.",
+      "backHome": "← Back to agents",
+      "about": "About",
+      "bestFor": "Best for",
+      "capabilities": "Capabilities"
+    },
+    "agents": {
+      "onboarding": {
+        "name": "Onboarding Specialist",
+        "description": "Keeps new-hire checklists, reminders, and welcome templates on track.",
+        "summary": "Nora guides every new hire through day-one checklists, nudges owners on stalled tasks, and keeps welcome templates ready.",
+        "bestFor": "Teams that want consistent, on-time onboarding without chasing task owners.",
+        "capabilities": {
+          "checklists": "Checklists",
+          "reminders": "Reminders",
+          "templates": "Templates"
+        }
+      },
+      "employees": {
+        "name": "Employee Directory Agent",
+        "description": "Keeps the employee directory accurate and routes profile updates.",
+        "summary": "Pax watches the employee directory, flags missing data, and routes profile updates to the right owners.",
+        "bestFor": "HR teams that need a clean, trusted employee record as the source of truth.",
+        "capabilities": {
+          "directory": "Directory",
+          "updates": "Updates",
+          "routing": "Routing"
+        }
+      },
+      "compliance": {
+        "name": "Compliance & Documents",
+        "description": "Tracks expiring documents, requests renewals, and flags gaps.",
+        "summary": "Cora monitors document expirations, opens renewal requests, and surfaces compliance gaps before they become blockers.",
+        "bestFor": "Organizations with contracts, IDs, and certifications that must stay current.",
+        "capabilities": {
+          "documents": "Documents",
+          "expirations": "Expirations",
+          "requests": "Requests"
+        }
+      },
+      "offboarding": {
+        "name": "Offboarding Specialist",
+        "description": "Runs clearance, asset return, and access revocation checklists.",
+        "summary": "Rhea orchestrates exit checklists — clearance, assets, and access — so offboarding closes cleanly and on time.",
+        "bestFor": "Teams that need a repeatable, auditable exit process every time someone leaves.",
+        "capabilities": {
+          "clearance": "Clearance",
+          "assets": "Assets",
+          "access": "Access"
+        }
+      },
+      "analytics": {
+        "name": "People Analytics Agent",
+        "description": "Surfaces workforce insights, trends, and report-ready summaries.",
+        "summary": "Atlas turns headcount, movement, and people metrics into clear insights and report-ready summaries for leadership.",
+        "bestFor": "Leaders who want People Analytics highlights without building every chart by hand.",
+        "capabilities": {
+          "insights": "Insights",
+          "reports": "Reports",
+          "trends": "Trends"
+        }
+      }
+    },
+    "chat": {
+      "loading": "Loading conversation…",
+      "emptyTitle": "Talk to {{name}}",
+      "send": "Send",
+      "onboarding": {
+        "hint": "Ask Nora about stalled tasks, checklists, or welcome reminders.",
+        "placeholder": "Tell Nora what to check…",
+        "paused": "Unpause Nora to chat.",
+        "suggestions": {
+          "stuckTasks": "Which onboarding tasks are stuck?",
+          "checklists": "Review open checklists",
+          "reminders": "Send day-one reminders"
+        }
+      },
+      "employees": {
+        "hint": "Ask Pax about missing profile data or directory updates.",
+        "placeholder": "Tell Pax what to update…",
+        "paused": "Unpause Pax to chat.",
+        "suggestions": {
+          "missingData": "Who is missing profile data?",
+          "directory": "Scan the directory for gaps",
+          "routeUpdate": "Route a profile update"
+        }
+      },
+      "compliance": {
+        "hint": "Ask Cora about expirations, renewals, or compliance gaps.",
+        "placeholder": "Tell Cora what to track…",
+        "paused": "Unpause Cora to chat.",
+        "suggestions": {
+          "expiring": "What documents expire soon?",
+          "renewals": "Open renewal requests",
+          "gaps": "Show compliance gaps"
+        }
+      },
+      "offboarding": {
+        "hint": "Ask Rhea about clearance, assets, or access revocation.",
+        "placeholder": "Tell Rhea which exit to review…",
+        "paused": "Unpause Rhea to chat.",
+        "suggestions": {
+          "clearance": "Check clearance status",
+          "assets": "Pending asset returns",
+          "access": "Revoke pending access"
+        }
+      },
+      "analytics": {
+        "hint": "Ask Atlas about headcount, turnover, or report summaries.",
+        "placeholder": "Tell Atlas what to analyze…",
+        "paused": "Unpause Atlas to chat.",
+        "suggestions": {
+          "headcount": "Summarize headcount trend",
+          "turnover": "Highlight turnover risks",
+          "summary": "Leadership-ready summary"
+        }
+      }
     }
   }
 }

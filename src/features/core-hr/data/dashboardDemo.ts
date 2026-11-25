@@ -15,13 +15,14 @@ export const hrHeadcountTrend = [
   { label: 'Ene', value: 328 },
 ];
 
+/** Same palette as Recruitment dashboard charts (BarChart / LineChart). */
 export const hrAreaSlices = [
   { key: 'operations', percent: 36, color: '#8B5CF6' },
-  { key: 'sales', percent: 18, color: '#A78BFA' },
-  { key: 'admin', percent: 15, color: '#C4B5FD' },
-  { key: 'hospitality', percent: 14, color: '#DDD6FE' },
-  { key: 'it', percent: 7, color: '#EDE9FE' },
-  { key: 'other', percent: 10, color: '#F5F3FF' },
+  { key: 'sales', percent: 18, color: '#3B82F6' },
+  { key: 'admin', percent: 15, color: '#F97316' },
+  { key: 'hospitality', percent: 14, color: '#F59E0B' },
+  { key: 'it', percent: 7, color: '#10B981' },
+  { key: 'other', percent: 10, color: '#EC4899' },
 ] as const;
 
 export const hrProcesses = [
@@ -40,11 +41,3 @@ export const hrUpcomingEvents: {
   { key: 'birthdays', dateKey: 'feb03', celebrate: true },
 ];
 
-export const hrIncludesKeys = [
-  'digitalFile',
-  'onboardingChecklists',
-  'docsAndSignatures',
-  'orgChart',
-  'peopleReports',
-  'employeePortal',
-] as const;

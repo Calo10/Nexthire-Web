@@ -1,12 +1,12 @@
 import { useTranslation } from 'react-i18next';
 import CoreHrPageShell from '../components/CoreHrPageShell';
+import CoreHrDashboardAiAgentsCard from '../components/CoreHrDashboardAiAgentsCard';
 import HrAreaDonutChart from '../components/HrAreaDonutChart';
 import HrHeadcountTrendChart from '../components/HrHeadcountTrendChart';
 import {
   hrAreaSlices,
   hrDashboardMetrics,
   hrHeadcountTrend,
-  hrIncludesKeys,
   hrProcesses,
   hrUpcomingEvents,
 } from '../data/dashboardDemo';
@@ -222,21 +222,7 @@ export default function CoreHrDashboardPage() {
           </ol>
         </div>
 
-        <div className="rounded-2xl bg-primary text-white p-5 shadow-sm">
-          <h2 className="text-base font-semibold mb-4">{t('coreHr.dashboard.includesTitle')}</h2>
-          <ul className="space-y-2.5">
-            {hrIncludesKeys.map((key) => (
-              <li key={key} className="flex items-start gap-2.5 text-sm text-white/95">
-                <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-white/20">
-                  <svg className="h-2.5 w-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                  </svg>
-                </span>
-                {t(`coreHr.dashboard.includes.${key}`)}
-              </li>
-            ))}
-          </ul>
-        </div>
+        <CoreHrDashboardAiAgentsCard />
       </div>
     </CoreHrPageShell>
   );

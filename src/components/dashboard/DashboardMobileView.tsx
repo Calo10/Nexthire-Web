@@ -3,6 +3,7 @@ import BarChart from '../BarChart';
 import LineChart from '../LineChart';
 import ChartCard from '../ChartCard';
 import Card from '../Card';
+import DashboardAiAgentsCard from './DashboardAiAgentsCard';
 import type { DashboardPageState } from '../../hooks/useDashboardPage';
 
 function CompactStatCard({
@@ -62,14 +63,9 @@ export default function DashboardMobileView({
   myJobs,
   jobsLoading,
   jobsError,
-  tasks,
-  tasksLoading,
-  tasksError,
-  allJobs,
   interviewStageCount,
   getStageInfo,
   getJobStatusColor,
-  getTaskStatusColor,
   formatStatusLabel,
   formatDateShort,
   dateRangeOptions,
@@ -266,48 +262,9 @@ export default function DashboardMobileView({
         )}
       </Card>
 
-      <Card className="p-4">
-        <h3 className="text-base font-semibold text-dark-text mb-3">{t('dashboard.upcomingTasks')}</h3>
-        {tasksLoading ? (
-          <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="h-14 bg-gray-200 rounded animate-pulse"></div>
-            ))}
-          </div>
-        ) : tasksError ? (
-          <ErrorMessage message={tasksError.message || 'Failed to load tasks'} />
-        ) : (tasks || []).length === 0 ? (
-          <div className="text-center py-6 text-gray-500 text-sm">{t('dashboard.noUpcomingTasks')}</div>
-        ) : (
-          <div className="space-y-3">
-            {(tasks || []).slice(0, 5).map((task) => {
-              const relatedJob = task.relatedJobId
-                ? allJobs.find((j) => String(j.id) === String(task.relatedJobId))
-                : null;
-              const relatedCandidate = task.relatedCandidateId
-                ? candidates.find((c) => c.candidateId === task.relatedCandidateId)
-                : null;
-
-              return (
-                <div key={task.taskId} className="border-b border-gray-200 pb-3 last:border-0 last:pb-0">
-                  <div className="flex items-start justify-between mb-1">
-                    <h4 className="text-sm font-medium text-dark-text">{task.title || 'Untitled Task'}</h4>
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getTaskStatusColor(task.status || 'open')}`}>
-                      {formatStatusLabel(task.status || 'open')}
-                    </span>
-                  </div>
-                  <div className="text-xs text-gray-600">
-                    {relatedCandidate && <span>{relatedCandidate.fullName}</span>}
-                    {relatedCandidate && relatedJob && <span> • </span>}
-                    {relatedJob && <span>{relatedJob.title}</span>}
-                    <span className="ml-2">{task.dueAt ? formatDateShort(task.dueAt) : '-'}</span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </Card>
+      <div className="min-h-[320px]">
+        <DashboardAiAgentsCard />
+      </div>
     </div>
   );
 }

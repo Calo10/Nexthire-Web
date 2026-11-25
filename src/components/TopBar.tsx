@@ -1,9 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import LanguageSwitcher from './LanguageSwitcher';
 import UserAccountMenu from './UserAccountMenu';
+import { ClaudeLogo, OpenAiLogo } from './settings/AiAssistantLogos';
 
 export default function TopBar() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
@@ -27,12 +31,30 @@ export default function TopBar() {
 
   return (
     <header className="bg-white border-b border-gray-200 px-8 py-4">
-      <div className="flex items-center justify-end gap-4">
-        {/* Language Selector */}
+      <div className="flex items-center justify-end gap-3">
         <LanguageSwitcher />
 
-        {/* Bell Icon (optional) */}
-        <button className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-200 transition-colors">
+        <Link
+          to="/app/settings?mcp=1"
+          className="inline-flex h-10 items-center gap-2 rounded-xl px-3 text-sm font-semibold text-white bg-[#D97757] hover:bg-[#C96A4B] transition-colors"
+          aria-label={t('dashboard.connectAi')}
+        >
+          <span className="inline-flex items-center -space-x-1.5" aria-hidden>
+            <span className="relative z-[1] inline-flex h-5 w-5 items-center justify-center rounded-full bg-white">
+              <ClaudeLogo size={13} />
+            </span>
+            <span className="relative z-0 inline-flex h-5 w-5 items-center justify-center rounded-full bg-white">
+              <OpenAiLogo size={13} />
+            </span>
+          </span>
+          <span className="hidden xl:inline">{t('dashboard.connectAi')}</span>
+          <span className="xl:hidden">{t('dashboard.connectAiShort')}</span>
+        </Link>
+
+        <button
+          type="button"
+          className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-200 transition-colors"
+        >
           <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
           </svg>
